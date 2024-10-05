@@ -1,7 +1,7 @@
 {
-  "name": "foundryvtt-module-template",
-  "version": "0.0.4",
-  "description": "",
+  "name": "foundryvtt-stage-manager",
+  "version": "0.0.1",
+  "description": "A module for Foundry VTT meant to replace Theatre Inserts and provide accessible methods to display and manipulate visual novel-like character art.",
   "main": "dist/module.js",
   "scripts": {
     "test": "npx start-server-and-test start-server http://localhost:30000 cy:run",
@@ -44,8 +44,5 @@
     "typescript": "^5.6.2",
     "typescript-eslint": "^8.6.0",
     "yocto-spinner": "^0.1.0"
-  },
-  "testing": {
-    "foundryLocation": "/media/storage/games/FoundryVTT"
   }
 }
