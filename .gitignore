@@ -131,3 +131,5 @@ out
 .angular
 cypress/reports
 lint-report.html
+
+.foundry_license
