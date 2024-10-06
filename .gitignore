@@ -131,3 +131,8 @@ out
 .angular
 cypress/reports
 lint-report.html
+
+.env
+FoundryData
+foundryvtt-12.331.zip
+.vscode
