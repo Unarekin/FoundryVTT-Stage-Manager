@@ -1,0 +1,38 @@
+{
+  "id": "stage-manager",
+  "title": "Stage Manager",
+  "description": "",
+  "version": "#{VERSION}#",
+  "library": "false",
+  "manifestPlusVersion": "1.2.0",
+  "compatibility": {
+    "minimum": 11,
+    "verified": 12,
+    "maximum": 12
+  },
+  "authors": [
+    {
+      "name": "Unarekin",
+      "url": "https://github.com/Unarekin",
+      "discord": "unarekin"
+    }
+  ],
+  "relationships": {
+    "systems": [],
+    "requires": []
+  },
+  "esmodules": ["module.js"],
+  "styles": ["styles/module.css"],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "languages/en.json"
+    }
+  ],
+  "url": "#{URL}#",
+  "manifest": "#{MANIFEST}#",
+  "download": "#{DOWNLOAD}#",
+  "license": "LICENSE",
+  "readme": "README.md"
+}
