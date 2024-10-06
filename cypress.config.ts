@@ -1,15 +1,17 @@
 import { defineConfig } from "cypress";
 
+import moduleSpec from "./module.json";
+
 module.exports = defineConfig({
   viewportWidth: 1920,
   viewportHeight: 1080,
   reporter: "cypress-mochawesome-reporter",
   video: true,
   videosFolder: "./cypress/reports/video",
-  screenshotsFolder: "./cypress/reports/screenshots",
-  screenshotOnRunFailure: true,
   reporterOptions: {
-
+    reportPageTitle: `${moduleSpec.title} Test Report`,
+    reportTitle: `${moduleSpec.title} Tests`,
+    charts: true,
   },
   e2e: {
     baseUrl: "http://localhost:30000",
