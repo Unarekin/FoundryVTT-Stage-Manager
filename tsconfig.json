@@ -1,5 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig.json",
+  "include": ["./@types", "./src/module.ts"],
+  "exclude": ["./node_modules"],
   "compilerOptions": {
     "typeRoots": ["./@types", "./node_modules/@types"],
     "allowImportingTsExtensions": true,
@@ -13,6 +15,7 @@
     "noUncheckedIndexedAccess": false,
     "allowJs": true,
     "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "skipLibCheck": true
   }
 }

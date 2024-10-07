@@ -12,7 +12,8 @@
     "run:e2e": "npx cypress run --e2e --browser chrome",
     "build": "./build.mjs",
     "build:prod": "NODE_ENV=production ./build.mjs",
-    "watch": "npx onchange 'src/**/*' -- yarn build"
+    "watch": "npx onchange 'src/**/*' -- yarn build",
+    "docs": "npx typedoc --out docs src/module.ts"
   },
   "author": "Unarekin",
   "license": "MIT",
@@ -41,6 +42,10 @@
     "esbuild-sass-plugin": "^3.3.1",
     "eslint": "^9.11.0",
     "glob": "^11.0.0",
+    "typedoc": "^0.26.8",
+    "typedoc-github-wiki-theme": "^2.0.0",
+    "typedoc-plugin-markdown": "^4.2.9",
+    "typedoc-umlclass": "^0.10.0",
     "typescript": "^5.6.2",
     "typescript-eslint": "^8.6.0",
     "unzipper": "^0.12.3",
