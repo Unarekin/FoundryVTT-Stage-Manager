@@ -1,37 +1,43 @@
+import { promises as fs } from "fs";
+import path from "path";
+import Handlebars from "handlebars"
 import { defineConfig } from "cypress";
 
-import moduleSpec from "./module.json";
-
-module.exports = defineConfig({
-  viewportWidth: 1920,
-  viewportHeight: 1080,
+export default defineConfig({
   reporter: "cypress-mochawesome-reporter",
-  video: true,
-  videosFolder: "./cypress/reports/video",
   reporterOptions: {
-    reportPageTitle: `${moduleSpec.title} Test Report`,
-    reportTitle: `${moduleSpec.title} Tests`,
-    charts: true,
+
   },
   e2e: {
-    baseUrl: "http://localhost:30000",
     setupNodeEvents(on, config) {
-      require("cypress-mochawesome-reporter/plugin")(on);
-
-      on("before:browser:launch", (browser, launchOptions) => {
-        launchOptions.preferences.default['default.disable_3d_apis'] = false;
-        launchOptions.args.push('--enable-features=VaapiVideoDecoder');
-        launchOptions.args.push('--use-gl=egl');
-      });
+      // implement node event listeners here
+      const webpackPreprocessor = require("@cypress/webpack-preprocessor");
+      const options = {
+        webpackOptions: {
+          resolve: {
+            alias: {
+              "@src": path.resolve(__dirname, "./src")
+            }
+          }
+        },
+        watchOptions: {}
+      }
+      on("file:preprocessor", webpackPreprocessor(options));
+      return config;
     },
-    experimentalInteractiveRunEvents: true
   },
 
   component: {
     devServer: {
-      framework: "angular",
+      framework: "cypress-ct-html" as any,
       bundler: "webpack",
     },
     specPattern: "**/*.cy.ts",
-  },
+    setupNodeEvents(on, config) {
+      on("task", {
+        readFileMaybe(filename) { return fs.readFile(filename, "utf-8") }
+      });
+      return config;
+    }
+  }
 });

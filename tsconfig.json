@@ -9,7 +9,7 @@
     "allowSyntheticDefaultImports": true,
     "module": "Node16",
     "moduleResolution": "Node16",
-    "noEmit": true,
+    "noEmit": false,
     "target": "ES2023",
     "strict": true,
     "noUncheckedIndexedAccess": false,

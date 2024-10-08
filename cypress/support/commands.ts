@@ -36,43 +36,4 @@
 //   }
 // }
 
-declare global {
-  namespace Cypress {
-    interface Chainable {
-      adminLogin(password: string),
-      selectWorld(name: string),
-      selectUser(name: string, password?: string),
-      clickMacroButton(nth: number),
-    }
-  }
-}
-
-Cypress.Commands.add('adminLogin', (password: string) => {
-  cy.get("input#key")
-    .type(password)
-    .get("div#setup-authentication button[type='submit']").click()
-    ;
-});
-
-Cypress.Commands.add("selectWorld", (name: string) => {
-  cy
-    .get("aside.tour-center-step.tour a.step-button[data-action='exit']").click()
-    .get(`li[data-package-id=${name}]`)
-    .trigger("mouseenter")
-    // .get("a.control-play[data-action='exit']").click()
-    .get(`li[data-package-id="${name}"] a[data-action='worldLaunch']`).first().click({ force: true })
-    ;
-});
-
-Cypress.Commands.add("selectUser", (name: string, password?: string) => {
-  cy.get("select[name='userid']").select(name)
-    // cy.get("select[name='userid'] option").contains(name).click({ force: true })
-    .then(() => {
-      if (password) return cy.get("input[type='password']").type(password);
-    })
-    .get("button[type='submit'][name='join']").click()
-});
-
-Cypress.Commands.add("clickMacroButton", (nth: number) => {
-  cy.get(`ol#macro-list li.macro[data-slot='${nth}']`).click();
-})
+import "cypress-mochawesome-reporter/register"

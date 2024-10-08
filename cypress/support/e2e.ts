@@ -13,10 +13,7 @@
 // https://on.cypress.io/configuration
 // ***********************************************************
 
-import "cypress-mochawesome-reporter/register";
-
 // Import commands.js using ES2015 syntax:
 import './commands'
-
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
