@@ -31,6 +31,8 @@
     "@types/node": "^22.7.5",
     "@types/path-browserify": "^1.0.3",
     "@types/unzipper": "^0.10.10",
+    "@typescript-eslint/eslint-plugin": "^8.8.1",
+    "@typescript-eslint/parser": "^8.8.1",
     "babel-loader": "^9.2.1",
     "cypress-ct-html": "^1.1.0",
     "cypress-mochawesome-reporter": "^3.8.2",

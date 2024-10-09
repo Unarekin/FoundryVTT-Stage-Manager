@@ -6394,11 +6394,25 @@ Please provide error handling inside the Effect using \`catchError\` or \`tapRes
     return v;
   }
 
+  // src/api/index.ts
+  var api_default = {};
+
   // src/module.ts
+  window.StageManager = api_default;
   Hooks.on("ready", () => {
     log(`${"Stage Manager"} ready!`);
   });
   window.rxjs = esm5_exports;
   window.MiniRX = index_esm_exports;
+  var store = configureStore({
+    extensions: [
+      new ReduxDevtoolsExtension({
+        name: "Stage Manager Store",
+        maxAge: 25,
+        latency: 1e3
+      })
+    ]
+  });
+  api_default.store = store;
 })();
 //# sourceMappingURL=module.js.map

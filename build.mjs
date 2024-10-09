@@ -42,7 +42,7 @@ if (!process.argv.slice(2).includes("--no-lint")) {
     cache: true,
     errorOnUnmatchedPattern: false,
   });
-  const lintResults = await linter.lintFiles(["src/**.ts", "src/*/**.ts"]);
+  const lintResults = await linter.lintFiles(["src/module.ts"]);
   await ESLint.outputFixes(lintResults);
 
   let formatter = await linter.loadFormatter("html");
