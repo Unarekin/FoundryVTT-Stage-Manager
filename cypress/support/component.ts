@@ -1,3 +1,4 @@
+import "cypress-mochawesome-reporter/register"
 import "./commands";
 import path from "path-browserify";
 import Handlebars from "handlebars";
@@ -26,7 +27,11 @@ Cypress.Commands.add("mount", (template: string, options: HandlebarsMountOptions
 
       const dom = new DOMParser().parseFromString(compiled, "text/html");
       const child = dom.firstElementChild;
-      window.document.body.appendChild(child as HTMLElement);
+      const root = window.document.querySelector("[data-cy-root]");
+      if (!root) throw new Error("Unable to locate document root.");
+      root.innerHTML = "";
+      root.appendChild(child as HTMLElement);
+      // window.document.body.appendChild(child as HTMLElement);
       return cy.wrap(child as HTMLElement, { log: false });
     })
 });
