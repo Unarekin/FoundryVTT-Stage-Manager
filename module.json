@@ -22,7 +22,7 @@
     "requires": []
   },
   "esmodules": [],
-  "scripts": ["module.js"],
+  "scripts": ["module.js", "./vendor/xstate.umd.min.js"],
   "styles": ["styles/module.css"],
   "languages": [
     {
