@@ -1,0 +1,1 @@
+declare const MiniRX = await import("../node_modules/mini-rx-store/index.d.ts");
