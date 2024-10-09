@@ -6397,22 +6397,64 @@ Please provide error handling inside the Effect using \`catchError\` or \`tapRes
   // src/api/index.ts
   var api_default = {};
 
-  // src/module.ts
-  window.StageManager = api_default;
-  Hooks.on("ready", () => {
-    log(`${"Stage Manager"} ready!`);
-  });
-  window.rxjs = esm5_exports;
-  window.MiniRX = index_esm_exports;
+  // src/store.ts
   var store = configureStore({
     extensions: [
       new ReduxDevtoolsExtension({
         name: "Stage Manager Store",
         maxAge: 25,
         latency: 1e3
-      })
+      }),
+      new ImmutableStateExtension(),
+      ...true ? [new LoggerExtension()] : []
     ]
   });
   api_default.store = store;
+
+  // src/lib/ActorDock/ActorDock.store.ts
+  var ActorDockStore = class extends FeatureStore {
+    constructor(name, image) {
+      super("ActorDock", { name, image }, { multi: true });
+    }
+  };
+
+  // src/lib/ActorDock/ActorDock.ts
+  var ActorDock = class {
+    constructor(name, portrait) {
+      this.name = name;
+      this.portrait = portrait;
+      this.#store = new ActorDockStore(name, portrait);
+      this.setPortraitImage(portrait).catch(console.error);
+    }
+    id = foundry.utils.randomID();
+    #portraitSprite = null;
+    get portraitSprite() {
+      return this.#portraitSprite;
+    }
+    // eslint-disable-next-line no-unused-private-class-members
+    #store;
+    setPortraitImage(arg) {
+      if (typeof arg === "string") {
+        return loadTexture(arg).then((val) => {
+          if (!val) throw new Error();
+          if (val instanceof PIXI.Texture) return this.setPortraitImage(val);
+          else throw new Error();
+        });
+      } else {
+        if (this.#portraitSprite) this.#portraitSprite.texture = arg;
+        else this.#portraitSprite = new PIXI.Sprite(arg);
+      }
+    }
+  };
+
+  // src/module.ts
+  window.StageManager = api_default;
+  Hooks.on("ready", () => {
+    log(`${"Stage Manager"} ready!`);
+    const dock = new ActorDock("Test Actor", "uploads/images/avatars/EricaNoKittyAvatar.png");
+    console.log("Dock:", dock);
+  });
+  window.rxjs = esm5_exports;
+  window.MiniRX = index_esm_exports;
 })();
 //# sourceMappingURL=module.js.map

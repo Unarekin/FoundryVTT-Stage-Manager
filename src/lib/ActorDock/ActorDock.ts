@@ -1,3 +1,5 @@
+import { ActorDockStore } from "./ActorDock.store";
+
 export class ActorDock {
   public id: string = foundry.utils.randomID();
 
@@ -7,8 +9,11 @@ export class ActorDock {
     return this.#portraitSprite;
   }
 
-  constructor(public name: string, public portrait: string) {
+  // eslint-disable-next-line no-unused-private-class-members
+  #store: ActorDockStore;
 
+  constructor(public name: string, public portrait: string) {
+    this.#store = new ActorDockStore(name, portrait);
 
     this.setPortraitImage(portrait).catch(console.error);
   }
