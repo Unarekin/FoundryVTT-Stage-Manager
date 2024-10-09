@@ -21,7 +21,8 @@
     "systems": [],
     "requires": []
   },
-  "esmodules": ["module.js"],
+  "esmodules": [],
+  "scripts": ["module.js"],
   "styles": ["styles/module.css"],
   "languages": [
     {

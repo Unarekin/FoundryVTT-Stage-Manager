@@ -11,6 +11,8 @@ import { promises as fs } from "fs";
 import { deepmerge } from "deepmerge-ts";
 import yoctoSpinner from "yocto-spinner";
 import { ESLint } from "eslint";
+import externalizeAllPackagesExcept from "esbuild-plugin-noexternal";
+
 
 /** Paths */
 const SRC_PATH = "./src";
@@ -21,6 +23,7 @@ const TEMPLATE_PATH = path.join(SRC_PATH, "templates");
 
 // Import module.json for some config options
 import moduleConfig from "./module.json" with { type: "json" };
+
 
 // Constants to be inserted into process.env during build
 const __DEV__ = process.env.NODE_ENV !== "production";
@@ -85,6 +88,7 @@ const STATIC_FILES = [
   { src: TEMPLATE_PATH, dest: "templates" },
   { src: STYLE_PATH, dest: "styles" },
   { src: path.join(SRC_PATH, "packs"), dest: "packs" },
+  { src: path.join(SRC_PATH, "vendor"), dest: "vendor" }
 ];
 
 const copyPlugins = [];
@@ -113,7 +117,7 @@ for (const file of STATIC_FILES) {
 const buildResults = await build({
   entryPoints: [
     path.join(SRC_PATH, "module.ts"),
-    path.join(STYLE_PATH, "module.scss"),
+    path.join(STYLE_PATH, "module.scss")
   ],
   outdir: OUT_PATH,
   sourcemap: __DEV__,
@@ -128,11 +132,12 @@ const buildResults = await build({
   },
   external: ["*.woff", "*.woff2", "*.otf", "*.ttf", "*.webp"],
   plugins: [
-    nodeExternalsPlugin(),
+    
     cleanPlugin({ patterns: "./dist/**" }),
     sassPlugin(),
     ...copyPlugins,
     ...jsonMergers,
+    externalizeAllPackagesExcept(["rxjs", "mini-rx-store", "tslib"])
   ],
 });
 

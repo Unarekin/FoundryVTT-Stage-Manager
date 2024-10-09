@@ -2826,6 +2826,11 @@ esbuild-plugin-json-merge@^0.1.0:
     fs-extra "^11.2.0"
     glob "^10.3.10"
 
+esbuild-plugin-noexternal@^0.1.6:
+  version "0.1.6"
+  resolved "https://registry.yarnpkg.com/esbuild-plugin-noexternal/-/esbuild-plugin-noexternal-0.1.6.tgz#442c773c08e47e839d5f113d4e3de083b818dfed"
+  integrity sha512-cXu0/dfFIEJIPqZCHBdJWK/FqDgBSOd4W/Auo1rcPASbYHC7KsjgVGmB1Hy1nPzz4rakGEcUvGEfHmXZsh+3LA==
+
 esbuild-sass-plugin@^3.3.1:
   version "3.3.1"
   resolved "https://registry.yarnpkg.com/esbuild-sass-plugin/-/esbuild-sass-plugin-3.3.1.tgz#74d096127bff10072042de30119235f276655566"
@@ -4091,6 +4096,11 @@ mimic-fn@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/mimic-fn/-/mimic-fn-2.1.0.tgz#7ed2c2ccccaf84d3ffcb7a69b57711fc2083401b"
   integrity sha512-OqbOk5oEQeAZ8WXWydlu9HJjz9WVdEIvamMCcXmuqUYjTknH/sqsWvhQ3vgwKFRR1HpjvNBKQ37nbJgYzGqGcg==
+
+mini-rx-store@^5.1.0:
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/mini-rx-store/-/mini-rx-store-5.1.0.tgz#b09b1598b25a63c86ed1dec888f20a8663bd25e8"
+  integrity sha512-/oaoJVzuoDOSz/+1TXVOYzJ8qD59jy1/Q4dPjG1dt8Gv79gaNWjGPus1NPW/1v/00iYLtzDd7K4XyFOzQYV+IQ==
 
 minimatch@^10.0.0:
   version "10.0.1"
