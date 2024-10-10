@@ -11,7 +11,7 @@
     "build:prod": "NODE_ENV=production node build.mjs",
     "test:pre": "yarn test:clean",
     "test:mid": "mv cypress/reports/videos cypress/reports/videos-temp",
-    "test:post": "mv cypress/reports/videos-temp/* cypress/reports/videos && npx rimraf cypress/reports/videos-temp",
+    "test:post": "mkdir -p cypress/reports/videos && mv cypress/reports/videos-temp/* cypress/reports/videos/ && npx rimraf cypress/reports/videos-temp",
     "test:component": "npx cypress run --component --browser chrome && mv cypress/reports/index.html cypress/reports/component.html",
     "test:e2e": "npx start-server-and-test start http://localhost:30000 'npx cypress run --e2e --browser chrome && mv cypress/reports/index.html cypress/reports/e2e.html' || docker compose down",
     "test": "yarn test:pre && yarn test:component && yarn test:mid && yarn test:e2e && yarn test:post",
