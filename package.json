@@ -65,6 +65,7 @@
     "typescript-eslint": "^8.6.0",
     "unzipper": "^0.12.3",
     "webpack": "^5.95.0",
-    "yocto-spinner": "^0.1.0"
+    "yocto-spinner": "^0.1.0",
+    "json-2-csv": "^5.5.6"
   }
 }
