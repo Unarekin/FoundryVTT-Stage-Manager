@@ -6422,27 +6422,80 @@ Please provide error handling inside the Effect using \`catchError\` or \`tapRes
   var StageManagerPrimaryGroup = class extends PIXI.Container {
   };
 
+  // src/lib/StageManagerTextBoxGroup.ts
+  var StageManagerTextBoxGroup = class extends PIXI.Container {
+  };
+
+  // src/lib/constants.ts
+  var CustomHooks = {
+    systemControlTools: `${"stage-manager"}.getSystemControlTools`
+  };
+
   // src/lib/StageManager.ts
   var StageManager = class {
-    canvasGroup = new StageManagerCanvasGroup();
-    foreground = new StageManagerForegroundGroup();
-    primary = new StageManagerPrimaryGroup();
-    background = new StageManagerBackgroundGroup();
-    constructor() {
+    canvasGroup;
+    foreground;
+    primary;
+    background;
+    textBoxes;
+    /**
+     * Creates our child canvas groups and attaches everything to the PIXI stage
+     */
+    intializeCanvas() {
+      this.canvasGroup = new StageManagerCanvasGroup();
+      this.foreground = new StageManagerForegroundGroup();
+      this.primary = new StageManagerPrimaryGroup();
+      this.background = new StageManagerBackgroundGroup();
+      this.textBoxes = new StageManagerTextBoxGroup();
       if (canvas) {
         if (canvas.stage) canvas.stage.addChild(this.canvasGroup);
         canvas.stageManager = this.canvasGroup;
       }
       this.canvasGroup.addChild(this.background, this.primary, this.foreground);
+      CONFIG.Canvas.layers["stage-manager"] = {
+        layerClass: SystemControlsLayer,
+        group: "interface"
+      };
     }
+    registerSceneControlButtons(controls) {
+      log("Registering scene controls");
+      const tools = [
+        {
+          name: "add-from-actor",
+          title: "STAGEMANAGER.SCENECONTROLS.ACTOR",
+          icon: "fas fa-person"
+        },
+        {
+          name: "add-from-token",
+          title: "STAGEMANAGER.SCENECONTROLS.TOKEN",
+          icon: "sm-icon sm-token"
+        }
+      ];
+      Hooks.callAll(CustomHooks.systemControlTools, tools);
+      controls.push({
+        name: "stage-manager",
+        title: "STAGEMANAGER.SCENECONTROLS.TITLE",
+        icon: "sm-icon sm-curtains",
+        tools,
+        layer: "stage-manager",
+        visible: true,
+        activeTool: ""
+      });
+    }
+  };
+  var SystemControlsLayer = class extends InteractionLayer {
   };
 
   // src/module.ts
+  var stageManager = new StageManager();
   window.rxjs = esm5_exports;
   window.MiniRX = index_esm_exports;
-  Hooks.on("ready", () => {
-    const stageManager = new StageManager();
-    window.StageManager = stageManager;
+  window.StageManager = stageManager;
+  Hooks.on("getSceneControlButtons", stageManager.registerSceneControlButtons.bind(stageManager));
+  Hooks.once("init", () => {
+    stageManager.intializeCanvas();
+  });
+  Hooks.once("ready", () => {
     log(`${"Stage Manager"} ready!`);
   });
 })();

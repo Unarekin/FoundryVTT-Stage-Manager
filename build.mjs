@@ -88,7 +88,8 @@ const STATIC_FILES = [
   { src: TEMPLATE_PATH, dest: "templates" },
   { src: STYLE_PATH, dest: "styles" },
   { src: path.join(SRC_PATH, "packs"), dest: "packs" },
-  { src: path.join(SRC_PATH, "vendor"), dest: "vendor" }
+  { src: path.join(SRC_PATH, "vendor"), dest: "vendor" },
+  { src: path.join(SRC_PATH, "assets"), dest: "assets" }
 ];
 
 const copyPlugins = [];
@@ -130,7 +131,7 @@ const buildResults = await build({
     __MODULE_ID__: `"${__MODULE_ID__}"`,
     __MODULE_VERSION__: `"${__MODULE_VERSION__}"`,
   },
-  external: ["*.woff", "*.woff2", "*.otf", "*.ttf", "*.webp"],
+  external: ["*.woff", "*.woff2", "*.otf", "*.ttf", "*.webp", "*.svg"],
   plugins: [
     
     cleanPlugin({ patterns: "./dist/**" }),
