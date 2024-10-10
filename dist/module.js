@@ -6394,67 +6394,56 @@ Please provide error handling inside the Effect using \`catchError\` or \`tapRes
     return v;
   }
 
-  // src/api/index.ts
-  var api_default = {};
-
-  // src/store.ts
-  var store = configureStore({
-    extensions: [
-      new ReduxDevtoolsExtension({
-        name: "Stage Manager Store",
-        maxAge: 25,
-        latency: 1e3
-      }),
-      new ImmutableStateExtension(),
-      ...true ? [new LoggerExtension()] : []
-    ]
-  });
-  api_default.store = store;
-
-  // src/lib/ActorDock/ActorDock.store.ts
-  var ActorDockStore = class extends FeatureStore {
-    constructor(name, image) {
-      super("ActorDock", { name, image }, { multi: true });
+  // src/lib/StageManagerCanvasGroup.ts
+  var StageManagerCanvasGroup = class extends PIXI.Container {
+    setInverseMatrix() {
+      if (canvas?.app?.stage)
+        this.transform.setFromMatrix(canvas.app.stage.localTransform.clone().invert());
     }
-  };
-
-  // src/lib/ActorDock/ActorDock.ts
-  var ActorDock = class {
-    constructor(name, portrait) {
-      this.name = name;
-      this.portrait = portrait;
-      this.#store = new ActorDockStore(name, portrait);
-      this.setPortraitImage(portrait).catch(console.error);
-    }
-    id = foundry.utils.randomID();
-    #portraitSprite = null;
-    get portraitSprite() {
-      return this.#portraitSprite;
-    }
-    // eslint-disable-next-line no-unused-private-class-members
-    #store;
-    setPortraitImage(arg) {
-      if (typeof arg === "string") {
-        return loadTexture(arg).then((val) => {
-          if (!val) throw new Error();
-          if (val instanceof PIXI.Texture) return this.setPortraitImage(val);
-          else throw new Error();
+    constructor() {
+      super();
+      if (canvas?.app) {
+        canvas.app.renderer.addListener("prerender", () => {
+          this.setInverseMatrix();
         });
-      } else {
-        if (this.#portraitSprite) this.#portraitSprite.texture = arg;
-        else this.#portraitSprite = new PIXI.Sprite(arg);
       }
     }
   };
 
+  // src/lib/StageManagerForegroundGroup.ts
+  var StageManagerForegroundGroup = class extends PIXI.Container {
+  };
+
+  // src/lib/StageManagerBackgroundGroup.ts
+  var StageManagerBackgroundGroup = class extends PIXI.Container {
+  };
+
+  // src/lib/StageManagerPrimaryGroup.ts
+  var StageManagerPrimaryGroup = class extends PIXI.Container {
+  };
+
+  // src/lib/StageManager.ts
+  var StageManager = class {
+    canvasGroup = new StageManagerCanvasGroup();
+    foreground = new StageManagerForegroundGroup();
+    primary = new StageManagerPrimaryGroup();
+    background = new StageManagerBackgroundGroup();
+    constructor() {
+      if (canvas) {
+        if (canvas.stage) canvas.stage.addChild(this.canvasGroup);
+        canvas.stageManager = this.canvasGroup;
+      }
+      this.canvasGroup.addChild(this.background, this.primary, this.foreground);
+    }
+  };
+
   // src/module.ts
-  window.StageManager = api_default;
-  Hooks.on("ready", () => {
-    log(`${"Stage Manager"} ready!`);
-    const dock = new ActorDock("Test Actor", "uploads/images/avatars/EricaNoKittyAvatar.png");
-    console.log("Dock:", dock);
-  });
   window.rxjs = esm5_exports;
   window.MiniRX = index_esm_exports;
+  Hooks.on("ready", () => {
+    const stageManager = new StageManager();
+    window.StageManager = stageManager;
+    log(`${"Stage Manager"} ready!`);
+  });
 })();
 //# sourceMappingURL=module.js.map
