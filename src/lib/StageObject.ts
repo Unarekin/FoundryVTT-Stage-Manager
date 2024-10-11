@@ -11,6 +11,7 @@ export abstract class StageObject {
   #visible$ = new rxjs.BehaviorSubject<boolean>(false);
   #position$ = new rxjs.BehaviorSubject<Position>({ x: 0, y: 0 });
   #size$ = new rxjs.BehaviorSubject<Size>({ width: 0, height: 0 });
+  #zIndex$ = new rxjs.BehaviorSubject<number>(0);
 
   public get visible(): boolean { return this.#visible$.value; }
   public set visible(value: boolean) { this.#visible$.next(value); }
@@ -55,6 +56,12 @@ export abstract class StageObject {
     rxjs.map(size => size.height),
     rxjs.distinctUntilChanged()
   );
+
+  public get zIndex(): number { return this.#zIndex$.value; }
+  public set zIndex(value: number) { this.#zIndex$.next(value); }
+  public readonly zIndex$ = this.#zIndex$.asObservable();
+
+  public abstract displayObject: PIXI.DisplayObject;
 
   public destroy() {
     // Notify internal subscriptions
