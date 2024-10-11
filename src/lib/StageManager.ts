@@ -39,6 +39,9 @@ export default class StageManager {
 
     this.canvasGroup.addChild(this.background, this.primary, this.foreground);
 
+    log("Adding PIXI layer");
+    canvas?.stage?.addChild(this.canvasGroup);
+
     CONFIG.Canvas.layers[__MODULE_ID__] = {
       layerClass: SystemControlsLayer,
       group: "interface"
