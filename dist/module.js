@@ -6452,6 +6452,8 @@ Please provide error handling inside the Effect using \`catchError\` or \`tapRes
         canvas.stageManager = this.canvasGroup;
       }
       this.canvasGroup.addChild(this.background, this.primary, this.foreground);
+      log("Adding PIXI layer");
+      canvas?.stage?.addChild(this.canvasGroup);
       CONFIG.Canvas.layers["stage-manager"] = {
         layerClass: SystemControlsLayer,
         group: "interface"
@@ -6492,10 +6494,8 @@ Please provide error handling inside the Effect using \`catchError\` or \`tapRes
   window.MiniRX = index_esm_exports;
   window.StageManager = stageManager;
   Hooks.on("getSceneControlButtons", stageManager.registerSceneControlButtons.bind(stageManager));
-  Hooks.once("init", () => {
-    stageManager.intializeCanvas();
-  });
   Hooks.once("ready", () => {
+    stageManager.intializeCanvas();
     log(`${"Stage Manager"} ready!`);
   });
 })();

@@ -16,11 +16,12 @@ const stageManager = new StageManager();
 
 Hooks.on("getSceneControlButtons", stageManager.registerSceneControlButtons.bind(stageManager));
 
-Hooks.once("init", () => {
-  stageManager.intializeCanvas();
-})
+// Hooks.once("init", () => {
+
+// })
 
 Hooks.once("ready", () => {
+  stageManager.intializeCanvas();
   log(`${__MODULE_TITLE__} ready!`);
 });
 
