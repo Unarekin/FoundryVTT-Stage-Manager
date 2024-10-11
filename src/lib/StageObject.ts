@@ -36,6 +36,25 @@ export abstract class StageObject {
     rxjs.distinctUntilChanged()
   );
 
+  public get size(): Size { return this.#size$.value; }
+  public set size(value: Size) { this.#size$.next(value); }
+  public readonly size$ = this.#size$.asObservable();
+
+  public get width(): number { return this.#size$.value.width; }
+  public set width(value: number) { this.#size$.next({ width: value, height: this.#size$.value.height }); }
+  public readonly width$ = this.#size$.pipe(
+    rxjs.takeUntil(this.#destroy$),
+    rxjs.map(size => size.width),
+    rxjs.distinctUntilChanged()
+  );
+
+  public get height(): number { return this.#size$.value.height; }
+  public set height(value: number) { this.#size$.next({ width: this.#size$.value.width, height: value }); }
+  public readonly height$ = this.#size$.pipe(
+    rxjs.takeUntil(this.#destroy$),
+    rxjs.map(size => size.height),
+    rxjs.distinctUntilChanged()
+  );
 
   public destroy() {
     // Notify internal subscriptions
