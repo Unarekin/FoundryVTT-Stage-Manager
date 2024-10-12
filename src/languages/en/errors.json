@@ -1,5 +1,7 @@
 {
   "STAGEMANAGER": {
-    "ERRORS": {}
+    "ERRORS": {
+      "INVALIDCONTAINER": "Invalid PIXI container provided."
+    }
   }
 }

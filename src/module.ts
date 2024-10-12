@@ -4,7 +4,6 @@ import * as rxjs from "rxjs";
 import StageManager from './lib/StageManager';
 
 const stageManager = new StageManager();
-
 // Elevate some objects to global state
 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
 (window as any).rxjs = rxjs;
