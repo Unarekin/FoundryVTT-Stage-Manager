@@ -1,11 +1,11 @@
-import { StageManagerCanvasGroup } from "./StageManagerCanvasGroup"
-import { StageManagerForegroundGroup } from './StageManagerForegroundGroup';
-import { StageManagerBackgroundGroup } from './StageManagerBackgroundGroup';
-import { StageManagerPrimaryGroup } from './StageManagerPrimaryGroup';
-import { StageManagerTextBoxGroup } from './StageManagerTextBoxGroup';
+import { StageManagerCanvasGroup } from "./CanvasGroups/StageManagerCanvasGroup"
+import { StageManagerForegroundGroup } from './CanvasGroups/StageManagerForegroundGroup';
+import { StageManagerBackgroundGroup } from './CanvasGroups/StageManagerBackgroundGroup';
+import { StageManagerPrimaryGroup } from './CanvasGroups/StageManagerPrimaryGroup';
+import { StageManagerTextBoxGroup } from './CanvasGroups/StageManagerTextBoxGroup';
 import { CustomHooks } from './constants';
 import { log } from "../logging";
-import { StageObject } from './StageObject';
+import { StageObject } from './StageObjects/StageObject';
 
 
 /**
@@ -20,6 +20,7 @@ export default class StageManager {
   public background?: StageManagerBackgroundGroup;
   public textBoxes?: StageManagerTextBoxGroup;
 
+  public readonly stageObjects: StageObject[] = [];
 
   /**
    * Creates our child canvas groups and attaches everything to the PIXI stage
