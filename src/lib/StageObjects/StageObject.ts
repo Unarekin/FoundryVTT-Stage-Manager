@@ -1,4 +1,4 @@
-import { Position, Size } from './interfaces';
+import { Position, Size } from '../interfaces';
 
 /**
  * Generic object that can be displayed and manipulated on the stage
