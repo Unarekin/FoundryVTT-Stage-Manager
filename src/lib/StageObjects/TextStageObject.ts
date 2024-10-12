@@ -2,8 +2,8 @@ import { Size } from "../interfaces";
 import { StageObject } from "./StageObject";
 
 export class TextStageObject extends StageObject {
-  #displayObject: PIXI.HTMLText;
-  public get displayObject() { return this.#displayObject; }
+  protected _displayObject: PIXI.HTMLText;
+  public get displayObject() { return this._displayObject; }
 
   //#region Sizing
   #width = new rxjs.BehaviorSubject<number>(0);
@@ -63,6 +63,32 @@ export class TextStageObject extends StageObject {
     this.#style.next(value);
   }
   public readonly style$ = this.#style.asObservable();
+  //#endregion
+
+  //#region Styling
+  #fill = new rxjs.BehaviorSubject<PIXI.TextStyleFill>(0xfff);
+  public get fill(): PIXI.TextStyleFill { return this.displayObject.style.fill }
+  public set fill(value: PIXI.TextStyleFill) {
+    this.displayObject.style.fill = value;
+    this.#fill.next(value);
+  }
+  public readonly fill$ = this.#fill.asObservable();
+
+  public get color(): PIXI.TextStyleFill { return this.fill; }
+  public set color(value: PIXI.TextStyleFill) { this.fill = value; }
+  public readonly color$ = this.fill$;
+
+  #stroke = new rxjs.BehaviorSubject<string | number>(0);
+  public get stroke(): string | number { return this.displayObject.style.stroke; }
+  public set stroke(value: string | number) {
+    this.displayObject.style.stroke = value;
+    this.#stroke.next(value);
+  }
+  public readonly stroke$ = this.#stroke.asObservable();
+
+  public get outline(): string | number { return this.stroke; }
+  public set outline(value: string | number) { this.stroke = value; }
+  public readonly outline$ = this.stroke$;
 
   //#endregion
 
@@ -76,35 +102,7 @@ export class TextStageObject extends StageObject {
   constructor(text: string, style?: PIXI.HTMLTextStyle) {
     const textObj = new PIXI.HTMLText(text, style);
     super(textObj);
-    this.#displayObject = textObj;
-
+    this._displayObject = textObj;
   }
   //#endregion
 }
-
-// import { StageObject } from "./StageObject";
-
-// // export type TextStyle = PIXI.TextStyle | PIXI.HTMLTextStyle;
-
-// export class TextStageObject extends StageObject {
-//   public displayObject: PIXI.HTMLText;
-
-//   #text$ = new rxjs.BehaviorSubject<string>("");
-
-//   public get text() { return this.#text$.value; }
-//   public set text(value: string) { this.#text$.next(value); }
-//   public readonly text$ = this.#text$.asObservable().pipe(
-//     rxjs.takeUntil(this.destroy$),
-//     rxjs.distinctUntilChanged()
-//   );
-
-//   public style: PIXI.HTMLTextStyle = PIXI.TextStyle.defaultStyle;
-
-//   constructor(text: string, style?: PIXI.HTMLTextStyle) {
-//     super();
-//     this.#text$.next(text);
-//     if (style) this.style = style;
-//     this.displayObject = new PIXI.HTMLText(text, style);
-//   }
-
-// }
