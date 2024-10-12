@@ -5,6 +5,7 @@ import { StageManagerPrimaryGroup } from './StageManagerPrimaryGroup';
 import { StageManagerTextBoxGroup } from './StageManagerTextBoxGroup';
 import { CustomHooks } from './constants';
 import { log } from "../logging";
+import { StageObject } from './StageObject';
 
 
 /**
@@ -77,6 +78,8 @@ export default class StageManager {
 
 
   }
+
+  public addStageObject(object: StageObject) { }
 }
 
 class SystemControlsLayer extends InteractionLayer { }
