@@ -1,12 +1,9 @@
-import { StageManagerCanvasGroup } from "./CanvasGroups/StageManagerCanvasGroup"
-import { StageManagerForegroundGroup } from './CanvasGroups/StageManagerForegroundGroup';
-import { StageManagerBackgroundGroup } from './CanvasGroups/StageManagerBackgroundGroup';
-import { StageManagerPrimaryGroup } from './CanvasGroups/StageManagerPrimaryGroup';
-import { StageManagerTextBoxGroup } from './CanvasGroups/StageManagerTextBoxGroup';
 import { CustomHooks } from './constants';
 import { log } from "../logging";
-import { StageObject } from './StageObjects/StageObject';
-
+import { InvalidContainerError } from './errors';
+import { StageManagerBackgroundGroup, StageManagerCanvasGroup, StageManagerForegroundGroup, StageManagerPrimaryGroup, StageManagerTextBoxGroup } from "./CanvasGroups";
+import { } from "./errors";
+import { ImageStageObject, StageObject, TextStageObject } from "./StageObjects";
 
 /**
  * 
@@ -80,7 +77,38 @@ export default class StageManager {
 
   }
 
-  public addStageObject(object: StageObject) { }
+
+  public addStageObject(object: StageObject, container: PIXI.Container) {
+    this.stageObjects.push(object);
+    container.addChild(object.displayObject);
+
+    const destroySub = object.destroy$.subscribe(() => {
+      destroySub.unsubscribe();
+      this.removeStageObject(object);
+    });
+  }
+
+  public removeStageObject(object: StageObject) {
+    if (this.stageObjects.includes(object)) {
+      this.stageObjects.splice(this.stageObjects.indexOf(object), 1);
+      if (!object.destroyed) object.destroy();
+    }
+  }
+
+  public addImage(image: PIXI.ImageSource, container: PIXI.Container | undefined = this.primary): ImageStageObject {
+    if (!container) throw new InvalidContainerError();
+    const stageObject = new ImageStageObject(image);
+    this.addStageObject(stageObject, container);
+    return stageObject;
+  }
+
+  public addText(text: string, style?: PIXI.ITextStyle, container: PIXI.Container | undefined = this.primary): TextStageObject {
+    if (!container) throw new InvalidContainerError();
+    const stageObject = new TextStageObject(text, style);
+    this.addStageObject(stageObject, container);
+    return stageObject;
+  }
+
 }
 
 class SystemControlsLayer extends InteractionLayer { }

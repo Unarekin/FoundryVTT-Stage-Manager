@@ -1,25 +1,25 @@
 import { StageObject } from "./StageObject";
 
-type TextStyle = PIXI.TextStyle | PIXI.HTMLTextStyle;
+// export type TextStyle = PIXI.TextStyle | PIXI.HTMLTextStyle;
 
 export class TextStageObject extends StageObject {
   public displayObject: PIXI.HTMLText;
 
-  #text$ = new rxjs.Subject<string>();
-  #style$ = new rxjs.Subject<TextStyle>();
+  #text$ = new rxjs.BehaviorSubject<string>("");
 
   public get text() { return this.#text$.value; }
   public set text(value: string) { this.#text$.next(value); }
-  public readonly text$ = this.#text$.asObservable();
+  public readonly text$ = this.#text$.asObservable().pipe(
+    rxjs.takeUntil(this.destroy$),
+    rxjs.distinctUntilChanged()
+  );
 
-  public get style() { return this.#style$.value; }
-  public set style(value: TextStyle) { this.#style$.next(value); }
-  public readonly styel$ = this.#style$.asObservable();
+  public style: PIXI.ITextStyle = PIXI.TextStyle.defaultStyle;
 
-  constructor(text: string, style?: TextStyle) {
+  constructor(text: string, style?: PIXI.ITextStyle) {
     super();
     this.#text$.next(text);
-    this.#style$.next(style);
+    if (style) this.style = style;
     this.displayObject = new PIXI.HTMLText(text, style);
   }
 
