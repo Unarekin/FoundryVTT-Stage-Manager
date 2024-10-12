@@ -49,8 +49,8 @@
     "eslint": "^9.11.0",
     "glob": "^11.0.0",
     "handlebars": "^4.7.8",
+    "json-2-csv": "^5.5.6",
     "marge": "^1.0.1",
-    "mini-rx-store": "^5.1.0",
     "mocha": "^10.7.3",
     "mochawesome": "^7.1.3",
     "mochawesome-merge": "^4.3.0",
@@ -65,7 +65,6 @@
     "typescript-eslint": "^8.6.0",
     "unzipper": "^0.12.3",
     "webpack": "^5.95.0",
-    "yocto-spinner": "^0.1.0",
-    "json-2-csv": "^5.5.6"
+    "yocto-spinner": "^0.1.0"
   }
 }
