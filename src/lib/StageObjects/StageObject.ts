@@ -6,7 +6,7 @@ import { Position, Size } from '../interfaces';
 export abstract class StageObject {
   public readonly id: string = foundry.utils.randomID();
 
-  #destroy$ = new rxjs.Subject<void>();
+  protected destroy$ = new rxjs.Subject<void>();
 
   #visible$ = new rxjs.BehaviorSubject<boolean>(false);
   #position$ = new rxjs.BehaviorSubject<Position>({ x: 0, y: 0 });
@@ -65,7 +65,7 @@ export abstract class StageObject {
 
   public destroy() {
     // Notify internal subscriptions
-    this.#destroy$.next();
+    this.destroy$.next();
   }
 
 }
