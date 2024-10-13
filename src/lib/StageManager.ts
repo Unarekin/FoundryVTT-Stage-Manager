@@ -3,7 +3,7 @@ import { log } from "../logging";
 
 import { StageManagerBackgroundGroup, StageManagerCanvasGroup, StageManagerForegroundGroup, StageManagerPrimaryGroup, StageManagerTextBoxGroup } from "./CanvasGroups";
 import { InvalidContainerError } from "../errors";
-import { ImageStageObject, MotherBGStageObject, StageObject, TextStageObject, ActorStageObject, CanvasStageObject } from "./StageObjects";
+import { ImageStageObject, MotherBGStageObject, StageObject, TextStageObject, ActorStageObject, CanvasStageObject, TokenStageObject } from "./StageObjects";
 
 /**
  * 
@@ -24,6 +24,7 @@ export default class StageManager {
   public CanvasStageObject = CanvasStageObject;
   public MotherBGStageObject = MotherBGStageObject;
   public ActorStageObject = ActorStageObject;
+  public TokenStageObject = TokenStageObject;
 
   public readonly stageObjects: StageObject[] = [];
 
@@ -134,6 +135,13 @@ export default class StageManager {
   public addActor(actor: Actor, container: PIXI.Container | undefined = this.primary): ActorStageObject {
     if (!container || !(container instanceof PIXI.Container)) throw new InvalidContainerError();
     const stageObject = new ActorStageObject(actor);
+    this.addStageObject(stageObject, container);
+    return stageObject;
+  }
+
+  public addToken(token: Token, container: PIXI.Container | undefined = this.primary): TokenStageObject {
+    if (!container || !(container instanceof PIXI.Container)) throw new InvalidContainerError();
+    const stageObject = new TokenStageObject(token);
     this.addStageObject(stageObject, container);
     return stageObject;
   }
