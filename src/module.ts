@@ -17,6 +17,6 @@ Hooks.on("getSceneControlButtons", stageManager.registerSceneControlButtons.bind
 // })
 
 Hooks.once("ready", () => {
-  stageManager.intializeCanvas();
+  stageManager.initializeCanvas();
   log(`${__MODULE_TITLE__} ready!`);
 });

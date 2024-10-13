@@ -1,19 +1,40 @@
-.scene-control {
-  .sm-icon {
-    display: inline-block;
-    width: 24px;
-    height: 24px;
-    background-size: cover;
-    cursor: pointer;
-    fill: var(--color-text-light-header);
-    color: var(--color-text-light-header);
-  }
+@mixin scene-control-icon($url) {
+  $mask: url($url);
 
-  .sm-curtains {
-    background-image: url("/modules/stage-manager/assets/theater-curtains.svg");
-  }
+  background-color: var(--color-text-light-heading);
+  mask: $mask;
+  -webkit-mask: $mask;
+  mask-size: contain;
+}
 
-  .sm-token {
-    background-image: url("/modules/stage-manager/assets/token.svg");
-  }
+.sm-icon {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  background-size: cover;
+  cursor: pointer;
+}
+
+.sm-curtains {
+  @include scene-control-icon(
+    "/modules/stage-manager/assets/icons/theater-curtains-black.svg"
+  );
+}
+
+.sm-token {
+  @include scene-control-icon(
+    "/modules/stage-manager/assets/icons/token-black.svg"
+  );
+}
+
+.sm-foreground {
+  @include scene-control-icon(
+    "/modules/stage-manager/assets/icons/foreground-black.svg"
+  );
+}
+
+.sm-background {
+  @include scene-control-icon(
+    "/modules/stage-manager/assets/icons/background-black.svg"
+  );
 }

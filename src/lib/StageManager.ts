@@ -31,7 +31,7 @@ export default class StageManager {
   /**
    * Creates our child canvas groups and attaches everything to the PIXI stage
    */
-  public intializeCanvas() {
+  public initializeCanvas() {
     this.canvasGroup = new StageManagerCanvasGroup();
     this.foreground = new StageManagerForegroundGroup();
     this.primary = new StageManagerPrimaryGroup();
@@ -49,17 +49,25 @@ export default class StageManager {
 
     log("Adding PIXI layer");
     canvas?.stage?.addChild(this.canvasGroup);
-
-    CONFIG.Canvas.layers[__MODULE_ID__] = {
-      layerClass: SystemControlsLayer,
-      group: "interface"
-    };
   }
 
 
+  #controlsInitialized = false;
   public registerSceneControlButtons(controls: SceneControl[]) {
     log("Registering scene controls");
+    if (!this.#controlsInitialized) {
+      CONFIG.Canvas.layers[__MODULE_ID__] = {
+        layerClass: StageManagerControlsLayer,
+        group: "interface"
+      };
+      this.#controlsInitialized = true;
+    }
     const tools: SceneControlTool[] = [
+      {
+        name: "add-speech-dock",
+        title: "STAGEMANAGER.SCENECONTROLS.SPEECH",
+        icon: "fas fa-comment"
+      },
       {
         name: "add-from-actor",
         title: "STAGEMANAGER.SCENECONTROLS.ACTOR",
@@ -69,6 +77,31 @@ export default class StageManager {
         name: "add-from-token",
         title: "STAGEMANAGER.SCENECONTROLS.TOKEN",
         icon: "sm-icon sm-token"
+      },
+      {
+        name: "add-from-image",
+        title: "STAGEMANAGER.SCENECONTROLS.IMAGE",
+        icon: "fas fa-image"
+      },
+      {
+        name: "add-foreground-image",
+        title: "STAGEMANAGER.SCENECONTROLS.FOREGROUND",
+        icon: "sm-icon sm-foreground"
+      },
+      {
+        name: "add-background-image",
+        title: "STAGEMANAGER.SCENECONTROLS.BACKGROUND",
+        icon: "sm-icon sm-background"
+      },
+      {
+        name: "manage-docks",
+        title: "STAGEMANAGER.SCENECONTROLS.MANAGE",
+        icon: "fas fa-gears"
+      },
+      {
+        name: "clear-docks",
+        title: "STAGEMANAGER.SCENECONTROLS.CLEAR",
+        icon: "fas fa-trash"
       }
     ];
     Hooks.callAll(CustomHooks.systemControlTools, tools);
@@ -148,4 +181,4 @@ export default class StageManager {
 
 }
 
-class SystemControlsLayer extends InteractionLayer { }
+class StageManagerControlsLayer extends InteractionLayer { }
