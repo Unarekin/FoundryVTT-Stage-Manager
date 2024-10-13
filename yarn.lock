@@ -1344,6 +1344,11 @@
   resolved "https://registry.yarnpkg.com/@pixi/filter-noise/-/filter-noise-7.4.2.tgz#99aebe14d0f52aaa8509e2531f1a4e658a702da9"
   integrity sha512-Vy9ViBFhZEGh6xKkd3kFWErolZTwv1Y5Qb1bV7qPIYbvBECYsqzlR4uCrrjBV6KKm0PufpG/+NKC5vICZaqKzg==
 
+"@pixi/gif@^3.0.1":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@pixi/gif/-/gif-3.0.1.tgz#2709d6559d316161cde1821b0f29cc2c05f88794"
+  integrity sha512-oGl0nkbFAe1vaRLyIvGbJc3fcIrS8vF1E00cwjiV+9f1pYe072D+yijJxHsgYnXs6jdzERh+D0MqSrEag0jRzg==
+
 "@pixi/graphics-smooth@^1.1.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@pixi/graphics-smooth/-/graphics-smooth-1.1.0.tgz#05a212f90d926a7f1a95260ff7ceaec016fde712"
@@ -1621,6 +1626,13 @@
   integrity sha512-kGaNbPh1k7AFzgpud/gMdvIm5xuECykRR+JnWKQno9TAXVa6WIVCGTPvYGekIDL4uwCZQSYbUxNBSb1aUo79oA==
   dependencies:
     "@types/unist" "*"
+
+"@types/mime@^4.0.0":
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/@types/mime/-/mime-4.0.0.tgz#b5f8a75697ac775ecf1daaea9bfb91cde065b397"
+  integrity sha512-5eEkJZ/BLvTE3vXGKkWlyTSUVZuzj23Wj8PoyOq2lt5I3CYbiLBOPb3XmCW6QcuOibIUE6emHXHt9E/F/rCa6w==
+  dependencies:
+    mime "*"
 
 "@types/node@*":
   version "22.5.1"
@@ -4190,6 +4202,11 @@ mime-types@^2.1.12, mime-types@^2.1.27, mime-types@~2.1.19:
   integrity sha512-ZDY+bPm5zTTF+YpCrAU9nK0UgICYPT0QtT1NZWFv4s++TNkcgVaT0g6+4R2uI4MjQjzysHB1zxuWL50hzaeXiw==
   dependencies:
     mime-db "1.52.0"
+
+mime@*, mime@^4.0.4:
+  version "4.0.4"
+  resolved "https://registry.yarnpkg.com/mime/-/mime-4.0.4.tgz#9f851b0fc3c289d063b20a7a8055b3014b25664b"
+  integrity sha512-v8yqInVjhXyqP6+Kw4fV3ZzeMRqEW6FotRsKXjRS5VMTNIuXsdRoAvklpoRgSqXm6o9VNH4/C0mgedko9DdLsQ==
 
 mimic-fn@^2.1.0:
   version "2.1.0"

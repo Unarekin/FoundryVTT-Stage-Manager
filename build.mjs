@@ -138,7 +138,7 @@ const buildResults = await build({
     sassPlugin(),
     ...copyPlugins,
     ...jsonMergers,
-    externalizeAllPackagesExcept(["rxjs", "mini-rx-store", "tslib"])
+    externalizeAllPackagesExcept(["rxjs", "mini-rx-store", "tslib", "mime", "@pixi/gif"])
   ],
 });
 

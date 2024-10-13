@@ -1,4 +1,6 @@
 import { StageObject } from "./StageObject";
+import mime from "mime";
+import { MotherBGStageObject } from './MotherBGStageObject';
 
 export class ImageStageObject extends StageObject {
 
@@ -61,8 +63,32 @@ export class ImageStageObject extends StageObject {
 
 
   constructor(source: PIXI.SpriteSource) {
-    const sprite = PIXI.Sprite.from(source);
+    let sprite: PIXI.Sprite | null = null;
+    if (typeof source === "string") {
+      const mimeType = mime.getType(source);
+
+      if (typeof mimeType === "string") {
+        const split = mimeType?.split("/");
+        if (split[0] === "video") {
+          // Create a PIXI.Sprite from a video element to ensure it plays
+          const vid = document.createElement("video");
+          vid.src = source;
+          vid.autoplay = true;
+          vid.loop = true;
+          sprite = PIXI.Sprite.from(vid);
+        } else if (split[1] === "gif") {
+          sprite = new PIXI.Sprite();;
+
+          PIXI.Assets.load(source)
+            .then(asset => {
+              this._displayObject.addChild(asset);
+            }).catch(console.error);
+        }
+      }
+    }
+    if (!sprite) sprite = PIXI.Sprite.from(source);
     super(sprite);
     this._displayObject = sprite;
   }
 }
+
