@@ -11,7 +11,7 @@ export class MotherBGStageObject extends CanvasStageObject {
   #tick = 0;
   #lastDraw = Date.now();
 
-  public readonly layerPresets = presets;
+  static LayerPresets = presets;
 
   #layer1 = new rxjs.BehaviorSubject<number>(0);
   public get layer1() { return this.#renderEngine.layer1; }
@@ -31,6 +31,11 @@ export class MotherBGStageObject extends CanvasStageObject {
   }
   public readonly layer2$ = this.#layer2.asObservable();
 
+  public get layers() { return [this.layer1, this.layer2] }
+  public set layers(value: [number, number]) {
+    this.layer1 = value[0];
+    this.layer2 = value[1];
+  }
 
   #fps = new rxjs.BehaviorSubject<number>(0);
   public get fps() { return this.#fps.value; }

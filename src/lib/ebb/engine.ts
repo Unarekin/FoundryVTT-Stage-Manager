@@ -27,8 +27,19 @@ export default class Engine {
   public drawFrame(tick: number) {
     if (!this.#context) throw new InvalidContextError();
     const image = this.#context.getImageData(0, 0, this.canvas.width, this.canvas.height);
-    const alpha1: number = this.#layer1.entry ? 1 : 0;
-    const alpha2: number = this.#layer2.entry ? 0 : 1;
+
+    let alpha1 = 0.5;
+    let alpha2 = 0.5;
+    if (this.layer1 && !this.layer2) {
+      alpha1 = 1;
+      alpha2 = 0;
+    }
+    if (!this.layer1 && this.layer2) {
+      alpha1 = 0;
+      alpha2 = 1;
+    }
+
+
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     let bitmap = this.#layer1.overlayFrame(image.data, 0, tick, alpha1, true);
