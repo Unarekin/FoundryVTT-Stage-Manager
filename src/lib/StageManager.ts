@@ -3,8 +3,7 @@ import { log } from "../logging";
 
 import { StageManagerBackgroundGroup, StageManagerCanvasGroup, StageManagerForegroundGroup, StageManagerPrimaryGroup, StageManagerTextBoxGroup } from "./CanvasGroups";
 import { InvalidContainerError } from "../errors";
-import { ImageStageObject, MotherBGStageObject, StageObject, TextStageObject } from "./StageObjects";
-import { CanvasStageObject } from './StageObjects/CanvasStageObject';
+import { ImageStageObject, MotherBGStageObject, StageObject, TextStageObject, ActorStageObject, CanvasStageObject } from "./StageObjects";
 
 /**
  * 
@@ -24,6 +23,7 @@ export default class StageManager {
   public TextStageObject = TextStageObject;
   public CanvasStageObject = CanvasStageObject;
   public MotherBGStageObject = MotherBGStageObject;
+  public ActorStageObject = ActorStageObject;
 
   public readonly stageObjects: StageObject[] = [];
 
@@ -127,6 +127,13 @@ export default class StageManager {
   public addMotherBackground(layer1 = 0, layer2 = 0, container: PIXI.Container | undefined = this.primary) {
     if (!container || !(container instanceof PIXI.Container)) throw new InvalidContainerError();
     const stageObject = new MotherBGStageObject(layer1, layer2);
+    this.addStageObject(stageObject, container);
+    return stageObject;
+  }
+
+  public addActor(actor: Actor, container: PIXI.Container | undefined = this.primary): ActorStageObject {
+    if (!container || !(container instanceof PIXI.Container)) throw new InvalidContainerError();
+    const stageObject = new ActorStageObject(actor);
     this.addStageObject(stageObject, container);
     return stageObject;
   }

@@ -1,3 +1,4 @@
+export * from './ActorStageObject';
 export * from './CanvasStageObject';
 export * from './ImageStageObject';
 export * from './MotherBGStageObject';
