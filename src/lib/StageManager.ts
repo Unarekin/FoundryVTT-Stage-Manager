@@ -1,9 +1,10 @@
 import { CustomHooks } from './constants';
 import { log } from "../logging";
-import { InvalidContainerError } from './errors';
+
 import { StageManagerBackgroundGroup, StageManagerCanvasGroup, StageManagerForegroundGroup, StageManagerPrimaryGroup, StageManagerTextBoxGroup } from "./CanvasGroups";
-import { } from "./errors";
-import { ImageStageObject, StageObject, TextStageObject } from "./StageObjects";
+import { InvalidContainerError } from "../errors";
+import { ImageStageObject, MotherBGStageObject, StageObject, TextStageObject } from "./StageObjects";
+import { CanvasStageObject } from './StageObjects/CanvasStageObject';
 
 /**
  * 
@@ -16,6 +17,13 @@ export default class StageManager {
   public primary?: StageManagerPrimaryGroup;
   public background?: StageManagerBackgroundGroup;
   public textBoxes?: StageManagerTextBoxGroup;
+
+  // Object classes
+  public StageObject = StageObject;
+  public ImageStageObject = ImageStageObject;
+  public TextStageObject = TextStageObject;
+  public CanvasStageObject = CanvasStageObject;
+  public MotherBGStageObject = MotherBGStageObject;
 
   public readonly stageObjects: StageObject[] = [];
 
@@ -96,15 +104,29 @@ export default class StageManager {
   }
 
   public addImage(image: PIXI.ImageSource, container: PIXI.Container | undefined = this.primary): ImageStageObject {
-    if (!container) throw new InvalidContainerError();
+    if (!container || !(container instanceof PIXI.Container)) throw new InvalidContainerError();
     const stageObject = new ImageStageObject(image);
     this.addStageObject(stageObject, container);
     return stageObject;
   }
 
-  public addText(text: string, style?: PIXI.ITextStyle, container: PIXI.Container | undefined = this.primary): TextStageObject {
-    if (!container) throw new InvalidContainerError();
+  public addText(text: string, style?: PIXI.HTMLTextStyle, container: PIXI.Container | undefined = this.primary): TextStageObject {
+    if (!container || !(container instanceof PIXI.Container)) throw new InvalidContainerError();
     const stageObject = new TextStageObject(text, style);
+    this.addStageObject(stageObject, container);
+    return stageObject;
+  }
+
+  public addCanvas(canvas: HTMLCanvasElement, container: PIXI.Container | undefined = this.primary) {
+    if (!container || !(container instanceof PIXI.Container)) throw new InvalidContainerError();
+    const stageObject = new CanvasStageObject(canvas);
+    this.addStageObject(stageObject, container);
+    return stageObject;
+  }
+
+  public addMotherBackground(layer1 = 0, layer2 = 0, container: PIXI.Container | undefined = this.primary) {
+    if (!container || !(container instanceof PIXI.Container)) throw new InvalidContainerError();
+    const stageObject = new MotherBGStageObject(layer1, layer2);
     this.addStageObject(stageObject, container);
     return stageObject;
   }

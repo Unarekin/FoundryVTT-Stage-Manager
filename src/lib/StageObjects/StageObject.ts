@@ -17,6 +17,7 @@ export abstract class StageObject {
 
   public destroy() {
     // Notify internal subscriptions
+    this.onDestroy();
     this.#destroyed = true;
     this.destroy$.next();
     this.displayObject?.destroy();
@@ -180,6 +181,17 @@ export abstract class StageObject {
   public readonly filters$ = this.#filters.asObservable();
   //#endregion
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  protected preRender() { }
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  protected postRender() { }
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  protected onDestroy() { }
+
+
+  /** Whether or not to render this object relative to screen space or world space */
+  public screenSpace = true;
+
 
   //#region Construction
   constructor(displayObject: PIXI.DisplayObject) {
@@ -191,6 +203,10 @@ export abstract class StageObject {
     this.#pivot = createProxyPoint(this.displayObject.pivot, this.#pivotX$, this.#pivotY$);
 
     this.displayObject.filters = createProxyArray(this.displayObject.filters ?? [], this.filters$);
+
+    canvas?.app?.renderer.addListener("prerender", () => { this.preRender(); });
+    canvas?.app?.renderer.addListener("postrender", () => { this.postRender(); });
+
   }
   //#endregion
 }

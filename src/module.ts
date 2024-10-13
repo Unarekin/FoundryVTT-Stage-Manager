@@ -20,4 +20,3 @@ Hooks.once("ready", () => {
   stageManager.intializeCanvas();
   log(`${__MODULE_TITLE__} ready!`);
 });
-

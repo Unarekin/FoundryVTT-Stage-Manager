@@ -1,7 +1,9 @@
 {
   "STAGEMANAGER": {
     "ERRORS": {
-      "INVALIDCONTAINER": "Invalid PIXI container provided."
+      "INVALIDCONTAINER": "Invalid PIXI container provided.",
+      "INVALIDCONTEXT": "Invalid context",
+      "INVALIDLAYERVALUE": "Invalid layer value: {layer}, please use a number from {min} to {max}."
     }
   }
 }

@@ -10,7 +10,6 @@ export class StageManagerCanvasGroup extends PIXI.Container {
 
   constructor() {
     super();
-
     if (canvas?.app) {
       canvas.app.renderer.addListener("prerender", () => {
         this.setInverseMatrix();
