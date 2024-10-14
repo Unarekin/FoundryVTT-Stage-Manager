@@ -179,6 +179,14 @@ export default class StageManager {
     return stageObject;
   }
 
+  public addForegroundImage(image: PIXI.ImageSource): ImageStageObject {
+    return this.addImage(image, this.foreground);
+  }
+
+  public addBackgroundImage(image: PIXI.ImageSource): ImageStageObject {
+    return this.addImage(image, this.background);
+  }
+
 }
 
 class StageManagerControlsLayer extends InteractionLayer { }
