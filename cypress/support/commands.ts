@@ -38,3 +38,11 @@
 
 import "cypress-mochawesome-reporter/register"
 
+declare global {
+  const __MODULE_ID = `stage-manager`;
+  const __MODULE_NAME__ = `Stage Manager`;
+  const __DEV__ = true;
+  const __MODULE_VERSION__ = "0.0.1";
+}
+
+// import "../../src/styles/module.scss"

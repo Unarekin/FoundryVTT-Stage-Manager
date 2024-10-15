@@ -4,6 +4,7 @@ import { log } from "../logging";
 import { StageManagerBackgroundGroup, StageManagerCanvasGroup, StageManagerForegroundGroup, StageManagerPrimaryGroup, StageManagerTextBoxGroup } from "./CanvasGroups";
 import { InvalidContainerError } from "../errors";
 import { ImageStageObject, MotherBGStageObject, StageObject, TextStageObject, ActorStageObject, CanvasStageObject, TokenStageObject } from "./StageObjects";
+import { AddImageDialog } from './Applications/AddImageDialog';
 
 /**
  * 
@@ -25,6 +26,9 @@ export default class StageManager {
   public MotherBGStageObject = MotherBGStageObject;
   public ActorStageObject = ActorStageObject;
   public TokenStageObject = TokenStageObject;
+
+  public AddImageDialog = AddImageDialog;
+  // public AddImageDialog = game.release?.isNewer(12) ? AddImageDialog : null;
 
   public readonly stageObjects: StageObject[] = [];
 
@@ -187,6 +191,12 @@ export default class StageManager {
     return this.addImage(image, this.background);
   }
 
+
+  //#region Dialogs
+  // public addImageDialog() {
+  //   return new AddImageDialog().render();
+  // }
+  //#endregion
 }
 
 class StageManagerControlsLayer extends InteractionLayer { }

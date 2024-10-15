@@ -1,6 +1,8 @@
-import { defineConfig } from "cypress";
+import "dotenv/config";
 import path from "path";
+import { defineConfig } from "cypress";
 import { promises as fs } from "fs";
+import { searchForWorkspaceRoot } from 'vite';
 
 module.exports = defineConfig({
   viewportWidth: 1920,
@@ -21,18 +23,6 @@ module.exports = defineConfig({
     setupNodeEvents(on, config) {
       // implement node event listeners here
       require("cypress-mochawesome-reporter/plugin")(on);
-      const webpackPreprocessor = require("@cypress/webpack-preprocessor");
-      const options = {
-        webpackOptions: {
-          resolve: {
-            alias: {
-              "@src": path.resolve(__dirname, "./src")
-            }
-          }
-        },
-        watchOptions: {}
-      }
-      on("file:preprocessor", webpackPreprocessor(options));
       return config;
     },
   },
@@ -40,7 +30,17 @@ module.exports = defineConfig({
   component: {
     devServer: {
       framework: "cypress-ct-html" as any,
-      bundler: "webpack",
+      bundler: "vite",
+      viteConfig: {
+        server: {
+          fs: {
+            allow: [
+              searchForWorkspaceRoot(process.cwd()),
+              path.join(process.env["FOUNDRY_INSTALL_LOCATION"], "resources/app/public")
+            ]
+          }
+        }
+      }
     },
     specPattern: "**/*.cy.ts",
     setupNodeEvents(on, config) {
