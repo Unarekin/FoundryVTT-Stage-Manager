@@ -11,8 +11,8 @@ import { StageObjects } from "./StageObjectsCollection"
  */
 export default class StageManager {
 
-  // public get USE_APPV2(): boolean { return !!game.release?.isNewer("12"); }
-  public readonly USE_APPV2 = false;
+  public get USE_APPV2(): boolean { return !!game.release?.isNewer("12"); }
+  // public readonly USE_APPV2 = false;
 
   public canvasGroup?: StageManagerCanvasGroup;
   public foreground?: StageManagerForegroundGroup;
