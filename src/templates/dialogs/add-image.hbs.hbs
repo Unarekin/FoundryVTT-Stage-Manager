@@ -1,6 +1,25 @@
-<form class="flexcol">
-  <div class="form-group">
-    <label for="test">Test</label>
-    <input type="text" name="test" />
+<form class="flexcol editable" autocomplete="off">
+  <header class="flex0" data-cy-element="header">{{localize
+      "STAGEMANAGER.DIALOGS.ADDIMAGE.HEADER"
+    }}</header>
+  <div class="form-group" data-cy-element="filepicker">
+    <label for="filePicker">{{localize
+        "STAGEMANAGER.DIALOGS.ADDIMAGE.FILEPICKER.LABEL"
+      }}</label>
+    <file-picker
+      type="imagevideo"
+      id="filePicker"
+      name="filePicker"
+    ></file-picker>
+    <p class="notes">{{localize
+        "STAGEMANAGER.DIALOGS.ADDIMAGE.FILEPICKER.HINT"
+      }}</p>
+  </div>
+  <div class="form-group" data-cy-element="name">
+    <label for="name" id="name">{{localize
+        "STAGEMANAGER.DIALOGS.ADDIMAGE.NAME.LABEL"
+      }}</label>
+    <input type="text" name="name" id="name" value="{{name}}" />
+    <p class="notes">{{localize "STAGEMANAGER.DIALOGS.ADDIMAGE.NAME.HINT"}}</p>
   </div>
 </form>

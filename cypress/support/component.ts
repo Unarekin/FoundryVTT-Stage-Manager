@@ -78,6 +78,10 @@ function hbsMount(template: string, options: HandlebarsMountOptions): Cypress.Ch
 }
 
 
+// Set up dummy localize helper so templates can still compile
+Handlebars.registerHelper("localize", (...args: unknown[]) => {
+  return args[0];
+})
 
 Cypress.Commands.add("mount", hbsMount);
 
