@@ -20,9 +20,6 @@
   "author": "Unarekin",
   "license": "MIT",
   "devDependencies": {
-    "@babel/core": "^7.25.7",
-    "@babel/preset-env": "^7.25.7",
-    "@cypress/webpack-preprocessor": "^6.0.2",
     "@eslint/js": "^9.11.0",
     "@pixi/gif": "^3.0.1",
     "@types/Foundry-VTT": "https://github.com/League-of-Foundry-Developers/foundry-vtt-types.git#v12/main",
@@ -35,12 +32,12 @@
     "@types/unzipper": "^0.10.10",
     "@typescript-eslint/eslint-plugin": "^8.8.1",
     "@typescript-eslint/parser": "^8.8.1",
-    "babel-loader": "^9.2.1",
     "cypress-ct-html": "^1.1.0",
     "cypress-mochawesome-reporter": "^3.8.2",
     "cypress-multi-reporters": "^1.6.4",
     "deepmerge-ts": "^7.1.0",
     "docker-compose": "^1.1.0",
+    "dotenv": "^16.4.5",
     "esbuild": "^0.23.1",
     "esbuild-copy-static-files": "^0.1.0",
     "esbuild-node-externals": "^1.14.0",
@@ -66,7 +63,7 @@
     "typescript": "^5.6.2",
     "typescript-eslint": "^8.6.0",
     "unzipper": "^0.12.3",
-    "webpack": "^5.95.0",
+    "vite": "^5.4.9",
     "yocto-spinner": "^0.1.0"
   },
   "dependencies": {

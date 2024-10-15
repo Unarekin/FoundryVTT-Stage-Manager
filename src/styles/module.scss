@@ -16,25 +16,17 @@
 }
 
 .sm-curtains {
-  @include scene-control-icon(
-    "/modules/stage-manager/assets/icons/theater-curtains-black.svg"
-  );
+  @include scene-control-icon("../assets/icons/theater-curtains-black.svg");
 }
 
 .sm-token {
-  @include scene-control-icon(
-    "/modules/stage-manager/assets/icons/token-black.svg"
-  );
+  @include scene-control-icon("../assets/icons/token-black.svg");
 }
 
 .sm-foreground {
-  @include scene-control-icon(
-    "/modules/stage-manager/assets/icons/foreground-black.svg"
-  );
+  @include scene-control-icon("../assets/icons/foreground-black.svg");
 }
 
 .sm-background {
-  @include scene-control-icon(
-    "/modules/stage-manager/assets/icons/background-black.svg"
-  );
+  @include scene-control-icon("../assets/icons/background-black.svg");
 }

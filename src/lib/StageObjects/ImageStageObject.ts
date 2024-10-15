@@ -1,6 +1,7 @@
+import { InvalidFormDataError, InvalidURLError } from "../../errors";
+import { log } from "../../logging";
 import { StageObject } from "./StageObject";
 import mime from "mime";
-import { MotherBGStageObject } from './MotherBGStageObject';
 
 export class ImageStageObject extends StageObject {
 
@@ -62,7 +63,15 @@ export class ImageStageObject extends StageObject {
   public readonly anchor$ = this.#anchor.asObservable();
 
 
-  constructor(source: PIXI.SpriteSource) {
+  static async fromDialog(useDialogV2: boolean): Promise<ImageStageObject | void> {
+    if (useDialogV2) {
+      return fromDialogV2();
+    } else {
+      return fromDialogV1();
+    }
+  }
+
+  constructor(source: PIXI.SpriteSource, name?: string) {
     let sprite: PIXI.Sprite | null = null;
     if (typeof source === "string") {
       const mimeType = mime.getType(source);
@@ -87,8 +96,86 @@ export class ImageStageObject extends StageObject {
       }
     }
     if (!sprite) sprite = PIXI.Sprite.from(source);
-    super(sprite);
+    super(sprite, name);
     this._displayObject = sprite;
   }
 }
 
+function parseFormResponse(elem: JQuery<HTMLElement>): ImageStageObject | void {
+  const formData = elem.find("form").serializeArray();
+  if (!formData) throw new InvalidFormDataError();
+  const url = formData.find(elem => elem.name === "imagePath")?.value ?? "";
+  if (!url) throw new InvalidURLError(url);
+  const name = formData.find(elem => elem.name === "name")?.value ?? url.split("/").slice(-1)[0].split(".")[0];
+
+  return new ImageStageObject(url, name);
+}
+
+function addEventListeners(html: JQuery<HTMLElement>) {
+  html.find("#filePicker").on("change", (e) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
+    html.find("#imagePath").val((e.currentTarget as any).value as string);
+  })
+}
+
+async function fromDialogV1(): Promise<ImageStageObject | void> {
+  return renderTemplate(`/modules/${__MODULE_ID__}/templates/dialogs/add-image.hbs`, {})
+    .then(content => new Promise((resolve, reject) => {
+      new Dialog({
+        title: game.i18n?.localize("STAGEMANAGER.DIALOGS.ADDIMAGE.TITLE") ?? "",
+        content,
+        default: "ok",
+        buttons: {
+          cancel: {
+            label: game.i18n?.localize("STAGEMANAGER.DIALOGS.BUTTONS.CANCEL") ?? "",
+            icon: "<i class='fas fa-times'></i>"
+          },
+          ok: {
+            label: game.i18n?.localize("STAGEMANAGER.DIALOGS.BUTTONS.OK") ?? "",
+            icon: "<i class='fas fa-check'></i>",
+            callback: html => {
+              try {
+                resolve(parseFormResponse((html instanceof HTMLElement) ? $(html) : html));
+              } catch (err) {
+                reject(err as Error);
+              }
+            }
+          }
+        },
+        render(e: HTMLElement | JQuery<HTMLElement>) {
+          addEventListeners((e instanceof HTMLElement) ? $(e) : e);
+        }
+      }).render(true);
+    }))
+}
+
+async function fromDialogV2(): Promise<ImageStageObject | void> {
+
+  const content = await renderTemplate(`/modules/${__MODULE_ID__}/templates/dialogs/add-image.hbs`, {});
+  const response = await foundry.applications.api.DialogV2.wait({
+    window: {
+      title: "STAGEMANAGER.DIALOGS.ADDIMAGE.TITLE"
+    },
+    content,
+    render(event, dialog) {
+      addEventListeners($(dialog));
+    },
+    buttons: [
+      {
+        icon: "fas fa-times",
+        label: "STAGEMANAGER.DIALOGS.BUTTONS.CANCEL",
+        action: "cancel"
+      },
+      {
+        icon: "fas fa-check",
+        label: "STAGEMANAGER.DIALOGS.BUTTONS.OK",
+        action: "ok",
+        // eslint-disable-next-line @typescript-eslint/require-await
+        callback: async (event, button, dialog) => parseFormResponse($(dialog))
+
+      }
+    ]
+  });
+  if (response) return response;
+  else return;
+}

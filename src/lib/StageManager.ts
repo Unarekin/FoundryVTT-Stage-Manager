@@ -4,12 +4,15 @@ import { log } from "../logging";
 import { StageManagerBackgroundGroup, StageManagerCanvasGroup, StageManagerForegroundGroup, StageManagerPrimaryGroup, StageManagerTextBoxGroup } from "./CanvasGroups";
 import { InvalidContainerError } from "../errors";
 import { ImageStageObject, MotherBGStageObject, StageObject, TextStageObject, ActorStageObject, CanvasStageObject, TokenStageObject } from "./StageObjects";
+import { AddImageDialog } from './Applications/AddImageDialog';
 
 /**
  * 
  */
 export default class StageManager {
 
+  // public get USE_APPV2(): boolean { return !!game.release?.isNewer("12"); }
+  public readonly USE_APPV2 = false;
 
   public canvasGroup?: StageManagerCanvasGroup;
   public foreground?: StageManagerForegroundGroup;
@@ -25,6 +28,9 @@ export default class StageManager {
   public MotherBGStageObject = MotherBGStageObject;
   public ActorStageObject = ActorStageObject;
   public TokenStageObject = TokenStageObject;
+
+  public AddImageDialog = AddImageDialog;
+  // public AddImageDialog = game.release?.isNewer(12) ? AddImageDialog : null;
 
   public readonly stageObjects: StageObject[] = [];
 
@@ -81,7 +87,18 @@ export default class StageManager {
       {
         name: "add-from-image",
         title: "STAGEMANAGER.SCENECONTROLS.IMAGE",
-        icon: "fas fa-image"
+        icon: "fas fa-image",
+        onClick: () => {
+          ImageStageObject.fromDialog(this.USE_APPV2)
+            .then(obj => {
+              if (!obj) return;
+              this.addStageObject(obj, this.primary);
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+              ui.notifications.info(game.i18n?.format("STAGEMANAGER.DIALOGS.ADDIMAGE.SUCCESS", { name: obj.name }));
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            }).catch(err => { ui.notifications?.error(err); });
+        },
+        button: true
       },
       {
         name: "add-foreground-image",
@@ -187,6 +204,12 @@ export default class StageManager {
     return this.addImage(image, this.background);
   }
 
+
+  //#region Dialogs
+  // public addImageDialog() {
+  //   return new AddImageDialog().render();
+  // }
+  //#endregion
 }
 
 class StageManagerControlsLayer extends InteractionLayer { }
