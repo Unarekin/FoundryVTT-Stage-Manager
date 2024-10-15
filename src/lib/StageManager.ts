@@ -5,7 +5,7 @@ import { StageManagerBackgroundGroup, StageManagerCanvasGroup, StageManagerForeg
 import { InvalidContainerError } from "../errors";
 import { ImageStageObject, MotherBGStageObject, StageObject, TextStageObject, ActorStageObject, CanvasStageObject, TokenStageObject } from "./StageObjects";
 import { AddImageDialog } from './Applications/AddImageDialog';
-
+import { StageObjects } from "./StageObjectsCollection"
 /**
  * 
  */
@@ -32,7 +32,8 @@ export default class StageManager {
   public AddImageDialog = AddImageDialog;
   // public AddImageDialog = game.release?.isNewer(12) ? AddImageDialog : null;
 
-  public readonly stageObjects: StageObject[] = [];
+  // public readonly stageObjects: StageObject[] = [];
+  public readonly stageObjects = new StageObjects();
 
   /**
    * Creates our child canvas groups and attaches everything to the PIXI stage
@@ -43,6 +44,9 @@ export default class StageManager {
     this.primary = new StageManagerPrimaryGroup();
     this.background = new StageManagerBackgroundGroup();
     this.textBoxes = new StageManagerTextBoxGroup();
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+    (game as any).stageObjects = this.stageObjects;
 
     if (canvas) {
       if (canvas.stage) canvas.stage.addChild(this.canvasGroup);
@@ -138,7 +142,8 @@ export default class StageManager {
 
 
   public addStageObject(object: StageObject, container: PIXI.Container) {
-    this.stageObjects.push(object);
+    this.stageObjects.set(object.id, object);
+    // this.stageObjects.push(object);
     container.addChild(object.displayObject);
 
     const destroySub = object.destroy$.subscribe(() => {
@@ -148,10 +153,9 @@ export default class StageManager {
   }
 
   public removeStageObject(object: StageObject) {
-    if (this.stageObjects.includes(object)) {
-      this.stageObjects.splice(this.stageObjects.indexOf(object), 1);
-      if (!object.destroyed) object.destroy();
-    }
+    if (this.stageObjects.has(object.id))
+      this.stageObjects.delete(object.id);
+    if (!object.destroyed) object.destroy();
   }
 
   public addImage(image: PIXI.ImageSource, container: PIXI.Container | undefined = this.primary): ImageStageObject {
