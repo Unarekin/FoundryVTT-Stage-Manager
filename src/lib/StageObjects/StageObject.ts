@@ -8,6 +8,7 @@ import createProxyArray from '../ProxyArray';
 export abstract class StageObject {
   public readonly id: string = foundry.utils.randomID();
 
+  public name: string = this.id;
 
   //#region Destruction
   public readonly destroy$ = new rxjs.Subject<void>();
@@ -194,7 +195,8 @@ export abstract class StageObject {
 
 
   //#region Construction
-  constructor(displayObject: PIXI.DisplayObject) {
+  constructor(displayObject: PIXI.DisplayObject, name?: string) {
+    if (name) this.name = name;
     this._displayObject = displayObject;
     // Start out invisible so it can be displayed later
     this.visible = false;

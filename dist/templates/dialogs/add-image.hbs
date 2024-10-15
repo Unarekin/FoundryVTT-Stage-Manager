@@ -1,4 +1,5 @@
 <form class="flexcol editable" autocomplete="off">
+  <input type="hidden" name="imagePath" id="imagePath" value="" />
   <header class="flex0" data-cy-element="header">{{localize
       "STAGEMANAGER.DIALOGS.ADDIMAGE.HEADER"
     }}</header>
@@ -11,15 +12,17 @@
       id="filePicker"
       name="filePicker"
     ></file-picker>
-    <p class="notes">{{localize
-        "STAGEMANAGER.DIALOGS.ADDIMAGE.FILEPICKER.HINT"
-      }}</p>
   </div>
+  <div class="notes">{{localize
+      "STAGEMANAGER.DIALOGS.ADDIMAGE.FILEPICKER.HINT"
+    }}</div>
   <div class="form-group" data-cy-element="name">
     <label for="name" id="name">{{localize
         "STAGEMANAGER.DIALOGS.ADDIMAGE.NAME.LABEL"
       }}</label>
     <input type="text" name="name" id="name" value="{{name}}" />
-    <p class="notes">{{localize "STAGEMANAGER.DIALOGS.ADDIMAGE.NAME.HINT"}}</p>
   </div>
+  <div class="notes">{{localize
+      "STAGEMANAGER.DIALOGS.ADDIMAGE.NAME.HINT"
+    }}</div>
 </form>

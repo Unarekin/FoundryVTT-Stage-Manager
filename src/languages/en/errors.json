@@ -5,7 +5,8 @@
       "INVALIDCONTEXT": "Invalid context",
       "INVALIDLAYERVALUE": "Invalid layer value: {layer}, please use a number from {min} to {max}.",
       "INVALIDIMAGE": "Invalid image provided.",
-      "INVALIDURL": "Invalid URL: {url}"
+      "INVALIDURL": "Invalid URL: {url}",
+      "INVALIDFORMDATA": "Invalid form data"
     }
   }
 }
