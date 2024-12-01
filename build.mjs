@@ -12,7 +12,7 @@ import { deepmerge } from "deepmerge-ts";
 import yoctoSpinner from "yocto-spinner";
 import { ESLint } from "eslint";
 import externalizeAllPackagesExcept from "esbuild-plugin-noexternal";
-
+import { compilePack } from "@foundryvtt/foundryvtt-cli";
 
 /** Paths */
 const SRC_PATH = "./src";
@@ -22,8 +22,10 @@ const STYLE_PATH = path.join(SRC_PATH, "styles");
 const TEMPLATE_PATH = path.join(SRC_PATH, "templates");
 
 // Import module.json for some config options
-import moduleConfig from "./module.json" with { type: "json" };
-
+// import moduleConfig from "./module.json" with { type: "json" };
+const moduleConfig = JSON.parse(
+  (await fs.readFile("./module.json")).toString()
+);
 
 // Constants to be inserted into process.env during build
 const __DEV__ = process.env.NODE_ENV !== "production";
@@ -42,7 +44,7 @@ if (!process.argv.slice(2).includes("--no-lint")) {
     cache: true,
     errorOnUnmatchedPattern: false,
   });
-  const lintResults = await linter.lintFiles(["src/module.ts"]);
+  const lintResults = await linter.lintFiles(["src/**.ts", "src/*/**.ts"]);
   await ESLint.outputFixes(lintResults);
 
   let formatter = await linter.loadFormatter("html");
@@ -81,15 +83,11 @@ const jsonMergers = (
 // Create our copy plugins, ensuring that the paths we're copying from exist
 const STATIC_FILES = [
   { src: "./module.json", dest: "module.json" },
-  { src: "./system.json", dest: "system.json" },
   { src: "./LICENSE", dest: "LICENSE" },
   { src: "./README.md", dest: "README.md" },
-  { src: path.join(SRC_PATH, "fonts"), dest: "fonts" },
   { src: TEMPLATE_PATH, dest: "templates" },
-  { src: STYLE_PATH, dest: "styles" },
-  { src: path.join(SRC_PATH, "packs"), dest: "packs" },
+  { src: path.join(SRC_PATH, "assets"), dest: "assets" },
   { src: path.join(SRC_PATH, "vendor"), dest: "vendor" },
-  { src: path.join(SRC_PATH, "assets"), dest: "assets" }
 ];
 
 const copyPlugins = [];
@@ -118,7 +116,7 @@ for (const file of STATIC_FILES) {
 const buildResults = await build({
   entryPoints: [
     path.join(SRC_PATH, "module.ts"),
-    path.join(STYLE_PATH, "module.scss")
+    path.join(STYLE_PATH, "module.scss"),
   ],
   outdir: OUT_PATH,
   sourcemap: __DEV__,
@@ -131,14 +129,28 @@ const buildResults = await build({
     __MODULE_ID__: `"${__MODULE_ID__}"`,
     __MODULE_VERSION__: `"${__MODULE_VERSION__}"`,
   },
-  external: ["*.woff", "*.woff2", "*.otf", "*.ttf", "*.webp", "*.svg"],
+  external: [
+    "*.woff",
+    "*.woff2",
+    "*.otf",
+    "*.ttf",
+    "*.webp",
+    "*.svg",
+    "*.jpg",
+    "*.png",
+  ],
+  loader: {
+    ".frag": "text",
+    ".vert": "text",
+  },
   plugins: [
-    
+    nodeExternalsPlugin(),
     cleanPlugin({ patterns: "./dist/**" }),
     sassPlugin(),
     ...copyPlugins,
     ...jsonMergers,
-    externalizeAllPackagesExcept(["rxjs", "mini-rx-store", "tslib", "mime", "@pixi/gif"])
+    externalizeAllPackagesExcept(["semver", "handlebars-group-by", "lunr"]),
+    // externalizeAllPackagesExcept(["rxjs", "mini-rx-store", "tslib", "mime", "@pixi/gif"])
   ],
 });
 
@@ -149,5 +161,26 @@ if (buildResults.errors.length) {
   spinner.success(
     `Build completed in ${((Date.now() - buildStart) / 1000).toFixed(2)}s`
   );
-  if (buildResults.warnings.length) console.warn(buildResults.warnings);
+  // if (buildResults.warnings.length) console.warn(buildResults.warnings);
+
+  const packStart = Date.now();
+  spinner = yoctoSpinner({ text: "Packing compendia..." }).start();
+  try {
+    // Build compendia
+    const packs = await fs.readdir(path.join(SRC_PATH, "packs"));
+    for (const pack of packs) {
+      if (pack === ".gitattributes") continue;
+      await compilePack(
+        path.join(SRC_PATH, `packs`, pack),
+        path.join(OUT_PATH, "packs", pack),
+        { yaml: false }
+      );
+    }
+    spinner.success(
+      `Compendia packed in ${((Date.now() - packStart) / 1000).toFixed(2)}s`
+    );
+  } catch (err) {
+    spinner.error("Build failed!");
+    console.error(err);
+  }
 }

@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../src/styles/module.scss"],
-  "sourcesContent": [".scene-control {\n  .sm-icon {\n    display: inline-block;\n    width: 24px;\n    height: 24px;\n    background-size: cover;\n    cursor: pointer;\n    fill: var(--color-text-light-header);\n    color: var(--color-text-light-header);\n  }\n\n  .sm-curtains {\n    background-image: url(\"/modules/stage-manager/assets/theater-curtains.svg\");\n  }\n\n  .sm-token {\n    background-image: url(\"/modules/stage-manager/assets/token.svg\");\n  }\n}\n"],
-  "mappings": ";AACE,CAAA,cAAA,CAAA;AACE,WAAA;AACA,SAAA;AACA,UAAA;AACA,mBAAA;AACA,UAAA;AACA,QAAA,IAAA;AACA,SAAA,IAAA;;AAGF,CAVA,cAUA,CAAA;AACE,oBAAA;;AAGF,CAdA,cAcA,CAAA;AACE,oBAAA;;",
-  "names": []
-}

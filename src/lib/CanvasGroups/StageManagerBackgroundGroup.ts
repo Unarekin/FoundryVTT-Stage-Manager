@@ -1,1 +1,0 @@
-export class StageManagerBackgroundGroup extends PIXI.Container { }

@@ -1,1 +1,0 @@
-export class StageManagerPrimaryGroup extends PIXI.Container { }
