@@ -1,0 +1,7 @@
+{
+  "STAGEMANAGER": {
+    "ERRORS": {
+      "INVALIDUSER": "Invalid user: {user}"
+    }
+  }
+}
