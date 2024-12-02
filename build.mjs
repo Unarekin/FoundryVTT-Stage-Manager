@@ -54,13 +54,12 @@ if (!process.argv.slice(2).includes("--no-lint")) {
   const hasErrors = lintResults.findIndex((result) => result.errorCount) !== -1;
   if (hasErrors) {
     if (spinner) spinner.error("Linting errors found!");
-    else console.error("Linting errors found!");
     formatter = await linter.loadFormatter("stylish");
     console.log(formatter.format(lintResults));
     process.exit();
   } else {
     if (spinner) spinner.success(`Linting passed in ${((Date.now() - start) / 1000).toFixed(2)}s`);
-    else console.log(`Linting passed in ${((Date.now() - start) / 1000).toFixed(2)}s`)
+    else console.log(`Linting passed in ${((Date.now() - start) / 1000).toFixed(2)}s`);
   }
 }
 
@@ -161,9 +160,8 @@ if (buildResults.errors.length) {
   else console.error("Build failed!");
   console.error(buildResults.errors);
 } else {
-  if (process.env.GITHUB_ACTIONS) spinner.success(`Build completed in ${((Date.now() - buildStart) / 1000).toFixed(2)}s`);
+  if (spinner) spinner.success(`Build completed in ${((Date.now() - buildStart) / 1000).toFixed(2)}s`);
   else console.log(`Build completed in ${((Date.now() - buildStart) / 1000).toFixed(2)}s`);
-
   // if (buildResults.warnings.length) console.warn(buildResults.warnings);
 
   const packStart = Date.now();
@@ -181,7 +179,7 @@ if (buildResults.errors.length) {
       );
     }
     if (spinner) spinner.success(`Compendia packed in ${((Date.now() - packStart) / 1000).toFixed(2)}s`);
-    else console.log(`Compendia packed in ${((Date.now() - packStart) / 1000).toFixed(2)}s`)
+    else console.log(`Compendia packed in ${((Date.now() - packStart) / 1000).toFixed(2)}s`);
   } catch (err) {
     if (spinner) spinner.error("Build failed!");
     else console.error("Build failed!");
