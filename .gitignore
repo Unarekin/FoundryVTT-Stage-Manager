@@ -136,3 +136,5 @@ lint-report.html
 FoundryData
 foundryvtt-12.331.zip
 .vscode
+
+dist/
