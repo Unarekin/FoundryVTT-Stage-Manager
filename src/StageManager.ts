@@ -1,4 +1,5 @@
 import { ScreenSpaceCanvasGroup } from './ScreenSpaceCanvasGroup';
+import { StageObject } from './stageobjects';
 
 let canvasGroup: ScreenSpaceCanvasGroup | null = null;
 
@@ -19,5 +20,10 @@ export class StageManager {
     }
   }
 
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public static addStageObject(stageObject: StageObject) {
+    // Empty
+  }
 
 }
