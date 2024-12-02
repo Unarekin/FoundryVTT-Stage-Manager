@@ -1,5 +1,5 @@
 import { StageManager } from "./StageManager"
 
-Hooks.on("init", () => {
+Hooks.on("canvasReady", () => {
   StageManager.init();
 })
