@@ -1,5 +1,6 @@
 import { ScreenSpaceCanvasGroup } from './ScreenSpaceCanvasGroup';
-import { StageObject } from './stageobjects';
+import { ImageStageObject, StageObject } from './stageobjects';
+import { CanvasLayer } from './types';
 
 let primaryCanvasGroup: ScreenSpaceCanvasGroup;
 let bgCanvasGroup: ScreenSpaceCanvasGroup;
@@ -16,6 +17,12 @@ export class StageManager {
   public static get foregroundCanvasGroup() { return fgCanvasGroup; }
   public static get textCanvasGroup() { return textCanvasGroup; }
 
+  public static canAddStageObjects(user: User): boolean
+  public static canAddStageObjects(id: string): boolean
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public static canAddStageObjects(arg: unknown): boolean {
+    return true;
+  }
 
   /** Handles any initiatlization */
   public static init() {
@@ -34,9 +41,37 @@ export class StageManager {
   }
 
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public static addStageObject(stageObject: StageObject) {
-    // Empty
+  public static addStageObject(stageObject: StageObject, layer: CanvasLayer = "primary") {
+    switch (layer) {
+      case "background":
+        this.backgroundCanvasGroup.addChild(stageObject.displayObject);
+        break;
+      case "foreground":
+        this.foregroundCanvasGroup.addChild(stageObject.displayObject);
+        break;
+      case "primary":
+        this.primaryCanvasGroup.addChild(stageObject.displayObject);
+        break;
+      case "text":
+        this.textCanvasGroup.addChild(stageObject.displayObject);
+    }
   }
 
+
+  /**
+   * Adds an {@link ImageStageObject} to the Stage.
+   * @param {string} path - Path to the image to use as a texture
+   * @param {string} [name] - Identifiable name for this object
+   * @param {CanvasLayer} [layer="primary"] - {@link CanvasLayer} to which to add this object.
+   * @returns 
+   */
+  public static addImage(path: string, name?: string, layer: CanvasLayer = "primary"): ImageStageObject {
+    if (game.user && StageManager.canAddStageObjects(game.user as User)) {
+      const obj = new ImageStageObject(path, name);
+      StageManager.addStageObject(obj, layer);
+      return obj;
+    } else {
+      throw new Error("");
+    }
+  }
 }

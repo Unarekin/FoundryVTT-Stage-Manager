@@ -1,0 +1,1 @@
+export type CanvasLayer = "primary" | "foreground" | "background" | "text";
