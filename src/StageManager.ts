@@ -8,6 +8,8 @@ let canvasGroup: ScreenSpaceCanvasGroup | null = null;
 export class StageManager {
 
   public static get CanvasGroup() { return canvasGroup; }
+  public static get foreground() { return canvas?.primary?.children.find(child => child.name === "foreground"); }
+  public static get background() { return canvas?.primary?.children.find(child => child.name === "background"); }
 
   /** Handles any initiatlization */
   public static init() {

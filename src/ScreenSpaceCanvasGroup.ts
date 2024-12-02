@@ -1,10 +1,11 @@
 export class ScreenSpaceCanvasGroup extends PIXI.Container {
+
   protected setInverseMatrix() {
     if (canvas?.app?.stage)
       this.transform.setFromMatrix(canvas.app.stage.localTransform.clone().invert());
   }
 
-  constructor() {
+  constructor(public name = "ScreenSpaceCanvasGroup") {
     super();
     this.interactiveChildren = false;
     this.interactive = false;
