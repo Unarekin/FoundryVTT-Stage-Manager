@@ -1,22 +1,35 @@
 import { ScreenSpaceCanvasGroup } from './ScreenSpaceCanvasGroup';
 import { StageObject } from './stageobjects';
 
-let canvasGroup: ScreenSpaceCanvasGroup | null = null;
+let primaryCanvasGroup: ScreenSpaceCanvasGroup;
+let bgCanvasGroup: ScreenSpaceCanvasGroup;
+let fgCanvasGroup: ScreenSpaceCanvasGroup;
+let textCanvasGroup: ScreenSpaceCanvasGroup;
 
 /**
  * Core class for Stage Manager
  */
 export class StageManager {
 
-  public static get CanvasGroup() { return canvasGroup; }
-  public static get foreground() { return canvas?.primary?.children.find(child => child.name === "foreground"); }
-  public static get background() { return canvas?.primary?.children.find(child => child.name === "background"); }
+  public static get backgroundCanvasGroup() { return bgCanvasGroup; }
+  public static get primaryCanvasGroup() { return primaryCanvasGroup; }
+  public static get foregroundCanvasGroup() { return fgCanvasGroup; }
+  public static get textCanvasGroup() { return textCanvasGroup; }
+
 
   /** Handles any initiatlization */
   public static init() {
     if (canvas?.stage) {
-      canvasGroup = new ScreenSpaceCanvasGroup();
-      canvas.stage.addChild(canvasGroup);
+      bgCanvasGroup = new ScreenSpaceCanvasGroup("StageManagerBackgroundCanvasGroup");
+      primaryCanvasGroup = new ScreenSpaceCanvasGroup("StageManagerPrimaryCanvasGroup");
+      fgCanvasGroup = new ScreenSpaceCanvasGroup("StageManagerForegroundCanvasGroup");
+      textCanvasGroup = new ScreenSpaceCanvasGroup("StageManagerTextCanvasGroup");
+
+      canvas.stage.addChild(bgCanvasGroup);
+      canvas.stage.addChild(primaryCanvasGroup);
+      canvas.stage.addChild(fgCanvasGroup);
+      canvas.stage.addChild(textCanvasGroup);
+
     }
   }
 
