@@ -1,6 +1,7 @@
 import { ScreenSpaceCanvasGroup } from './ScreenSpaceCanvasGroup';
 import { ImageStageObject, StageObject } from './stageobjects';
 import { CanvasLayer } from './types';
+import { coerceUser } from './coercion';
 
 let primaryCanvasGroup: ScreenSpaceCanvasGroup;
 let bgCanvasGroup: ScreenSpaceCanvasGroup;
@@ -18,10 +19,12 @@ export class StageManager {
   public static get textCanvasGroup() { return textCanvasGroup; }
 
   public static canAddStageObjects(user: User): boolean
-  public static canAddStageObjects(id: string): boolean
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public static canAddStageObjects(user: string): boolean
   public static canAddStageObjects(arg: unknown): boolean {
-    return true;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    const user = coerceUser(arg as any);
+    if (user?.isGM) return true;
+    return false;
   }
 
   /** Handles any initiatlization */
@@ -66,7 +69,7 @@ export class StageManager {
    * @returns 
    */
   public static addImage(path: string, name?: string, layer: CanvasLayer = "primary"): ImageStageObject {
-    if (game.user && StageManager.canAddStageObjects(game.user as User)) {
+    if (StageManager.canAddStageObjects(game.user as User)) {
       const obj = new ImageStageObject(path, name);
       StageManager.addStageObject(obj, layer);
       return obj;
