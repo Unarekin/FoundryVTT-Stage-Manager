@@ -1,6 +1,6 @@
 import { ScreenSpaceCanvasGroup } from './ScreenSpaceCanvasGroup';
 
-const canvasGroup = new ScreenSpaceCanvasGroup();
+let canvasGroup: ScreenSpaceCanvasGroup | null = null;
 
 /**
  * Core class for Stage Manager
@@ -11,7 +11,10 @@ export class StageManager {
 
   /** Handles any initiatlization */
   public static init() {
-    if (canvas?.stage) canvas.stage.addChild(canvasGroup);
+    if (canvas?.stage) {
+      canvasGroup = new ScreenSpaceCanvasGroup();
+      canvas.stage.addChild(canvasGroup);
+    }
   }
 
 
