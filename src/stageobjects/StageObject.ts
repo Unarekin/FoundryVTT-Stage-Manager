@@ -1,15 +1,16 @@
+import { ScreenSpaceCanvasGroup } from "../ScreenSpaceCanvasGroup";
 import { StageManager } from "../StageManager";
 
 export abstract class StageObject {
-  // #region Properties (3)
-
+  // #region Properties (4)
 
   private _draggable = true;
   private _dragging = false;
 
+
   public readonly id = foundry.utils.randomID();
 
-  // #endregion Properties (3)
+  // #endregion Properties (4)
 
   // #region Constructors (1)
 
@@ -19,12 +20,14 @@ export abstract class StageObject {
 
   // #endregion Constructors (1)
 
-  // #region Public Getters And Setters (21)
+  // #region Public Getters And Setters (23)
 
   /** Object's rotation, in degrees */
   public get angle() { return this.displayObject.angle; }
 
   public set angle(angle) { this.displayObject.angle = angle; }
+
+  public get destroyed() { return this.displayObject.destroyed; }
 
   public get displayObject() { return this._displayObject; }
 
@@ -39,6 +42,14 @@ export abstract class StageObject {
 
   public set dragging(dragging) {
     this._dragging = dragging;
+  }
+
+  public get layer() {
+    if (this.displayObject.parent instanceof ScreenSpaceCanvasGroup) {
+      return this.displayObject.parent.layer;
+    } else {
+      return "";
+    }
   }
 
   public get pivot() { return this.displayObject.pivot; }
@@ -78,11 +89,9 @@ export abstract class StageObject {
 
   public set y(y) { this.displayObject.y = y; }
 
-  // #endregion Public Getters And Setters (21)
+  // #endregion Public Getters And Setters (23)
 
   // #region Public Methods (1)
-
-  public get destroyed() { return this.displayObject.destroyed; }
 
   public destroy() {
     if (!this.destroyed) {

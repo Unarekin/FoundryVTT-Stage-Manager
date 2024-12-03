@@ -1,1 +1,1 @@
-export type CanvasLayer = "primary" | "foreground" | "background" | "text";
+export type StageLayer = "primary" | "foreground" | "background" | "text";

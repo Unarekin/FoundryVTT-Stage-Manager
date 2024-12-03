@@ -1,6 +1,6 @@
 import { ScreenSpaceCanvasGroup } from './ScreenSpaceCanvasGroup';
 import { ImageStageObject, StageObject } from './stageobjects/';
-import { CanvasLayer } from './types';
+import { StageLayer } from './types';
 import { coerceStageObject, coerceUser } from './coercion';
 import { StageObjects } from './StageObjectCollection';
 import { InvalidStageObjectError } from './errors';
@@ -36,10 +36,10 @@ export class StageManager {
   /** Handles any initiatlization */
   public static init() {
     if (canvas?.stage) {
-      bgCanvasGroup = new ScreenSpaceCanvasGroup("StageManagerBackgroundCanvasGroup");
-      primaryCanvasGroup = new ScreenSpaceCanvasGroup("StageManagerPrimaryCanvasGroup");
-      fgCanvasGroup = new ScreenSpaceCanvasGroup("StageManagerForegroundCanvasGroup");
-      textCanvasGroup = new ScreenSpaceCanvasGroup("StageManagerTextCanvasGroup");
+      bgCanvasGroup = new ScreenSpaceCanvasGroup("StageManagerBackgroundCanvasGroup", "background");
+      primaryCanvasGroup = new ScreenSpaceCanvasGroup("StageManagerPrimaryCanvasGroup", "primary");
+      fgCanvasGroup = new ScreenSpaceCanvasGroup("StageManagerForegroundCanvasGroup", "foreground");
+      textCanvasGroup = new ScreenSpaceCanvasGroup("StageManagerTextCanvasGroup", "text");
 
       canvas.stage.addChild(bgCanvasGroup);
       canvas.stage.addChild(primaryCanvasGroup);
@@ -50,7 +50,7 @@ export class StageManager {
   }
 
 
-  public static addStageObject(stageObject: StageObject, layer: CanvasLayer = "primary") {
+  public static addStageObject(stageObject: StageObject, layer: StageLayer = "primary") {
     StageManager.StageObjects.set(stageObject.id, stageObject);
 
     switch (layer) {
@@ -76,7 +76,7 @@ export class StageManager {
   public static removeStageObject(arg: unknown): boolean {
     const obj = coerceStageObject(arg);
     if (!obj) throw new InvalidStageObjectError(arg);
-    StageManager.StageObjects.delete(obj.id);
+    return StageManager.StageObjects.delete(obj.id);
   }
 
   /**
@@ -85,10 +85,10 @@ export class StageManager {
    * @param {number} x
    * @param {number} y
    * @param {string} [name] - Identifiable name for this object
-   * @param {CanvasLayer} [layer="primary"] - {@link CanvasLayer} to which to add this object.
+   * @param {StageLayer} [layer="primary"] - {@link StageLayer} to which to add this object.
    * @returns 
    */
-  public static addImage(path: string, x: number = window.innerWidth / 2, y: number = window.innerHeight / 2, name?: string, layer: CanvasLayer = "primary"): ImageStageObject {
+  public static addImage(path: string, x: number = window.innerWidth / 2, y: number = window.innerHeight / 2, name?: string, layer: StageLayer = "primary"): ImageStageObject {
     if (StageManager.canAddStageObjects(game.user as User)) {
       const obj = new ImageStageObject(path, name);
       obj.x = x + (obj.width / 2);
