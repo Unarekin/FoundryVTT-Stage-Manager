@@ -6,8 +6,7 @@ export abstract class StageObject {
   // #region Properties (4)
 
   private _draggable = true;
-  private _dragging = false;
-
+  public placing = false;
 
   public readonly id = foundry.utils.randomID();
 
@@ -19,6 +18,10 @@ export abstract class StageObject {
     this.displayObject.name = name;
     this.displayObject.interactive = true;
     this.displayObject.eventMode = "dynamic";
+
+    this.displayObject.on("pointerdown", () => { if (this.placing) this.placing = false; });
+    this.displayObject.on("destroyed", () => { this.destroy(); });
+
     if (this.draggable) {
       this.displayObject.on("pointerdown", e => {
         if (game && game.activeTool === this.selectTool) {
@@ -49,11 +52,7 @@ export abstract class StageObject {
     if (this.dragging) this.dragging = false;
   }
 
-  public get dragging() { return this._dragging; }
-
-  public set dragging(dragging) {
-    this._dragging = dragging;
-  }
+  public dragging = false;
 
   public get layer() {
     if (this.displayObject.parent instanceof ScreenSpaceCanvasGroup) {
@@ -118,7 +117,7 @@ export abstract class StageObject {
 
   public destroy() {
     if (!this.destroyed) {
-      this.displayObject.destroy();
+      if (!this.displayObject.destroyed) this.displayObject.destroy();
       StageManager.StageObjects.delete(this.id);
     }
   }

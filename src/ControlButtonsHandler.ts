@@ -54,7 +54,7 @@ export class ControlButtonsHandler {
       tools,
       layer: __MODULE_ID__,
       visible: true,
-      activeTool: "sm-select-foreground"
+      activeTool: "sm-select-primary"
     });
 
   }
@@ -67,7 +67,10 @@ function addImage() {
     type: "imagevideo",
     displayMode: "tiles",
     callback: result => {
-      if (result) StageManager.addImage(result, window.innerWidth / 2, window.innerHeight / 2);
+      if (result) {
+        const img = StageManager.addImage(result, window.innerWidth / 2, window.innerHeight / 2);
+        img.placing = true;
+      }
     },
   }).render(true);
 }

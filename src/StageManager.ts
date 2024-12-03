@@ -110,7 +110,7 @@ export class StageManager {
 
 
 function onDragMove(event: PIXI.FederatedPointerEvent) {
-  const dragging = StageManager.StageObjects.contents.filter(item => item.dragging);
+  const dragging = StageManager.StageObjects.contents.filter(item => item.dragging || item.placing);
   for (const item of dragging) {
     item.x += event.movementX;
     item.y += event.movementY;
