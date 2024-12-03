@@ -90,11 +90,11 @@ export class StageManager {
    * @param {StageLayer} [layer="primary"] - {@link StageLayer} to which to add this object.
    * @returns 
    */
-  public static addImage(path: string, x: number = window.innerWidth / 2, y: number = window.innerHeight / 2, name?: string, layer: StageLayer = "primary"): ImageStageObject {
+  public static addImage(path: string, x?: number, y?: number, name?: string, layer: StageLayer = "primary"): ImageStageObject {
     if (StageManager.canAddStageObjects(game.user as User)) {
       const obj = new ImageStageObject(path, name);
-      obj.x = x + (obj.width / 2);
-      obj.y = y + (obj.height / 2);
+      obj.x = typeof x === "number" ? x : window.innerWidth / 2;
+      obj.y = typeof y === "number" ? y : window.innerHeight / 2;
 
       StageManager.addStageObject(obj, layer);
       return obj;
