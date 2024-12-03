@@ -19,9 +19,24 @@ export class ControlButtonsHandler {
 
     const tools: SceneControlTool[] = [
       {
-        name: "select-stage-object",
-        title: "STAGEMANAGER.SCENECONTROLS.SELECT",
-        icon: "fas fa-expand"
+        name: "sm-select-foreground",
+        title: "STAGEMANAGER.SCENECONTROLS.SELECTFOREGROUND",
+        icon: "sm-icon control select-foreground",
+      },
+      {
+        name: "sm-select-primary",
+        title: "STAGEMANAGER.SCENECONTROLS.SELECTPRIMARY",
+        icon: "sm-icon control select-primary"
+      },
+      {
+        name: "sm-select-background",
+        title: "STAGEMANAGER.SCENECONTROLS.SELECTBACKGROUND",
+        icon: "sm-icon control select-background"
+      },
+      {
+        name: "sm-select-text",
+        title: "STAGEMANAGER.SCENECONTROLS.SELECTTEXT",
+        icon: "sm-icon control select-text"
       },
       {
         name: "add-from-image",
@@ -39,7 +54,7 @@ export class ControlButtonsHandler {
       tools,
       layer: __MODULE_ID__,
       visible: true,
-      activeTool: "select-stage-object"
+      activeTool: "sm-select-foreground"
     });
 
   }

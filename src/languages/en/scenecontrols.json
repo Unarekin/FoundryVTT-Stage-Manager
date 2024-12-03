@@ -2,7 +2,11 @@
   "STAGEMANAGER": {
     "SCENECONTROLS": {
       "TITLE": "Stage Manager",
-      "IMAGE": "Add Image"
+      "IMAGE": "Add Image",
+      "SELECTFOREGROUND": "Select Foreground Objects",
+      "SELECTPRIMARY": "Select Primary Layer Objects",
+      "SELECTBACKGROUND": "Select Background Objects",
+      "SELECTTEXT": "Select Text Layer Objects"
     }
   }
 }

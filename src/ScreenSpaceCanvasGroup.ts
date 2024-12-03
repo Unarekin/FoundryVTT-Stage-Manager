@@ -1,7 +1,14 @@
 import { StageLayer } from "./types";
 
 export class ScreenSpaceCanvasGroup extends PIXI.Container {
-
+  public get selectTool() {
+    switch (this.layer) {
+      case "background": return "sm-select-background";
+      case "foreground": return "sm-select-foreground";
+      case "primary": return "sm-select-primary";
+      case "text": return "sm-select-text";
+    }
+  }
 
   protected setInverseMatrix() {
     if (canvas?.app?.stage)
