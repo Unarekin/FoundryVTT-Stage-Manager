@@ -20,6 +20,20 @@ export abstract class StageObject {
     )
   }
 
+
+  private _draggable = true;
+  private _dragging = false;
+  public get draggable() { return this._draggable; }
+  public set draggable(draggable) {
+    this._draggable = draggable;
+    if (this.dragging) this.dragging = false;
+  }
+
+  public get dragging() { return this._dragging; }
+  public set dragging(dragging) {
+    this._dragging = dragging;
+  }
+
   public get skew() { return this.displayObject.skew; }
   public set skew(skew) { this.displayObject.skew = skew; }
 

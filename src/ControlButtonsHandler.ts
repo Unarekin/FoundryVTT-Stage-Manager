@@ -1,4 +1,6 @@
 import { log } from "./logging";
+import { StageManager } from "./StageManager";
+// import { StageManager } from "./StageManager";
 
 let controlsInitialized = false;
 
@@ -20,9 +22,7 @@ export class ControlButtonsHandler {
         name: "add-from-image",
         title: "STAGEMANAGER.SCENECONTROLS.IMAGE",
         icon: "fas fa-image",
-        onClick: () => {
-          // empty
-        },
+        onClick: () => { addImage(); },
         button: true
       }
     ]
@@ -36,6 +36,18 @@ export class ControlButtonsHandler {
       visible: true,
       activeTool: ""
     });
+
   }
 
+}
+
+
+function addImage() {
+  new FilePicker({
+    type: "imagevideo",
+    displayMode: "tiles",
+    callback: result => {
+      if (result) StageManager.addImage(result, window.innerWidth / 2, window.innerHeight / 2);
+    },
+  }).render(true);
 }

@@ -64,13 +64,17 @@ export class StageManager {
   /**
    * Adds an {@link ImageStageObject} to the Stage.
    * @param {string} path - Path to the image to use as a texture
+   * @param {number} x
+   * @param {number} y
    * @param {string} [name] - Identifiable name for this object
    * @param {CanvasLayer} [layer="primary"] - {@link CanvasLayer} to which to add this object.
    * @returns 
    */
-  public static addImage(path: string, name?: string, layer: CanvasLayer = "primary"): ImageStageObject {
+  public static addImage(path: string, x: number, y: number, name?: string, layer: CanvasLayer = "primary"): ImageStageObject {
     if (StageManager.canAddStageObjects(game.user as User)) {
       const obj = new ImageStageObject(path, name);
+      if (x) obj.x = x;
+      if (y) obj.y = y;
       StageManager.addStageObject(obj, layer);
       return obj;
     } else {

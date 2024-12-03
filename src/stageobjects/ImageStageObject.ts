@@ -6,6 +6,9 @@ export class ImageStageObject extends StageObject {
   public get width() { return this.displayObject.width; }
   public set width(width) { this.displayObject.width = width; }
 
+  public get height() { return this.displayObject.height; }
+  public set height(height) { this.displayObject.height = height; }
+
   public get anchor() { return this.displayObject.anchor; }
   public set anchor(anchor) { this.displayObject.anchor = anchor; }
 
@@ -13,6 +16,8 @@ export class ImageStageObject extends StageObject {
 
   constructor(path: string, name?: string) {
     const sprite = PIXI.Sprite.from(path);
-    if (sprite) super(sprite, name);
+    super(sprite, name);
+    this.anchor.x = .5;
+    this.anchor.y = .5;
   }
 }
