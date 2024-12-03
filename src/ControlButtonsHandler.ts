@@ -21,7 +21,7 @@ export class ControlButtonsHandler {
       {
         name: "select-stage-object",
         title: "STAGEMANAGER.SCENECONTROLS.SELECT",
-        icon: "fas fa-expand"
+        icon: "fas fa-expand",
       },
       {
         name: "add-from-image",
