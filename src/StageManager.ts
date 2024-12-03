@@ -49,23 +49,25 @@ export class StageManager {
     }
   }
 
+  public static setStageObjectLayer(stageObject: StageObject, layer: StageLayer) {
+    switch (layer) {
+      case "background":
+        StageManager.backgroundCanvasGroup.addChild(stageObject.displayObject);
+        break;
+      case "foreground":
+        StageManager.foregroundCanvasGroup.addChild(stageObject.displayObject);
+        break;
+      case "primary":
+        StageManager.primaryCanvasGroup.addChild(stageObject.displayObject);
+        break;
+      case "text":
+        StageManager.textCanvasGroup.addChild(stageObject.displayObject);
+    }
+  }
 
   public static addStageObject(stageObject: StageObject, layer: StageLayer = "primary") {
     StageManager.StageObjects.set(stageObject.id, stageObject);
-
-    switch (layer) {
-      case "background":
-        this.backgroundCanvasGroup.addChild(stageObject.displayObject);
-        break;
-      case "foreground":
-        this.foregroundCanvasGroup.addChild(stageObject.displayObject);
-        break;
-      case "primary":
-        this.primaryCanvasGroup.addChild(stageObject.displayObject);
-        break;
-      case "text":
-        this.textCanvasGroup.addChild(stageObject.displayObject);
-    }
+    StageManager.setStageObjectLayer(stageObject, layer);
   }
 
   /**

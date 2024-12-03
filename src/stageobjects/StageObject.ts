@@ -54,7 +54,7 @@ export abstract class StageObject {
   }
 
   public setLayer(layer: StageLayer) {
-    if (this.layer !== layer) StageManager.addStageObject(this, layer);
+    if (this.layer !== layer) StageManager.setStageObjectLayer(this, layer);
   }
 
   public get pivot() { return this.displayObject.pivot; }
