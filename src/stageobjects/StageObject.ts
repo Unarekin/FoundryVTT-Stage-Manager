@@ -17,6 +17,16 @@ export abstract class StageObject {
 
   constructor(protected _displayObject: PIXI.DisplayObject, public name: string = this.id) {
     this.displayObject.name = name;
+    this.displayObject.interactive = true;
+    this.displayObject.eventMode = "dynamic";
+    if (this.draggable) {
+      this.displayObject.on("pointerdown", e => {
+        if (game && game.activeTool === "select-stage-object") {
+          this.dragging = true;
+          e.preventDefault();
+        }
+      });
+    }
   }
 
   // #endregion Constructors (1)

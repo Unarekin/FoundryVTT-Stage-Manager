@@ -19,6 +19,11 @@ export class ControlButtonsHandler {
 
     const tools: SceneControlTool[] = [
       {
+        name: "select-stage-object",
+        title: "STAGEMANAGER.SCENECONTROLS.SELECT",
+        icon: "fas fa-expand"
+      },
+      {
         name: "add-from-image",
         title: "STAGEMANAGER.SCENECONTROLS.IMAGE",
         icon: "fas fa-image",
@@ -34,7 +39,7 @@ export class ControlButtonsHandler {
       tools,
       layer: __MODULE_ID__,
       visible: true,
-      activeTool: ""
+      activeTool: "select-stage-object"
     });
 
   }

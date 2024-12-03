@@ -46,6 +46,10 @@ export class StageManager {
       canvas.stage.addChild(fgCanvasGroup);
       canvas.stage.addChild(textCanvasGroup);
 
+      // Drag events
+      canvas.stage.on("pointermove", onDragMove);
+      canvas.stage.on("pointerup", onDragEnd);
+      canvas.stage.on("pointerupoutside", onDragEnd);
     }
   }
 
@@ -102,4 +106,19 @@ export class StageManager {
       throw new Error("");
     }
   }
+}
+
+
+function onDragMove(event: PIXI.FederatedPointerEvent) {
+  const dragging = StageManager.StageObjects.contents.filter(item => item.dragging);
+  for (const item of dragging) {
+    item.x += event.movementX;
+    item.y += event.movementY;
+  }
+}
+
+function onDragEnd() {
+  const dragging = StageManager.StageObjects.contents.filter(item => item.dragging);
+  for (const item of dragging)
+    item.dragging = false;
 }

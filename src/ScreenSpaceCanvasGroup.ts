@@ -10,9 +10,9 @@ export class ScreenSpaceCanvasGroup extends PIXI.Container {
 
   constructor(public name = "ScreenSpaceCanvasGroup", public readonly layer: StageLayer) {
     super();
-    this.interactiveChildren = false;
-    this.interactive = false;
-    this.eventMode = "none";
+    this.interactiveChildren = true;
+    this.interactive = true;
+    this.eventMode = "static";
 
     if (canvas?.app) {
       canvas.app.renderer.addListener("prerender", () => {
