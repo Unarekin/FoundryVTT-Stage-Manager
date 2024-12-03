@@ -5,6 +5,7 @@ import { log } from "./logging";
 
 (window as any).StageManager = StageManager;
 
+
 Hooks.on("canvasReady", () => {
   (window as any).__PIXI_DEVTOOLS__ = {
     stage: canvas?.stage,
@@ -12,7 +13,11 @@ Hooks.on("canvasReady", () => {
   };
 
   StageManager.init();
-  if (game) (game as any).StageManager = StageManager;
+  if (game) {
+    (game as any).StageManager = StageManager;
+    (game as any).stageobjects = StageManager.StageObjects;
+  }
+
 
   log("Initialized.");
 });

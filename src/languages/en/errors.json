@@ -1,7 +1,8 @@
 {
   "STAGEMANAGER": {
     "ERRORS": {
-      "INVALIDUSER": "Invalid user: {user}"
+      "INVALIDUSER": "Invalid user: {user}",
+      "INVALIDSTAGEOBJECT": "Invalid stage object: {key}"
     }
   }
 }

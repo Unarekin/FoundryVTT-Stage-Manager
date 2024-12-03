@@ -1,4 +1,6 @@
 import { InvalidUserError } from "./errors";
+import { StageObject } from "./stageobjects";
+import { StageManager } from "./StageManager";
 
 
 export function coerceUser(id: string): User | undefined
@@ -20,4 +22,21 @@ export function coerceUser(arg: unknown): User | undefined {
   }
 
   throw new InvalidUserError(arg);
+}
+
+/**
+ * Will attempt to locate a StageObject by id, or name
+ * @param {unknown} arg 
+ * @returns {StageObject | undefined}
+ */
+export function coerceStageObject<t extends StageObject>(arg: unknown): t | undefined {
+  if (arg instanceof StageObject) return arg as t;
+  if (typeof arg === "string") {
+    let obj = StageManager.StageObjects.get(arg);
+    if (obj instanceof StageObject) return obj as t;
+
+    obj = StageManager.StageObjects.getName(arg);
+    if (obj instanceof StageObject) return obj as t;
+
+  }
 }

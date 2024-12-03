@@ -12,6 +12,7 @@
   "license": "MIT",
   "devDependencies": {
     "@eslint/js": "^9.11.0",
+    "@foundryvtt/foundryvtt-cli": "^1.0.3",
     "@pixi/gif": "^3.0.1",
     "@types/Foundry-VTT": "https://github.com/League-of-Foundry-Developers/foundry-vtt-types.git",
     "@types/eslint__js": "^8.42.3",
@@ -44,7 +45,5 @@
     "typescript-eslint": "^8.6.0",
     "yocto-spinner": "^0.1.0"
   },
-  "dependencies": {
-    "@foundryvtt/foundryvtt-cli": "^1.0.3"
-  }
+  "dependencies": {}
 }
