@@ -1,5 +1,6 @@
 import { ScreenSpaceCanvasGroup } from "../ScreenSpaceCanvasGroup";
 import { StageManager } from "../StageManager";
+import { StageLayer } from "../types";
 
 export abstract class StageObject {
   // #region Properties (4)
@@ -50,6 +51,10 @@ export abstract class StageObject {
     } else {
       return "";
     }
+  }
+
+  public setLayer(layer: StageLayer) {
+    if (this.layer !== layer) StageManager.setStageObjectLayer(this, layer);
   }
 
   public get pivot() { return this.displayObject.pivot; }
