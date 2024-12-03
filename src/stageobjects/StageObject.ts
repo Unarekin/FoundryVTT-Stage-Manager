@@ -21,7 +21,7 @@ export abstract class StageObject {
     this.displayObject.eventMode = "dynamic";
     if (this.draggable) {
       this.displayObject.on("pointerdown", e => {
-        if (game && game.activeTool === "select-stage-object") {
+        if (game && game.activeTool === this.selectTool) {
           this.dragging = true;
           e.preventDefault();
         }
@@ -58,6 +58,14 @@ export abstract class StageObject {
   public get layer() {
     if (this.displayObject.parent instanceof ScreenSpaceCanvasGroup) {
       return this.displayObject.parent.layer;
+    } else {
+      return "";
+    }
+  }
+
+  protected get selectTool() {
+    if (this.displayObject.parent instanceof ScreenSpaceCanvasGroup) {
+      return this.displayObject.parent.selectTool;
     } else {
       return "";
     }
