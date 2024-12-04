@@ -7,6 +7,7 @@ export interface SerializedStageObject {
   version: string;
   layer: StageLayer;
   data: Record<string, unknown>;
+  name: string;
 }
 
 export interface SerializedTransform {

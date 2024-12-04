@@ -17,28 +17,36 @@ export class ImageStageObject extends StageObject {
 
   public get texture() { return this.displayObject.texture; }
 
-  public serialize(): Record<string, unknown> {
+  public serialize(): SerializedStageObject {
+    const serialized = super.serialize();
+
     return {
-      ...super.serialize(),
-      image: this.path,
-      anchor: { x: this.anchor.x, y: this.anchor.y },
-      width: this.width,
-      height: this.height
+      ...serialized,
+      type: "image",
+      data: {
+        ...serialized.data,
+        image: this.path,
+        anchor: { x: this.anchor.x, y: this.anchor.y },
+        width: this.width,
+        height: this.height
+      }
     }
+
   }
 
-
-  protected applyJSON(data: Record<string, unknown>): void {
-    super.applyJSON(data);
-    this.anchor.x = data.anchor?.x as number ?? 0;
-    this.anchor.y = data.anchor?.y as number ?? 0;
-    this.width = data.width as number ?? this.texture.width;
-    this.height = data.height as number ?? this.texture.height;
+  public deserialize(serialized: SerializedStageObject) {
+    super.deserialize(serialized);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    this.anchor.x = (serialized.data.anchor as any)?.x as number ?? 0;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    this.anchor.y = (serialized.data.anchor as any)?.y as number ?? 0;
+    this.width = serialized.data.width as number ?? this.texture.width;
+    this.height = serialized.data.height as number ?? this.texture.height;
   }
 
   public static deserialize(data: SerializedStageObject): ImageStageObject {
     const obj = new ImageStageObject(data.data.image as string, data.data.name as string);
-    obj.applyJSON(data.data);
+    obj.deserialize(data);
 
     return obj;
   }

@@ -10,8 +10,14 @@ let socket: any;
 
 export class SocketManager {
 
+  public static syncStageObjects(stageObjects: SerializedStageObject[]) {
+    if (!StageManager.canAddStageObjects(game?.user as User)) throw new PermissionDeniedError();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    socket.executeForOthers("syncStageObjects", stageObjects);
+  }
+
   public static addStageObject(stageObject: StageObject) {
-    if (!StageManager.canAddStageObjects(game?.user)) throw new PermissionDeniedError();
+    if (!StageManager.canAddStageObjects(game?.user as User)) throw new PermissionDeniedError();
     const objectClass = Object.values(stageObjectTypes).find(item => item.type && stageObject instanceof item);
     if (!objectClass) throw new InvalidStageObjectError(stageObject.constructor.name);
 
@@ -19,14 +25,7 @@ export class SocketManager {
     log("Serialized:", serialized);
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    socket.executeForOthers("addStageObject",
-      {
-        id: stageObject.id,
-        type: objectClass.type,
-        data: serialized,
-        layer: stageObject.layer,
-        version: __MODULE_VERSION__
-      });
+    socket.executeForOthers("addStageObject", serialized);
   }
 
 
@@ -36,9 +35,15 @@ export class SocketManager {
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     socket.register("addStageObject", addStageObject);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    socket.register("syncStageObjects", syncStageObjects);
   }
 }
 
 function addStageObject(stageObject: SerializedStageObject) {
   StageManager.deserialize(stageObject);
+}
+
+function syncStageObjects(data: SerializedStageObject[]) {
+  StageManager.Synchronize(data);
 }

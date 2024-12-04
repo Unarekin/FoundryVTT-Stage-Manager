@@ -8,6 +8,7 @@ export abstract class StageObject {
   // #region Properties (5)
 
   private _draggable = true;
+  public synchronize = false;
 
   protected _id = foundry.utils.randomID();
   public get id() { return this._id; }
@@ -42,6 +43,7 @@ export abstract class StageObject {
       this.displayObject.on("pointerdown", e => {
         if (game && game.activeTool === this.selectTool) {
           this.dragging = true;
+          this.synchronize = false;
           e.preventDefault();
         }
       });
@@ -145,41 +147,50 @@ export abstract class StageObject {
 
   public static deserialize(serialized: SerializedStageObject): StageObject { throw new CannotDeserializeError(serialized.type) }
 
-  // #region Public Abstract Methods (1)
+  public deserialize(serialized: SerializedStageObject) {
+    this.name = serialized.name;
+    this.id = serialized.id;
 
-  protected applyJSON(data: Record<string, unknown>) {
-    this.name = data.name as string ?? this.id;
-    this.id = data.id as string;
+    const transform = serialized.data.transform as SerializedTransform;
 
-    const transform = data.transform as SerializedTransform;
-
-    this.displayObject.setTransform(
-      transform.x,
-      transform.y,
-      transform.scaleX,
-      transform.scaleY,
-      transform.rotation,
-      transform.skewX,
-      transform.skewY,
-      transform.pivotX,
-      transform.pivotY
-    );
+    if (transform) {
+      this.displayObject.setTransform(
+        transform.x,
+        transform.y,
+        transform.scaleX,
+        transform.scaleY,
+        transform.rotation,
+        transform.skewX,
+        transform.skewY,
+        transform.pivotX,
+        transform.pivotY
+      );
+    }
   }
 
-  public serialize(): Record<string, unknown> {
-    return {
-      name: this.name,
-      transform: {
-        x: this.transform.position.x,
-        y: this.transform.position.y,
-        scaleX: this.transform.scale.x,
-        scaleY: this.transform.scale.y,
-        rotation: this.transform.rotation,
-        skewX: this.transform.skew.x,
-        skewY: this.transform.skew.y,
-        pivotX: this.transform.pivot.x,
-        pivotY: this.transform.pivot.y
+  // #region Public Abstract Methods (1)
 
+
+  public serialize(): SerializedStageObject {
+    return {
+      id: this.id,
+      layer: this.layer as StageLayer ?? "primary",
+      version: __MODULE_VERSION__,
+      type: "",
+      name: this.name ?? this.id,
+      data: {
+        transform: {
+          x: this.transform.position.x,
+          y: this.transform.position.y,
+          scaleX: this.transform.scale.x,
+          scaleY: this.transform.scale.y,
+          rotation: this.transform.rotation,
+          skewX: this.transform.skew.x,
+          skewY: this.transform.skew.y,
+          pivotX: this.transform.pivot.x,
+          pivotY: this.transform.pivot.y
+
+        }
       }
     }
   }

@@ -6,6 +6,9 @@ import { StageObjects } from './StageObjectCollection';
 import { InvalidStageObjectError } from './errors';
 
 import * as stageObjectTypes from "./stageobjects";
+import { SocketManager } from './SocketManager';
+import { log } from './logging';
+
 
 // #region Classes (1)
 
@@ -54,6 +57,8 @@ export class StageManager {
   public static addStageObject(stageObject: StageObject, layer: StageLayer = "primary") {
     StageManager.StageObjects.set(stageObject.id, stageObject);
     StageManager.setStageObjectLayer(stageObject, layer);
+
+    SYNCHRONIZATION_HASH[stageObject.id] = stageObject.serialize();
   }
 
   public static canAddStageObjects(user: User): boolean
@@ -66,15 +71,31 @@ export class StageManager {
   }
 
 
-  public static deserialize(serialized: SerializedStageObject) {
+  public static deserialize(serialized: SerializedStageObject): StageObject | undefined {
     try {
       const newType = Object.values(stageObjectTypes).find(item => item.type === serialized.type);
       if (!newType) throw new InvalidStageObjectError(serialized.type);
 
-      this.addStageObject(newType.deserialize(serialized), serialized.layer ?? "primary");
+      return newType.deserialize(serialized);
     } catch (err) {
       ui.notifications?.error((err as Error).message, { console: false });
       console.error(err);
+    }
+  }
+
+  public static Synchronize(data: SerializedStageObject[]) {
+    log("Synchronizing:", data);
+    for (const stageObject of data) {
+      const obj = StageManager.StageObjects.get(stageObject.id);
+      // If it isn't in our collection, add it.
+      // This shouldn't happen, as it should have been added via
+      // addStageObject
+      if (!obj) {
+        const deserialized = StageManager.deserialize(stageObject);
+        if (deserialized) StageManager.addStageObject(deserialized);
+      } else {
+        obj.deserialize(stageObject);
+      }
     }
   }
 
@@ -95,6 +116,8 @@ export class StageManager {
       canvas.stage.on("pointermove", onDragMove);
       canvas.stage.on("pointerup", onDragEnd);
       canvas.stage.on("pointerupoutside", onDragEnd);
+
+      if (canvas.app?.renderer) canvas.app.renderer.addListener("postrender", () => { synchronizeStageObjects(); })
     }
   }
 
@@ -134,8 +157,10 @@ export class StageManager {
 
 function onDragEnd() {
   const dragging = StageManager.StageObjects.contents.filter(item => item.dragging);
-  for (const item of dragging)
+  for (const item of dragging) {
     item.dragging = false;
+    item.synchronize = true;
+  }
 }
 
 function onDragMove(event: PIXI.FederatedPointerEvent) {
@@ -157,3 +182,27 @@ let textCanvasGroup: ScreenSpaceCanvasGroup;
 const stageObjects = new StageObjects();
 
 // #endregion Variables (5)
+
+const SYNCHRONIZATION_HASH: Record<string, SerializedStageObject> = {};
+
+function synchronizeStageObjects() {
+  if (StageManager.canAddStageObjects(game?.user as User)) {
+    const updates: SerializedStageObject[] = [];
+
+
+    StageManager.StageObjects.forEach(stageObject => {
+      if (!stageObject.synchronize) return;
+      const previous = SYNCHRONIZATION_HASH[stageObject.id];
+      if (previous) {
+        const serialized = stageObject.serialize();
+
+        if (!foundry.utils.objectsEqual(serialized, previous)) {
+          updates.push(serialized);
+          SYNCHRONIZATION_HASH[stageObject.id] = serialized;
+        }
+      }
+    });
+
+    if (updates.length) SocketManager.syncStageObjects(updates);
+  }
+}
