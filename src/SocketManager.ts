@@ -27,7 +27,7 @@ export class SocketManager {
   }
 
   public static removeStageObject(stageObject: StageObject) {
-    if (!StageManager.canAddStageObjects(game?.user as User)) throw new PermissionDeniedError();
+    if (!StageManager.canDeleteStageObject(game?.user as User, stageObject.id)) throw new PermissionDeniedError();
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     socket.executeForOthers("removeStageObject", stageObject.id);
   }

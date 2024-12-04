@@ -39,16 +39,21 @@ export abstract class StageObject {
     });
     this.displayObject.on("destroyed", () => { this.destroy(); });
 
-    if (this.draggable) {
-      this.displayObject.on("pointerdown", e => {
-        if (game && game.activeTool === this.selectTool) {
-          this.dragging = true;
-          this.synchronize = false;
-          e.preventDefault();
-        }
-      });
-    }
+
+    this.displayObject.on("pointerdown", e => {
+      if (
+        this.draggable &&
+        StageManager.canModifyStageObject(game?.user?.id ?? "", this.id) &&
+        game.activeTool === this.selectTool
+      ) {
+        this.dragging = true;
+        this.synchronize = false;
+        e.preventDefault();
+      }
+    });
+
   }
+  public get owners() { return StageManager.getOwners(this.id).reduce((prev: User[], curr: string) => game?.users?.get(curr) ? [...prev, game.users.get(curr) as User] : prev, [] as User[]); }
 
   // #endregion Constructors (1)
 
@@ -176,6 +181,7 @@ export abstract class StageObject {
     return {
       id: this.id,
       layer: this.layer as StageLayer ?? "primary",
+      owners: StageManager.getOwners(this.id),
       version: __MODULE_VERSION__,
       type: "",
       name: this.name ?? this.id,

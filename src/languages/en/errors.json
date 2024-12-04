@@ -5,7 +5,8 @@
       "INVALIDSTAGEOBJECT": "Invalid stage object: {key}",
       "PERMISSIONDENIED": "Permission denied.",
       "CANNOTDESERIALIZE": "Cannot deserialize stage object: {type}",
-      "NOTIMPLEMENTED": "Not Implemented"
+      "NOTIMPLEMENTED": "Not Implemented",
+      "UNKNOWNUSER": "Unknown user: {user}"
     }
   }
 }

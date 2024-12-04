@@ -4,6 +4,7 @@ export type StageLayer = "primary" | "foreground" | "background" | "text";
 export interface SerializedStageObject {
   type: string;
   id: string;
+  owners: string[],
   version: string;
   layer: StageLayer;
   data: Record<string, unknown>;

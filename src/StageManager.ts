@@ -6,7 +6,6 @@ import { StageObjects } from './StageObjectCollection';
 import { InvalidStageObjectError } from './errors';
 import * as stageObjectTypes from "./stageobjects";
 import { SocketManager } from './SocketManager';
-import { log } from './logging';
 
 // #region Classes (1)
 
@@ -56,7 +55,7 @@ export class StageManager {
    * @returns 
    */
   public static addImage(path: string, x?: number, y?: number, name?: string, layer: StageLayer = "primary"): ImageStageObject {
-    if (StageManager.canAddStageObjects(game.user as User)) {
+    if (StageManager.canAddStageObjects(game.user?.id ?? "")) {
       const obj = new ImageStageObject(path, name);
       obj.x = typeof x === "number" ? x : window.innerWidth / 2;
       obj.y = typeof y === "number" ? y : window.innerHeight / 2;
@@ -73,18 +72,35 @@ export class StageManager {
     StageManager.setStageObjectLayer(stageObject, layer);
 
     SYNCHRONIZATION_HASH[stageObject.id] = stageObject.serialize();
-    if (game?.settings && StageManager.canAddStageObjects(game.user as User)) {
+    if (game?.settings && StageManager.canAddStageObjects(game.user?.id ?? "")) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       void (game.settings as any).set(__MODULE_ID__, "currentObjects", SYNCHRONIZATION_HASH);
+      OWNER_HASH[stageObject.id] = [
+        ...StageManager.getOwners(stageObject.id),
+        game.user?.id ?? ""
+      ].filter((item, index, arr) => arr.indexOf(item) === index)
     }
   }
 
-  public static canAddStageObjects(user: User): boolean
-  public static canAddStageObjects(user: string): boolean
-  public static canAddStageObjects(arg: unknown): boolean {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    const user = coerceUser(arg as any);
+  public static canModifyStageObject(userId: string, objectId: string): boolean {
+    const user = coerceUser(userId);
+    if (!user) return false;
+    if (user.isGM) return true;
+    if ((OWNER_HASH[objectId] ?? []).includes(userId)) return true;
+    return false;
+  }
+
+  public static canAddStageObjects(userId: string): boolean {
+    const user = coerceUser(userId);
     if (user?.isGM) return true;
+    return false;
+  }
+
+  public static canDeleteStageObject(userId: string, objectId: string): boolean {
+    const user = coerceUser(userId);
+    if (!user) return false;
+    if (user.isGM) return true;
+    if ((OWNER_HASH[objectId] ?? []).includes(userId)) return true;
     return false;
   }
 
@@ -125,6 +141,20 @@ export class StageManager {
 
       if (canvas.app?.renderer) canvas.app.renderer.addListener("postrender", () => { synchronizeStageObjects(); })
     }
+
+  }
+
+  /**
+   * Returns a list of user IDs that are considered to have ownership over a given {@link StageObject}
+   * @param {string} objId - id of the {@link StageObject} for which to get owners
+   * @returns {string[]}
+   */
+  public static getOwners(objId: string): string[] {
+    if (!coerceStageObject(objId)) throw new InvalidStageObjectError(objId);
+    return [
+      ...(game?.users ? game.users.contents.reduce((prev: string[], curr: User) => curr.isGM ? [...prev, curr.id] : prev, []) as string[] : []),
+      ...(OWNER_HASH[objId] ?? [])
+    ].filter((id, index, arr) => arr.indexOf(id) === index);
   }
 
   /**
@@ -136,8 +166,9 @@ export class StageManager {
     const obj = coerceStageObject(arg);
     if (!obj) throw new InvalidStageObjectError(arg);
     delete SYNCHRONIZATION_HASH[obj.id];
+    delete OWNER_HASH[obj.id];
 
-    if (StageManager.canAddStageObjects(game.user as User)) {
+    if (StageManager.canDeleteStageObject(game.user?.id ?? "", obj.id)) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       if (game?.settings) void (game.settings as any).set(__MODULE_ID__, "currentObjects", Object.values(SYNCHRONIZATION_HASH));
       SocketManager.removeStageObject(obj);
@@ -188,7 +219,7 @@ function onDragMove(event: PIXI.FederatedPointerEvent) {
 }
 
 function synchronizeStageObjects() {
-  if (StageManager.canAddStageObjects(game?.user as User)) {
+  if (StageManager.canAddStageObjects(game?.user?.id ?? "")) {
     const updates: SerializedStageObject[] = [];
 
     StageManager.StageObjects.forEach(stageObject => {
@@ -223,3 +254,5 @@ const stageObjects = new StageObjects();
 const SYNCHRONIZATION_HASH: Record<string, SerializedStageObject> = {};
 
 // #endregion Variables (6)
+
+const OWNER_HASH: Record<string, string[]> = {};
