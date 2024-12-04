@@ -136,6 +136,16 @@ export class StageManager {
   public static removeStageObject(arg: unknown): boolean {
     const obj = coerceStageObject(arg);
     if (!obj) throw new InvalidStageObjectError(arg);
+    delete SYNCHRONIZATION_HASH[obj.id];
+
+    if (StageManager.canAddStageObjects(game.user as User)) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+      if (game?.settings) void (game.settings as any).set(__MODULE_ID__, "currentObjects", Object.values(SYNCHRONIZATION_HASH));
+      SocketManager.removeStageObject(obj);
+    }
+
+
+    if (!obj.destroyed) obj.destroy();
     return StageManager.StageObjects.delete(obj.id);
   }
 

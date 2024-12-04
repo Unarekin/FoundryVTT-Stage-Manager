@@ -134,7 +134,8 @@ export abstract class StageObject {
   public destroy() {
     if (!this.destroyed) {
       if (!this.displayObject.destroyed) this.displayObject.destroy();
-      StageManager.StageObjects.delete(this.id);
+      // StageManager.StageObjects.delete(this.id);
+      StageManager.removeStageObject(this);
     }
   }
 

@@ -22,10 +22,14 @@ export class SocketManager {
     if (!objectClass) throw new InvalidStageObjectError(stageObject.constructor.name);
 
     const serialized = stageObject.serialize();
-    log("Serialized:", serialized);
-
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     socket.executeForOthers("addStageObject", serialized);
+  }
+
+  public static removeStageObject(stageObject: StageObject) {
+    if (!StageManager.canAddStageObjects(game?.user as User)) throw new PermissionDeniedError();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    socket.executeForOthers("removeStageObject", stageObject.id);
   }
 
 
@@ -37,6 +41,8 @@ export class SocketManager {
     socket.register("addStageObject", addStageObject);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     socket.register("syncStageObjects", syncStageObjects);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    socket.register("removeStageObject", removeStageObject);
   }
 }
 
@@ -47,4 +53,9 @@ function addStageObject(stageObject: SerializedStageObject) {
 function syncStageObjects(data: SerializedStageObject[]) {
   log("Synchronizing:", data);
   StageManager.Synchronize(data);
+}
+
+function removeStageObject(id: string) {
+  const obj = StageManager.StageObjects.get(id);
+  if (obj) StageManager.removeStageObject(obj);
 }
