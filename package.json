@@ -6,7 +6,8 @@
   "scripts": {
     "watch": "npx onchange -i src/**/* -- yarn build",
     "build": "node build.mjs",
-    "build:prod": "NODE_ENV=production node build.mjs"
+    "build:prod": "NODE_ENV=production node build.mjs",
+    "build:mime": "node build-mimedb.mjs"
   },
   "author": "Unarekin",
   "license": "MIT",
