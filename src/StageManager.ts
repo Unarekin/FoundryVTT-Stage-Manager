@@ -6,6 +6,7 @@ import { StageObjects } from './StageObjectCollection';
 import { InvalidStageObjectError } from './errors';
 import * as stageObjectTypes from "./stageobjects";
 import { SocketManager } from './SocketManager';
+import { getSetting, setSetting } from './Settings';
 
 // #region Classes (1)
 
@@ -72,13 +73,8 @@ export class StageManager {
     StageManager.setStageObjectLayer(stageObject, layer);
 
     SYNCHRONIZATION_HASH[stageObject.id] = stageObject.serialize();
-    if (game?.settings && StageManager.canAddStageObjects(game.user?.id ?? "")) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-      void (game.settings as any).set(__MODULE_ID__, "currentObjects", SYNCHRONIZATION_HASH);
-      OWNER_HASH[stageObject.id] = [
-        ...StageManager.getOwners(stageObject.id),
-        game.user?.id ?? ""
-      ].filter((item, index, arr) => arr.indexOf(item) === index)
+    if (StageManager.canAddStageObjects(game.user?.id ?? "")) {
+      void setSetting("currentObjects", SYNCHRONIZATION_HASH);
     }
   }
 
@@ -86,8 +82,8 @@ export class StageManager {
     const user = coerceUser(userId);
     if (!user) return false;
     if (user.isGM) return true;
-    if ((OWNER_HASH[objectId] ?? []).includes(userId)) return true;
-    return false;
+    const owners = StageManager.getOwners(objectId);
+    return owners.includes(userId);
   }
 
   public static canAddStageObjects(userId: string): boolean {
@@ -100,8 +96,7 @@ export class StageManager {
     const user = coerceUser(userId);
     if (!user) return false;
     if (user.isGM) return true;
-    if ((OWNER_HASH[objectId] ?? []).includes(userId)) return true;
-    return false;
+    return StageManager.getOwners(objectId).includes(userId);
   }
 
   public static deserialize(serialized: SerializedStageObject): StageObject | undefined {
@@ -151,10 +146,8 @@ export class StageManager {
    */
   public static getOwners(objId: string): string[] {
     if (!coerceStageObject(objId)) throw new InvalidStageObjectError(objId);
-    return [
-      ...(game?.users ? game.users.contents.reduce((prev: string[], curr: User) => curr.isGM ? [...prev, curr.id] : prev, []) as string[] : []),
-      ...(OWNER_HASH[objId] ?? [])
-    ].filter((id, index, arr) => arr.indexOf(id) === index);
+    const owners = getSetting<Record<string, string[]>>("objectOwnership");
+    return owners?.[objId] ?? [];
   }
 
   /**
@@ -166,11 +159,10 @@ export class StageManager {
     const obj = coerceStageObject(arg);
     if (!obj) throw new InvalidStageObjectError(arg);
     delete SYNCHRONIZATION_HASH[obj.id];
-    delete OWNER_HASH[obj.id];
+
 
     if (StageManager.canDeleteStageObject(game.user?.id ?? "", obj.id)) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-      if (game?.settings) void (game.settings as any).set(__MODULE_ID__, "currentObjects", Object.values(SYNCHRONIZATION_HASH));
+      void setSetting("currentObjects", Object.values(SYNCHRONIZATION_HASH))
       SocketManager.removeStageObject(obj);
     }
 
@@ -237,8 +229,7 @@ function synchronizeStageObjects() {
     });
 
     if (updates.length) SocketManager.syncStageObjects(updates);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    if (game?.settings) void (game.settings as any).set(__MODULE_ID__, "currentObjects", Object.values(SYNCHRONIZATION_HASH));
+    void setSetting("currentObjects", Object.values(SYNCHRONIZATION_HASH));
   }
 }
 
@@ -254,5 +245,3 @@ const stageObjects = new StageObjects();
 const SYNCHRONIZATION_HASH: Record<string, SerializedStageObject> = {};
 
 // #endregion Variables (6)
-
-const OWNER_HASH: Record<string, string[]> = {};

@@ -11,13 +11,13 @@ let socket: any;
 export class SocketManager {
 
   public static syncStageObjects(stageObjects: SerializedStageObject[]) {
-    if (!StageManager.canAddStageObjects(game?.user as User)) throw new PermissionDeniedError();
+    if (!StageManager.canAddStageObjects(game?.user?.id ?? "")) throw new PermissionDeniedError();
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     socket.executeForOthers("syncStageObjects", stageObjects);
   }
 
   public static addStageObject(stageObject: StageObject) {
-    if (!StageManager.canAddStageObjects(game?.user as User)) throw new PermissionDeniedError();
+    if (!StageManager.canAddStageObjects(game?.user?.id ?? "")) throw new PermissionDeniedError();
     const objectClass = Object.values(stageObjectTypes).find(item => item.type && stageObject instanceof item);
     if (!objectClass) throw new InvalidStageObjectError(stageObject.constructor.name);
 
@@ -27,7 +27,7 @@ export class SocketManager {
   }
 
   public static removeStageObject(stageObject: StageObject) {
-    if (!StageManager.canDeleteStageObject(game?.user as User, stageObject.id)) throw new PermissionDeniedError();
+    if (!StageManager.canDeleteStageObject(game?.user?.id ?? "", stageObject.id)) throw new PermissionDeniedError();
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     socket.executeForOthers("removeStageObject", stageObject.id);
   }
