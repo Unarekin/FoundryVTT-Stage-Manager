@@ -73,7 +73,6 @@ export class StageManager {
     StageManager.setStageObjectLayer(stageObject, layer);
 
     SYNCHRONIZATION_HASH[stageObject.id] = stageObject.serialize();
-    log("Adding:", game?.settings, StageManager.canAddStageObjects(game.user as User));
     if (game?.settings && StageManager.canAddStageObjects(game.user as User)) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       void (game.settings as any).set(__MODULE_ID__, "currentObjects", SYNCHRONIZATION_HASH);
