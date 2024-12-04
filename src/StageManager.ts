@@ -4,11 +4,9 @@ import { SerializedStageObject, StageLayer } from './types';
 import { coerceStageObject, coerceUser } from './coercion';
 import { StageObjects } from './StageObjectCollection';
 import { InvalidStageObjectError } from './errors';
-
 import * as stageObjectTypes from "./stageobjects";
 import { SocketManager } from './SocketManager';
 import { log } from './logging';
-
 
 // #region Classes (1)
 
@@ -30,7 +28,23 @@ export class StageManager {
 
   // #endregion Public Static Getters And Setters (5)
 
-  // #region Public Static Methods (9)
+  // #region Public Static Methods (11)
+
+  public static Synchronize(data: SerializedStageObject[]) {
+
+    for (const stageObject of data) {
+      const obj = StageManager.StageObjects.get(stageObject.id);
+      // If it isn't in our collection, add it.
+      // This shouldn't happen, as it should have been added via
+      // addStageObject
+      if (!obj) {
+        const deserialized = StageManager.deserialize(stageObject);
+        if (deserialized) StageManager.addStageObject(deserialized);
+      } else {
+        obj.deserialize(stageObject);
+      }
+    }
+  }
 
   /**
    * Adds an {@link ImageStageObject} to the Stage.
@@ -59,6 +73,11 @@ export class StageManager {
     StageManager.setStageObjectLayer(stageObject, layer);
 
     SYNCHRONIZATION_HASH[stageObject.id] = stageObject.serialize();
+    log("Adding:", game?.settings, StageManager.canAddStageObjects(game.user as User));
+    if (game?.settings && StageManager.canAddStageObjects(game.user as User)) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+      void (game.settings as any).set(__MODULE_ID__, "currentObjects", SYNCHRONIZATION_HASH);
+    }
   }
 
   public static canAddStageObjects(user: User): boolean
@@ -69,7 +88,6 @@ export class StageManager {
     if (user?.isGM) return true;
     return false;
   }
-
 
   public static deserialize(serialized: SerializedStageObject): StageObject | undefined {
     try {
@@ -83,20 +101,9 @@ export class StageManager {
     }
   }
 
-  public static Synchronize(data: SerializedStageObject[]) {
-    log("Synchronizing:", data);
-    for (const stageObject of data) {
-      const obj = StageManager.StageObjects.get(stageObject.id);
-      // If it isn't in our collection, add it.
-      // This shouldn't happen, as it should have been added via
-      // addStageObject
-      if (!obj) {
-        const deserialized = StageManager.deserialize(stageObject);
-        if (deserialized) StageManager.addStageObject(deserialized);
-      } else {
-        obj.deserialize(stageObject);
-      }
-    }
+  public static fullSync(data: SerializedStageObject[]) {
+    for (const item of data)
+      SYNCHRONIZATION_HASH[item.id] = item;
   }
 
   /** Handles any initiatlization */
@@ -148,12 +155,12 @@ export class StageManager {
     }
   }
 
-  // #endregion Public Static Methods (9)
+  // #endregion Public Static Methods (11)
 }
 
 // #endregion Classes (1)
 
-// #region Functions (2)
+// #region Functions (3)
 
 function onDragEnd() {
   const dragging = StageManager.StageObjects.contents.filter(item => item.dragging);
@@ -171,24 +178,9 @@ function onDragMove(event: PIXI.FederatedPointerEvent) {
   }
 }
 
-// #endregion Functions (2)
-
-// #region Variables (5)
-
-let primaryCanvasGroup: ScreenSpaceCanvasGroup;
-let bgCanvasGroup: ScreenSpaceCanvasGroup;
-let fgCanvasGroup: ScreenSpaceCanvasGroup;
-let textCanvasGroup: ScreenSpaceCanvasGroup;
-const stageObjects = new StageObjects();
-
-// #endregion Variables (5)
-
-const SYNCHRONIZATION_HASH: Record<string, SerializedStageObject> = {};
-
 function synchronizeStageObjects() {
   if (StageManager.canAddStageObjects(game?.user as User)) {
     const updates: SerializedStageObject[] = [];
-
 
     StageManager.StageObjects.forEach(stageObject => {
       if (!stageObject.synchronize) return;
@@ -197,6 +189,7 @@ function synchronizeStageObjects() {
         const serialized = stageObject.serialize();
 
         if (!foundry.utils.objectsEqual(serialized, previous)) {
+
           updates.push(serialized);
           SYNCHRONIZATION_HASH[stageObject.id] = serialized;
         }
@@ -204,5 +197,20 @@ function synchronizeStageObjects() {
     });
 
     if (updates.length) SocketManager.syncStageObjects(updates);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    if (game?.settings) void (game.settings as any).set(__MODULE_ID__, "currentObjects", Object.values(SYNCHRONIZATION_HASH));
   }
 }
+
+// #endregion Functions (3)
+
+// #region Variables (6)
+
+let primaryCanvasGroup: ScreenSpaceCanvasGroup;
+let bgCanvasGroup: ScreenSpaceCanvasGroup;
+let fgCanvasGroup: ScreenSpaceCanvasGroup;
+let textCanvasGroup: ScreenSpaceCanvasGroup;
+const stageObjects = new StageObjects();
+const SYNCHRONIZATION_HASH: Record<string, SerializedStageObject> = {};
+
+// #endregion Variables (6)

@@ -3,6 +3,7 @@ import { StageManager } from "./StageManager"
 import { ControlButtonsHandler } from "./ControlButtonsHandler"
 import { log } from "./logging";
 import { SocketManager } from "./SocketManager";
+import { SerializedStageObject } from "./types";
 
 (window as any).StageManager = StageManager;
 
@@ -26,7 +27,7 @@ Hooks.on("canvasReady", () => {
 Hooks.on("getSceneControlButtons", (controls: SceneControl[]) => { ControlButtonsHandler.register(controls); });
 Hooks.once("socketlib.ready", () => { SocketManager.init(); })
 
-Hooks.on("ready", () => {
+Hooks.on("init", () => {
   if (game?.settings) {
     game.settings.register(__MODULE_ID__, "currentObjects", {
       name: "Current StageObjects",
@@ -38,4 +39,10 @@ Hooks.on("ready", () => {
       requiresReload: false
     })
   }
+});
+
+Hooks.once("ready", () => {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+  const persisted = (game.settings as any).get(__MODULE_ID__, "currentObjects") as SerializedStageObject[] ?? [];
+  StageManager.Synchronize(persisted);
 })

@@ -45,5 +45,6 @@ function addStageObject(stageObject: SerializedStageObject) {
 }
 
 function syncStageObjects(data: SerializedStageObject[]) {
+  log("Synchronizing:", data);
   StageManager.Synchronize(data);
 }
