@@ -1,10 +1,21 @@
 import { log } from "./logging";
 import { StageManager } from "./StageManager";
+import { ImageStageObject } from "./stageobjects";
+import { StageLayer } from "./types";
 // import { StageManager } from "./StageManager";
 
 let controlsInitialized = false;
 
+
 export class StageManagerControlsLayer extends InteractionLayer { }
+
+const TOOL_LAYERS: Record<string, StageLayer> = {
+  "sm-select-primary": "primary",
+  "sm-select-foreground": "foreground",
+  "sm-select-background": "background",
+  "sm-select-text": "text"
+}
+
 
 export class ControlButtonsHandler {
   public static register(controls: SceneControl[]) {
@@ -22,32 +33,47 @@ export class ControlButtonsHandler {
         name: "sm-select-foreground",
         title: "STAGEMANAGER.SCENECONTROLS.SELECTFOREGROUND",
         icon: "sm-icon control select-foreground",
-        visible: true
+        visible: true,
+        onClick: () => {
+          StageManager.DeselectAll();
+        }
       },
       {
         name: "sm-select-primary",
         title: "STAGEMANAGER.SCENECONTROLS.SELECTPRIMARY",
         icon: "sm-icon control select-primary",
-        visible: true
+        visible: true,
+        onClick: () => {
+          StageManager.DeselectAll();
+        }
       },
       {
         name: "sm-select-background",
         title: "STAGEMANAGER.SCENECONTROLS.SELECTBACKGROUND",
         icon: "sm-icon control select-background",
-        visible: true
+        visible: true,
+        onClick: () => {
+          StageManager.DeselectAll();
+        }
       },
       {
         name: "sm-select-text",
         title: "STAGEMANAGER.SCENECONTROLS.SELECTTEXT",
         icon: "sm-icon control select-text",
-        visible: true
+        visible: true,
+        onClick: () => {
+          StageManager.DeselectAll();
+        }
       },
       {
         name: "add-from-image",
         title: "STAGEMANAGER.SCENECONTROLS.IMAGE",
         icon: "fas fa-image",
-        onClick: () => { addImage(); },
-        visible: StageManager.canAddStageObjects(game?.user as User),
+        onClick: () => {
+          StageManager.DeselectAll();
+          addImage();
+        },
+        visible: StageManager.canAddStageObjects(game?.user?.id ?? ""),
         button: true
       }
     ]
@@ -67,14 +93,19 @@ export class ControlButtonsHandler {
 }
 
 
+
 function addImage() {
   new FilePicker({
     type: "imagevideo",
     displayMode: "tiles",
     callback: result => {
       if (result) {
-        const img = StageManager.addImage(result, window.innerWidth / 2, window.innerHeight / 2);
-        img.placing = true;
+        const obj = new ImageStageObject(result);
+        obj.placing = true;
+        const layer = TOOL_LAYERS[game?.activeTool ?? ""];
+        if (!layer) return;
+        StageManager.addStageObject(obj, layer, true);
+
       }
     },
   }).render(true);

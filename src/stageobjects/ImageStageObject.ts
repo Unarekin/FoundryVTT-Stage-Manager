@@ -124,4 +124,9 @@ export class ImageStageObject extends StageObject {
     this.anchor.y = 0.5;
 
   }
+
+  protected get top() { return this.y - (this.height * this.anchor.y); }
+  protected get left() { return this.x - (this.width * this.anchor.x); }
+  protected get right() { return this.x + (this.width * this.anchor.x); }
+  protected get bottom() { return this.y + (this.width * this.anchor.y); }
 }

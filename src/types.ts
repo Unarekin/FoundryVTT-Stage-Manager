@@ -1,4 +1,4 @@
-export type StageLayer = "primary" | "foreground" | "background" | "text";
+export type StageLayer = "primary" | "foreground" | "background" | "text" | "ui";
 
 
 export interface SerializedStageObject {
