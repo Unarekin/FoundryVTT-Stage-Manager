@@ -1,25 +1,41 @@
+import { CannotDeserializeError } from "../errors";
 import { ScreenSpaceCanvasGroup } from "../ScreenSpaceCanvasGroup";
+import { SocketManager } from "../SocketManager";
 import { StageManager } from "../StageManager";
-import { StageLayer } from "../types";
+import { SerializedStageObject, SerializedTransform, StageLayer } from "../types";
 
 export abstract class StageObject {
-  // #region Properties (4)
+  // #region Properties (5)
 
   private _draggable = true;
+
+  protected _id = foundry.utils.randomID();
+  public get id() { return this._id; }
+  protected set id(id) { this._id = id; }
+
+  // public readonly id = foundry.utils.randomID();
+
+  public dragging = false;
   public placing = false;
+  public static type = "UNKNOWN";
 
-  public readonly id = foundry.utils.randomID();
-
-  // #endregion Properties (4)
+  // #endregion Properties (5)
 
   // #region Constructors (1)
 
-  constructor(protected _displayObject: PIXI.DisplayObject, public name: string = this.id) {
-    this.displayObject.name = name;
+  constructor(protected _displayObject: PIXI.DisplayObject, public name?: string) {
+    this.name = name ?? this.id;
+    this.displayObject.name = this.name;
     this.displayObject.interactive = true;
     this.displayObject.eventMode = "dynamic";
 
-    this.displayObject.on("pointerdown", () => { if (this.placing) this.placing = false; });
+    this.displayObject.on("pointerdown", () => {
+      if (this.placing) {
+        this.placing = false;
+
+        SocketManager.addStageObject(this);
+      }
+    });
     this.displayObject.on("destroyed", () => { this.destroy(); });
 
     if (this.draggable) {
@@ -34,25 +50,23 @@ export abstract class StageObject {
 
   // #endregion Constructors (1)
 
-  // #region Public Getters And Setters (23)
+  // #region Public Getters And Setters (21)
 
   /** Object's rotation, in degrees */
-  public get angle() { return this.displayObject.angle; }
 
+  public get angle() { return this.displayObject.angle; }
   public set angle(angle) { this.displayObject.angle = angle; }
 
   public get destroyed() { return this.displayObject.destroyed; }
 
   public get displayObject() { return this._displayObject; }
 
-  public get draggable() { return this._draggable; }
 
+  public get draggable() { return this._draggable; }
   public set draggable(draggable) {
     this._draggable = draggable;
     if (this.dragging) this.dragging = false;
   }
-
-  public dragging = false;
 
   public get layer() {
     if (this.displayObject.parent instanceof ScreenSpaceCanvasGroup) {
@@ -62,25 +76,13 @@ export abstract class StageObject {
     }
   }
 
-  protected get selectTool() {
-    if (this.displayObject.parent instanceof ScreenSpaceCanvasGroup) {
-      return this.displayObject.parent.selectTool;
-    } else {
-      return "";
-    }
-  }
-
-  public setLayer(layer: StageLayer) {
-    if (this.layer !== layer) StageManager.setStageObjectLayer(this, layer);
-  }
-
   public get pivot() { return this.displayObject.pivot; }
-
   public set pivot(pivot) { this.displayObject.pivot = pivot; }
 
-  /** Object's rotation, in radians  */
-  public get rotation() { return this.displayObject.rotation; }
 
+  /** Object's rotation, in radians  */
+
+  public get rotation() { return this.displayObject.rotation; }
   public set rotation(rotation) { this.displayObject.rotation = rotation; }
 
   public get scale() { return this.displayObject.scale; }
@@ -103,17 +105,29 @@ export abstract class StageObject {
     )
   }
 
-  public get x() { return this.displayObject.x; }
 
+  public get x() { return this.displayObject.x; }
   public set x(x) { this.displayObject.x = x; }
 
-  public get y() { return this.displayObject.y; }
 
+  public get y() { return this.displayObject.y; }
   public set y(y) { this.displayObject.y = y; }
 
-  // #endregion Public Getters And Setters (23)
+  // #endregion Public Getters And Setters (21)
 
-  // #region Public Methods (1)
+  // #region Protected Getters And Setters (1)
+
+  protected get selectTool() {
+    if (this.displayObject.parent instanceof ScreenSpaceCanvasGroup) {
+      return this.displayObject.parent.selectTool;
+    } else {
+      return "";
+    }
+  }
+
+  // #endregion Protected Getters And Setters (1)
+
+  // #region Public Methods (2)
 
   public destroy() {
     if (!this.destroyed) {
@@ -122,5 +136,53 @@ export abstract class StageObject {
     }
   }
 
-  // #endregion Public Methods (1)
+  public setLayer(layer: StageLayer) {
+    if (this.layer !== layer) StageManager.setStageObjectLayer(this, layer);
+  }
+
+  // #endregion Public Methods (2)
+
+
+  public static deserialize(serialized: SerializedStageObject): StageObject { throw new CannotDeserializeError(serialized.type) }
+
+  // #region Public Abstract Methods (1)
+
+  protected applyJSON(data: Record<string, unknown>) {
+    this.name = data.name as string ?? this.id;
+    this.id = data.id as string;
+
+    const transform = data.transform as SerializedTransform;
+
+    this.displayObject.setTransform(
+      transform.x,
+      transform.y,
+      transform.scaleX,
+      transform.scaleY,
+      transform.rotation,
+      transform.skewX,
+      transform.skewY,
+      transform.pivotX,
+      transform.pivotY
+    );
+  }
+
+  public serialize(): Record<string, unknown> {
+    return {
+      name: this.name,
+      transform: {
+        x: this.transform.position.x,
+        y: this.transform.position.y,
+        scaleX: this.transform.scale.x,
+        scaleY: this.transform.scale.y,
+        rotation: this.transform.rotation,
+        skewX: this.transform.skew.x,
+        skewY: this.transform.skew.y,
+        pivotX: this.transform.pivot.x,
+        pivotY: this.transform.pivot.y
+
+      }
+    }
+  }
+
+  // #endregion Public Abstract Methods (1)
 }

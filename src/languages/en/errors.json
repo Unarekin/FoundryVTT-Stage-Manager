@@ -2,7 +2,10 @@
   "STAGEMANAGER": {
     "ERRORS": {
       "INVALIDUSER": "Invalid user: {user}",
-      "INVALIDSTAGEOBJECT": "Invalid stage object: {key}"
+      "INVALIDSTAGEOBJECT": "Invalid stage object: {key}",
+      "PERMISSIONDENIED": "Permission denied.",
+      "CANNOTDESERIALIZE": "Cannot deserialize stage object: {type}",
+      "NOTIMPLEMENTED": "Not Implemented"
     }
   }
 }

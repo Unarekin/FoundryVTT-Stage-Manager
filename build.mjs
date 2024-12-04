@@ -27,11 +27,15 @@ const moduleConfig = JSON.parse(
   (await fs.readFile("./module.json")).toString()
 );
 
+const packageConfig = JSON.parse(
+  (await fs.readFile("./package.json")).toString()
+)
+
 // Constants to be inserted into process.env during build
 const __DEV__ = process.env.NODE_ENV !== "production";
 const __MODULE_TITLE__ = moduleConfig.title;
 const __MODULE_ID__ = moduleConfig.id;
-const __MODULE_VERSION__ = moduleConfig.version;
+const __MODULE_VERSION__ = packageConfig.version;
 
 const start = Date.now();
 let spinner = null;

@@ -2,6 +2,7 @@
 import { StageManager } from "./StageManager"
 import { ControlButtonsHandler } from "./ControlButtonsHandler"
 import { log } from "./logging";
+import { SocketManager } from "./SocketManager";
 
 (window as any).StageManager = StageManager;
 
@@ -23,3 +24,4 @@ Hooks.on("canvasReady", () => {
 });
 
 Hooks.on("getSceneControlButtons", (controls: SceneControl[]) => { ControlButtonsHandler.register(controls); });
+Hooks.once("socketlib.ready", () => { SocketManager.init(); })

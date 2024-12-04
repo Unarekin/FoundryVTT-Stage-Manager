@@ -17,6 +17,7 @@
       "discord": "unarekin"
     }
   ],
+  "socket": true,
   "relationships": {
     "systems": [],
     "requires": [
