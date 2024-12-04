@@ -51,10 +51,13 @@ export class ImageStageObject extends StageObject {
     return obj;
   }
 
-  constructor(private path: string, name?: string) {
-    const sprite = PIXI.Sprite.from(path);
+  // public static CreateSprite(path: string): PIXI.Sprite { return PIXI.Sprite.from(path); }
+
+
+  constructor(protected path: string, name?: string, spriteOverride?: PIXI.Sprite) {
+    const sprite = spriteOverride ? spriteOverride : PIXI.Sprite.from(path);
     super(sprite, name);
-    this.anchor.x = .5;
-    this.anchor.y = .5;
+    this.anchor.x = 0.5;
+    this.anchor.y = 0.5;
   }
 }
