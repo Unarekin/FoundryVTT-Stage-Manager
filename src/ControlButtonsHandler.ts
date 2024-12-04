@@ -22,25 +22,25 @@ export class ControlButtonsHandler {
         name: "sm-select-foreground",
         title: "STAGEMANAGER.SCENECONTROLS.SELECTFOREGROUND",
         icon: "sm-icon control select-foreground",
-        visible: StageManager.canAddStageObjects(game?.user as User)
+        visible: true
       },
       {
         name: "sm-select-primary",
         title: "STAGEMANAGER.SCENECONTROLS.SELECTPRIMARY",
         icon: "sm-icon control select-primary",
-        visible: StageManager.canAddStageObjects(game?.user as User)
+        visible: true
       },
       {
         name: "sm-select-background",
         title: "STAGEMANAGER.SCENECONTROLS.SELECTBACKGROUND",
         icon: "sm-icon control select-background",
-        visible: StageManager.canAddStageObjects(game?.user as User)
+        visible: true
       },
       {
         name: "sm-select-text",
         title: "STAGEMANAGER.SCENECONTROLS.SELECTTEXT",
         icon: "sm-icon control select-text",
-        visible: StageManager.canAddStageObjects(game?.user as User)
+        visible: true
       },
       {
         name: "add-from-image",
