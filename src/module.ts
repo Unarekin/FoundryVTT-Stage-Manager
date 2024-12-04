@@ -25,3 +25,17 @@ Hooks.on("canvasReady", () => {
 
 Hooks.on("getSceneControlButtons", (controls: SceneControl[]) => { ControlButtonsHandler.register(controls); });
 Hooks.once("socketlib.ready", () => { SocketManager.init(); })
+
+Hooks.on("ready", () => {
+  if (game?.settings) {
+    game.settings.register(__MODULE_ID__, "currentObjects", {
+      name: "Current StageObjects",
+      hint: "Serialized list of StageObjects currently present.",
+      config: false,
+      scope: "world",
+      type: Array,
+      default: [],
+      requiresReload: false
+    })
+  }
+})
