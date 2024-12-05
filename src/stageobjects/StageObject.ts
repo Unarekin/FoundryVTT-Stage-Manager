@@ -440,6 +440,13 @@ export abstract class StageObject {
     }
   }
 
+  /**
+   * Scales the current rotation to a number from 0-360 degrees (0-2π radians)
+   */
+  public normalizeRotation() {
+    this.angle = this.angle % 360;
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected onPointerEnter(e: PIXI.FederatedPointerEvent) {
     if (game.activeTool === this.selectTool && StageManager.canModifyStageObject(game.user?.id ?? "", this.id)) {
