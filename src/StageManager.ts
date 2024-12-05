@@ -160,6 +160,7 @@ export class StageManager {
         .on("pointerdown", onPointerDown)
         ;
 
+      // Wrap the game's handle keyboard event to catch Escape
       // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       libWrapper.register(__MODULE_ID__, "game.keyboard._handleKeyboardEvent", function (wrapped: Function, ...args: unknown[]) {
         const event = args[0] as KeyboardEvent;
@@ -170,7 +171,10 @@ export class StageManager {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-return
           return wrapped(...args);
         }
-      })
+      });
+
+      // Regular event listener
+      document.addEventListener("keydown", onKeyDown);
 
       if (canvas.app?.renderer) canvas.app.renderer.addListener("postrender", () => { synchronizeStageObjects(); })
     }
@@ -308,3 +312,11 @@ const SYNCHRONIZATION_HASH: Record<string, SerializedStageObject> = {};
 
 // #endregion Variables (7)
 
+
+function onKeyDown(e: KeyboardEvent) {
+  // The escape key is caught above
+  if (e.key === "Delete") {
+    const objs = StageManager.StageObjects.filter(obj => obj.selected);
+    for (const obj of objs) obj.destroy();
+  }
+}
