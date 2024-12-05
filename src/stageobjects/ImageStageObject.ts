@@ -6,6 +6,7 @@ export class ImageStageObject extends StageObject {
   public static type = "image";
 
   public get displayObject(): PIXI.Sprite { return this._displayObject as PIXI.Sprite; }
+  public readonly resizable = true;
 
   public get width() { return this.displayObject.width; }
   public set width(width) { this.displayObject.width = width; }
@@ -125,8 +126,10 @@ export class ImageStageObject extends StageObject {
 
   }
 
-  protected get top() { return this.y - (this.height * this.anchor.y); }
-  protected get left() { return this.x - (this.width * this.anchor.x); }
-  protected get right() { return this.x + (this.width * this.anchor.x); }
-  protected get bottom() { return this.y + (this.width * this.anchor.y); }
+  public get top() { return this.y - (this.height * this.anchor.y); }
+  public get left() { return this.x - (this.width * this.anchor.x); }
+  public get right() { return this.x + (this.width * this.anchor.x); }
+  public get bottom() { return this.y + (this.height * this.anchor.y); }
+  public get baseWidth() { return this.displayObject.texture.width; }
+  public get baseHeight() { return this.displayObject.texture.height; }
 }

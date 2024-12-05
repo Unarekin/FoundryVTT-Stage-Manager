@@ -1,4 +1,5 @@
 import { CannotDeserializeError } from "../errors";
+import { localize } from "../functions";
 import { ScreenSpaceCanvasGroup } from "../ScreenSpaceCanvasGroup";
 import { SocketManager } from "../SocketManager";
 import { StageManager } from "../StageManager";
@@ -12,15 +13,17 @@ export abstract class StageObject {
   private _selected = false;
 
   protected _id = foundry.utils.randomID();
-  protected interfaceContainer = new PIXI.Container();
+  public readonly interfaceContainer = new PIXI.Container();
 
-  public readonly resizable = true;
+  public readonly resizable: boolean = false;
+
 
   public static type = "UNKNOWN";
 
   // public readonly id = foundry.utils.randomID();
   public dragging = false;
   public placing = false;
+  public resizing = false;
   public synchronize = false;
 
   // #endregion Properties (10)
@@ -60,9 +63,40 @@ export abstract class StageObject {
     handle.name = "handle";
     handle.visible = false;
 
+
+    handle.addListener("pointerenter", () => {
+      handle.scale.set(1.5, 1.5);
+    }).addListener("pointerout", () => {
+      handle.scale.set(1.0, 1.0);
+    })
+      .addListener("touchstart", this.onHandleDragStart.bind(this))
+      .addListener("mousedown", this.onHandleDragStart.bind(this))
+    // .addListener("touchmove", this.onHandleDragMove.bind(this))
+    // .addListener("mousemove", this.onHandleDragMove.bind(this))
+    // .addListener("mouseup", this.onHandleDragEnd.bind(this))
+    // .addListener("touchend", this.onHandleDragEnd.bind(this))
+    // .addListener("touchcancel", this.onHandleDragEnd.bind(this))
+
+
+
+
     // frame.visible = false;
     this.interfaceContainer = frame;
     if (StageManager.uiCanvasGroup instanceof ScreenSpaceCanvasGroup) StageManager.uiCanvasGroup.addChild(frame);
+  }
+
+  protected onHandleDragStart(e: PIXI.FederatedMouseEvent) {
+    e.preventDefault();
+    this.resizing = true;
+    this.synchronize = false;
+  }
+
+
+
+  protected onHandleDragEnd(e: PIXI.FederatedMouseEvent) {
+    e.preventDefault();
+    this.resizing = false;
+    this.synchronize = true;
   }
 
   // #endregion Constructors (1)
@@ -91,8 +125,12 @@ export abstract class StageObject {
     if (this.dragging) this.dragging = false;
   }
 
-  // eslint-disable-next-line @typescript-eslint/class-literal-property-style
-  public get height() { return 0; }
+
+  public get height(): number { return 0; }
+  public set height(height: number) {
+    ui.notifications?.warn("STAGEMANAGER.WARNINGS.READONLYHEIGHT", { console: false, localize: true });
+    console.warn(localize("STAGEMANAGER.WARNINGS.READONLYHEIGHT"));
+  }
 
   public get highlighted() { return this._highlighted; }
 
@@ -166,8 +204,17 @@ export abstract class StageObject {
     )
   }
 
+
   // eslint-disable-next-line @typescript-eslint/class-literal-property-style
-  public get width() { return 0; }
+  public get baseWidth(): number { return 0; }
+  // eslint-disable-next-line @typescript-eslint/class-literal-property-style
+  public get baseHeight(): number { return 0; }
+
+  public get width(): number { return 0; }
+  public set width(width: number) {
+    ui.notifications?.warn("STAGEMANAGER.WARNINGS.READONLYWIDTH", { console: false, localize: true });
+    console.warn(localize("STAGEMANAGER.WARNINGS.READONLYWIDTH"));
+  }
 
   public get x() { return this.displayObject.x; }
 
@@ -181,14 +228,14 @@ export abstract class StageObject {
 
   // #region Protected Getters And Setters (6)
 
-  protected get bottom() { return this.y + this.height; }
+  public get bottom() { return this.y + this.height; }
 
   protected set id(id) { this._id = id; }
   public get id() { return this._id; }
 
-  protected get left() { return this.x; }
+  public get left() { return this.x; }
 
-  protected get right() { return this.x + this.width; }
+  public get right() { return this.x + this.width; }
 
   protected get selectTool() {
     if (this.displayObject.parent instanceof ScreenSpaceCanvasGroup) {
@@ -198,7 +245,7 @@ export abstract class StageObject {
     }
   }
 
-  protected get top() { return this.y; }
+  public get top() { return this.y; }
 
   // #endregion Protected Getters And Setters (6)
 
@@ -237,6 +284,7 @@ export abstract class StageObject {
       canvas?.app?.renderer.removeListener("prerender", this.onPreRender.bind(this));
       // StageManager.StageObjects.delete(this.id);
       StageManager.removeStageObject(this);
+      if (!this.interfaceContainer.destroyed) this.interfaceContainer.destroy();
     }
   }
 

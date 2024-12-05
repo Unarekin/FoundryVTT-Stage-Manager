@@ -7,6 +7,7 @@ import { InvalidStageObjectError, PermissionDeniedError } from './errors';
 import * as stageObjectTypes from "./stageobjects";
 import { SocketManager } from './SocketManager';
 import { getSetting, setSetting } from './Settings';
+import { log } from './logging';
 
 // #region Classes (1)
 
@@ -153,10 +154,12 @@ export class StageManager {
       canvas.stage.addChild(uiCanvasGroup);
 
       // Drag events
-      canvas.stage.on("pointermove", onDragMove);
-      canvas.stage.on("pointerup", onDragEnd);
-      canvas.stage.on("pointerupoutside", onDragEnd);
-      canvas.stage.on("pointerdown", onPointerDown);
+      canvas.stage
+        .on("mousemove", onDragMove)
+        .on("pointerup", onDragEnd)
+        .on("pointerupoutside", onDragEnd)
+        .on("pointerdown", onPointerDown)
+        ;
 
       // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       libWrapper.register(__MODULE_ID__, "game.keyboard._handleKeyboardEvent", function (wrapped: Function, ...args: unknown[]) {
@@ -220,27 +223,52 @@ export class StageManager {
 
 // #region Functions (4)
 
+
 function onDragEnd() {
-  const dragging = StageManager.StageObjects.contents.filter(item => item.dragging);
-  for (const item of dragging) {
-    item.dragging = false;
-    item.synchronize = true;
-  }
+  StageManager.StageObjects.contents.forEach(item => {
+    if (item.dragging) {
+      item.dragging = false;
+      item.synchronize = true;
+    }
+
+    if (item.resizing) {
+      item.resizing = false;
+      item.synchronize = true;
+    }
+  })
+
 }
 
 function onDragMove(event: PIXI.FederatedPointerEvent) {
-  const dragging = StageManager.StageObjects.contents.filter(item => item.dragging || item.placing);
-  for (const item of dragging) {
-    item.x = event.screenX;
-    item.y = event.screenY;
-  }
+  StageManager.StageObjects.forEach(item => {
+    if (item.dragging || item.placing) {
+      event.preventDefault();
+      item.x = event.screenX;
+      item.y = event.screenY;
+    }
+
+    if (item.resizing) {
+      event.preventDefault();
+      log("Control:", event.ctrlKey);
+      if (event.ctrlKey) {
+        const desiredWidth = event.screenX - item.left;
+        const desiredHeight = event.screenY - item.top;
+        const ratio = Math.max(desiredWidth / item.baseWidth, desiredHeight / item.baseHeight);
+        item.width = item.baseWidth * ratio;
+        item.height = item.baseHeight * ratio;
+      } else {
+        item.width = event.screenX - item.left;
+        item.height = event.screenY - item.top;
+      }
+    }
+  })
 }
 
 function onPointerDown(e: PIXI.FederatedMouseEvent) {
   // Deselect if clicked outside
   if (game?.settings?.get("core", "leftClickRelease")) {
     StageManager.SelectedObjects.forEach(obj => {
-      if (!obj.bounds.contains(e.clientX, e.clientY)) obj.selected = false;
+      if (!obj.interfaceContainer.getBounds().contains(e.clientX, e.clientY)) obj.selected = false;
     });
   }
 }
@@ -280,3 +308,4 @@ const stageObjects = new StageObjects();
 const SYNCHRONIZATION_HASH: Record<string, SerializedStageObject> = {};
 
 // #endregion Variables (7)
+
