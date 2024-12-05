@@ -289,7 +289,8 @@ function synchronizeStageObjects() {
     });
 
     if (updates.length) SocketManager.syncStageObjects(updates);
-    void setSetting("currentObjects", Object.values(SYNCHRONIZATION_HASH));
+    if (!foundry.utils.objectsEqual({ wrap: getSetting<StageObject[]>("currentObjects") }, { wrap: Object.values(SYNCHRONIZATION_HASH) }))
+      void setSetting("currentObjects", Object.values(SYNCHRONIZATION_HASH));
   }
 }
 
