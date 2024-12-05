@@ -35,4 +35,8 @@ Hooks.on("init", () => {
 Hooks.once("ready", () => {
   const persisted = getSetting<SerializedStageObject[]>("currentObjects") ?? []
   StageManager.Synchronize(persisted);
-})
+});
+
+Hooks.on("deactivateStageManagerControlsLayer", () => {
+  StageManager.DeselectAll();
+});

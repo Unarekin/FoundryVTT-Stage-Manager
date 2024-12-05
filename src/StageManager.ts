@@ -178,6 +178,15 @@ export class StageManager {
 
       if (canvas.app?.renderer) canvas.app.renderer.addListener("postrender", () => { synchronizeStageObjects(); })
     }
+    const menuContainer = document.createElement("section");
+    menuContainer.id = "sm-menu-container";
+    menuContainer.style.position = "absolute";
+    menuContainer.style.pointerEvents = "none";
+    menuContainer.style.top = "0";
+    menuContainer.style.left = "0";
+    menuContainer.style.width = "100%";
+    menuContainer.style.height = "100%";
+    document.body.appendChild(menuContainer);
   }
 
   /**

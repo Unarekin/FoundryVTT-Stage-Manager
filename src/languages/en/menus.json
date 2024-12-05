@@ -1,0 +1,10 @@
+{
+  "STAGEMANAGER": {
+    "MENUS": {
+      "DELETEOBJECT": "Delete {name}",
+      "EDITOBJECT": "Edit {name}",
+      "LOCKOBJECT": "Lock {name}",
+      "UNLOCKOBJECT": "Unlock {name}"
+    }
+  }
+}

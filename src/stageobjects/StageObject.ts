@@ -1,9 +1,10 @@
 import { CannotDeserializeError } from "../errors";
-import { localize } from "../functions";
+import { closeAllContextMenus, localize, registerContextMenu } from "../functions";
 import { ScreenSpaceCanvasGroup } from "../ScreenSpaceCanvasGroup";
 import { SocketManager } from "../SocketManager";
 import { StageManager } from "../StageManager";
 import { SerializedStageObject, SerializedTransform, StageLayer } from "../types";
+
 
 export abstract class StageObject {
   // #region Properties (10)
@@ -15,7 +16,15 @@ export abstract class StageObject {
   protected _id = foundry.utils.randomID();
   public readonly interfaceContainer = new PIXI.Container();
 
-  public readonly resizable: boolean = false;
+  private _resizable = false;
+  public get resizable() { return !this.locked && this._resizable; }
+  public set resizable(resizable) {
+    this._resizable = resizable;
+    if (!resizable) {
+      if (this.resizeHandle) this.resizeHandle.visible = false;
+    }
+  }
+  // public readonly resizable: boolean = false;
 
 
   public static type = "UNKNOWN";
@@ -28,7 +37,92 @@ export abstract class StageObject {
 
   // #endregion Properties (10)
 
+  private _locked = false;
+  public get locked(): boolean { return this._locked; }
+  protected set locked(value) {
+    this._locked = value;
+    if (value && this.resizeHandle) this.resizeHandle.visible = false;
+    else if (this.selected && this.resizeHandle) this.resizeHandle.visible = true;
+  }
+
+  protected get resizeHandle(): ResizeHandle | undefined { return this.interfaceContainer?.children.find(item => item.name === "handle") as ResizeHandle; }
+
+  protected get contextMenuItems(): ContextMenuEntry[] {
+    return [
+      {
+        name: localize("STAGEMANAGER.MENUS.LOCKOBJECT", { name: this.name ?? this.id }),
+        icon: `<i class="fas fa-lock"></i>`,
+        callback: () => { this.locked = true; },
+        condition: !this.locked
+      },
+      {
+        name: localize("STAGEMANAGER.MENUS.UNLOCKOBJECT", { name: this.name ?? this.id }),
+        icon: `<i class="fas fa-lock-open"></i>`,
+        callback: () => { this.locked = false; },
+        condition: this.locked
+      },
+      {
+        name: localize("STAGEMANAGER.MENUS.DELETEOBJECT", { name: this.name ?? this.id }),
+        icon: `<i class="fas fa-trash"></i>`,
+        callback: () => { StageManager.removeStageObject(this); },
+        condition: () => StageManager.canDeleteStageObject(game.user?.id ?? "", this.id)
+      }
+    ];
+  }
+
+
   // #region Constructors (1)
+  protected onContextMenu(event: PIXI.FederatedMouseEvent) {
+    if (game.activeTool !== this.selectTool) return;
+
+    const elem = document.createElement("section");
+    elem.style.position = "absolute";
+    elem.style.pointerEvents = "auto";
+
+    $("#sm-menu-container").append(elem);
+    elem.style.top = `${event.clientY}px`;
+    elem.style.left = `${event.clientX}px`;
+    elem.dataset.object = this.id;
+
+    const hasItems = this.contextMenuItems.some(item => typeof item.condition === "function" ? item.condition($(elem)) : typeof condition === "boolean" ? condition : true);
+    if (!hasItems) return;
+
+    event.preventDefault();
+
+    const menu = new ContextMenu(
+      $(`#sm-menu-container`),
+      `[data-object="${this.id}"]`,
+      this.contextMenuItems,
+      { onClose: () => { elem.remove(); }, }
+    );
+    const render = menu.render($(`#sm-menu-container [data-object="${this.id}"]`));
+    if (render instanceof Promise) {
+      void render.then(() => {
+        const listener = (e: MouseEvent) => {
+          const elems = document.elementsFromPoint(e.clientX, e.clientY);
+
+          if (!elems.includes(menu.element[0])) {
+            document.removeEventListener("mousedown", listener);
+            void menu.close();
+          }
+        }
+        document.addEventListener("mousedown", listener);
+        return closeAllContextMenus()
+      })
+        .then(() => { registerContextMenu(menu); })
+        .catch((err: Error) => {
+          ui.notifications?.error(err.message, { console: false, localize: true });
+          console.error(err);
+        })
+    } else {
+      void closeAllContextMenus()
+        .then(() => registerContextMenu(menu))
+        .catch((err: Error) => {
+          ui.notifications?.error(err.message, { console: false, localize: true });
+          console.error(err);
+        });
+    }
+  }
 
   constructor(protected _displayObject: PIXI.DisplayObject, public name?: string) {
     this.name = name ?? this.id;
@@ -36,12 +130,15 @@ export abstract class StageObject {
     this.displayObject.interactive = true;
     this.displayObject.eventMode = "dynamic";
 
-    this.displayObject.on("destroyed", () => { this.destroy(); });
-    this.displayObject.on("pointerdown", this.onPointerDown.bind(this));
-    this.displayObject.on("pointerenter", this.onPointerEnter.bind(this));
-    this.displayObject.on("pointerleave", this.onPointerLeave.bind(this));
+    this.displayObject.on("destroyed", () => { this.destroy(); })
+    this.displayObject.on("pointerdown", this.onPointerDown.bind(this))
+    this.displayObject.on("pointerenter", this.onPointerEnter.bind(this))
+    this.displayObject.on("pointerleave", this.onPointerLeave.bind(this))
+    this.displayObject.on("rightdown", this.onContextMenu.bind(this))
+      ;
     // this.displayObject.on("prerender", this.onPreRender.bind(this));
-    canvas?.app?.renderer.addListener("prerender", this.onPreRender.bind(this));
+    canvas?.app?.renderer.addListener("prerender", this.onPreRender.bind(this))
+
 
     // Set up UI frame.
     const frame = new PIXI.Container();
@@ -118,7 +215,7 @@ export abstract class StageObject {
 
   public get displayObject() { return this._displayObject; }
 
-  public get draggable() { return this._draggable; }
+  public get draggable() { return !this.locked && this._draggable; }
 
   public set draggable(draggable) {
     this._draggable = draggable;
@@ -176,15 +273,15 @@ export abstract class StageObject {
     if (value) {
       this.interfaceContainer.visible = true;
       this.interfaceContainer.interactiveChildren = true;
-      const handle = this.interfaceContainer.children.find(child => child.name === "handle");
-      if (handle) handle.visible = true;
+
+      if (this.resizeHandle && this.resizable) this.resizeHandle.visible = true;
     } else {
       if (!this.highlighted) {
         this.interfaceContainer.visible = false;
         this.interfaceContainer.interactiveChildren = false;
       }
-      const handle = this.interfaceContainer.children.find(child => child.name === "handle");
-      if (handle) handle.visible = false;
+
+      if (this.resizeHandle) this.resizeHandle.visible = false;
     }
   }
 
@@ -260,6 +357,7 @@ export abstract class StageObject {
   public deserialize(serialized: SerializedStageObject) {
     this.name = serialized.name;
     this.id = serialized.id;
+    this.locked = !!serialized.data.locked;
 
     const transform = serialized.data.transform as SerializedTransform;
 
@@ -297,6 +395,7 @@ export abstract class StageObject {
       type: "",
       name: this.name ?? this.id,
       data: {
+        locked: this.locked,
         transform: {
           x: this.x,
           y: this.y,
@@ -335,7 +434,7 @@ export abstract class StageObject {
         this.dragging = true;
         this.synchronize = false;
       }
-      if (StageManager.canModifyStageObject(game?.user?.id ?? "", this.id)) {
+      if (StageManager.canModifyStageObject(game?.user?.id ?? "", this.id) && game.activeTool === this.selectTool) {
         this.selected = true;
       }
     }
@@ -357,13 +456,9 @@ export abstract class StageObject {
     if (this.destroyed) return;
     // Update interface container location
     if (this.interfaceContainer.visible && this.interfaceContainer.renderable) {
-      // this.interfaceContainer.x = this.x;
-      // this.interfaceContainer.y = this.y;
-
-      const handle = this.interfaceContainer.children.find(child => child.name === "handle");
-      if (handle instanceof ResizeHandle) {
-        handle.x = this.right;
-        handle.y = this.bottom;
+      if (this.resizeHandle) {
+        this.resizeHandle.x = this.right;
+        this.resizeHandle.y = this.bottom;
       }
 
       const border = this.interfaceContainer.children.find(child => child.name === "border");
