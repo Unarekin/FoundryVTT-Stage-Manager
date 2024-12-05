@@ -7,7 +7,6 @@ import { InvalidStageObjectError, PermissionDeniedError } from './errors';
 import * as stageObjectTypes from "./stageobjects";
 import { SocketManager } from './SocketManager';
 import { getSetting, setSetting } from './Settings';
-import { log } from './logging';
 
 // #region Classes (1)
 
@@ -249,7 +248,6 @@ function onDragMove(event: PIXI.FederatedPointerEvent) {
 
     if (item.resizing) {
       event.preventDefault();
-      log("Control:", event.ctrlKey);
       if (event.ctrlKey) {
         const desiredWidth = event.screenX - item.left;
         const desiredHeight = event.screenY - item.top;
