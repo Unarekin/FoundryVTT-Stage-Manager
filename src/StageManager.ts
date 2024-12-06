@@ -152,6 +152,20 @@ export class StageManager {
       canvas.stage.addChild(textCanvasGroup);
       canvas.stage.addChild(uiCanvasGroup);
 
+      const layers = {
+        background: bgCanvasGroup,
+        primary: primaryCanvasGroup,
+        foreground: fgCanvasGroup,
+        text: textCanvasGroup,
+        ui: uiCanvasGroup,
+
+        bg: bgCanvasGroup,
+        fg: bgCanvasGroup
+      };
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      (canvas.stage as any).stagemanager = layers;
+
 
       if (canvas.app?.renderer) canvas.app.renderer.addListener("postrender", () => { synchronizeStageObjects(); })
     }
