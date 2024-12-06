@@ -6,7 +6,8 @@
       "PERMISSIONDENIED": "Permission denied.",
       "CANNOTDESERIALIZE": "Cannot deserialize stage object: {type}",
       "NOTIMPLEMENTED": "Not Implemented",
-      "UNKNOWNUSER": "Unknown user: {user}"
+      "UNKNOWNUSER": "Unknown user: {user}",
+      "CANVASNOTINITIALIZED": "PIXI canvas not initialized, function likely called too early in the application's lifetime."
     }
   }
 }

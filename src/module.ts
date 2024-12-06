@@ -5,6 +5,7 @@ import { log } from "./logging";
 import { SocketManager } from "./SocketManager";
 import { SerializedStageObject } from "./types";
 import { getSetting, registerSettings } from './Settings';
+import { InputManager } from './InputManager';
 
 (window as any).StageManager = StageManager;
 
@@ -21,6 +22,7 @@ Hooks.on("canvasReady", () => {
     (game as any).stageobjects = StageManager.StageObjects;
   }
 
+  InputManager.init();
 
   log("Initialized.");
 });
