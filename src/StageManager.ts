@@ -169,6 +169,10 @@ export class StageManager {
 
       if (canvas.app?.renderer) canvas.app.renderer.addListener("postrender", () => { synchronizeStageObjects(); })
       if (canvas.app?.renderer) canvas.app.renderer.addListener("prerender", () => { sizeObjectInterfaceContainers(); });
+
+      Hooks.on("collapseSidebar", () => {
+        StageManager.StageObjects.forEach(item => { item.scaleToScreen(); });
+      });
     }
     const menuContainer = document.createElement("section");
     menuContainer.id = "sm-menu-container";
