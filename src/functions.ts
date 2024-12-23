@@ -24,3 +24,13 @@ export async function closeAllContextMenus(options?: ContextMenu.CloseOptions) {
     if (CONTEXT_MENUS.includes(menu)) CONTEXT_MENUS.splice(CONTEXT_MENUS.indexOf(menu), 1);
   }
 }
+
+/**
+ * Determines if a given value matches a bit flag
+ * @param {number} value - The value to check
+ * @param {number} flag - The bit flag
+ * @returns 
+ */
+export function hasFlag(value: number, flag: number): boolean {
+  return (value & flag) === flag;
+}

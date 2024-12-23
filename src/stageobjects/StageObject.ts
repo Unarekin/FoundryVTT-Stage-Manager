@@ -3,49 +3,269 @@ import { closeAllContextMenus, localize, registerContextMenu } from "../function
 import { ScreenSpaceCanvasGroup } from "../ScreenSpaceCanvasGroup";
 import { SocketManager } from "../SocketManager";
 import { StageManager } from "../StageManager";
-import { SerializedStageObject, SerializedTransform, StageLayer } from "../types";
-
+import { ScreenAnchors, SerializedStageObject, StageLayer } from "../types";
 
 export abstract class StageObject {
-  // #region Properties (10)
+  // #region Properties (15)
 
   private _draggable = true;
   private _highlighted = false;
+  private _locked = false;
+  private _resizable = false;
   private _selected = false;
 
+  protected scaledDimensions = {
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0
+  }
+
+  public pin = {
+    right: false,
+    top: false,
+    left: false,
+    bottom: false
+  }
+
+  public restrictToVisualArea = false;
+
   protected _id = foundry.utils.randomID();
+  protected _originalScreenHeight: number;
+  protected _originalScreenWidth: number;
+
+  public preserveAspectRatio = true;
+
   public readonly interfaceContainer = new PIXI.Container();
 
-  private _resizable = false;
-  public get resizable() { return !this.locked && this._resizable; }
-  public set resizable(resizable) {
-    this._resizable = resizable;
-    if (!resizable) {
-      if (this.resizeHandle) this.resizeHandle.visible = false;
-    }
-  }
   // public readonly resizable: boolean = false;
-
-
   public static type = "UNKNOWN";
 
   // public readonly id = foundry.utils.randomID();
   public dragging = false;
   public placing = false;
   public resizing = false;
+  public screenAnchor: ScreenAnchors = ScreenAnchors.None;
   public synchronize = false;
 
-  // #endregion Properties (10)
+  // #endregion Properties (15)
 
-  private _locked = false;
-  public get locked(): boolean { return this._locked; }
-  protected set locked(value) {
-    this._locked = value;
-    if (value && this.resizeHandle) this.resizeHandle.visible = false;
-    else if (this.selected && this.resizeHandle) this.resizeHandle.visible = true;
+  // #region Constructors (1)
+
+  constructor(protected _displayObject: PIXI.DisplayObject, public name?: string) {
+    this.name = name ?? this.id;
+    this.displayObject.name = this.name;
+    this.displayObject.interactive = true;
+    this.displayObject.eventMode = "dynamic";
+
+    this.displayObject.on("destroyed", () => { this.destroy(); })
+    this.displayObject.on("pointerdown", this.onPointerDown.bind(this))
+    this.displayObject.on("pointerenter", this.onPointerEnter.bind(this))
+    this.displayObject.on("pointerleave", this.onPointerLeave.bind(this))
+    this.displayObject.on("rightdown", this.onContextMenu.bind(this))
+      ;
+    // this.displayObject.on("prerender", this.onPreRender.bind(this));
+    // canvas?.app?.renderer.addListener("prerender", this.onPreRender.bind(this))
+
+    // Set up UI frame.
+    const frame = new PIXI.Container();
+    frame.name = this.name;
+    frame.eventMode = "passive";
+    frame.visible = false;
+
+    const interaction = frame.addChild(new PIXI.Container());
+    interaction.name = "interaction";
+    interaction.eventMode = "auto";
+    interaction.hitArea = frame.getBounds(true);
+
+    const border = frame.addChild(new PIXI.Graphics());
+    border.eventMode = "none";
+    border.name = "border";
+
+    const handle = frame.addChild(new ResizeHandle([1, 1]));
+    handle.eventMode = "static";
+    handle.name = "handle";
+    handle.visible = false;
+
+    handle.addListener("pointerenter", () => {
+      handle.scale.set(1.5, 1.5);
+    }).addListener("pointerout", () => {
+      handle.scale.set(1.0, 1.0);
+    })
+      .addListener("touchstart", this.onHandleDragStart.bind(this))
+      .addListener("mousedown", this.onHandleDragStart.bind(this))
+    // .addListener("touchmove", this.onHandleDragMove.bind(this))
+    // .addListener("mousemove", this.onHandleDragMove.bind(this))
+    // .addListener("mouseup", this.onHandleDragEnd.bind(this))
+    // .addListener("touchend", this.onHandleDragEnd.bind(this))
+    // .addListener("touchcancel", this.onHandleDragEnd.bind(this))
+
+    // frame.visible = false;
+    this.interfaceContainer = frame;
+    if (StageManager.uiCanvasGroup instanceof ScreenSpaceCanvasGroup) StageManager.uiCanvasGroup.addChild(frame);
+
+    this._originalScreenWidth = window.innerWidth;
+    this._originalScreenHeight = window.innerHeight;
   }
 
-  protected get resizeHandle(): ResizeHandle | undefined { return this.interfaceContainer?.children.find(item => item.name === "handle") as ResizeHandle; }
+  // #endregion Constructors (1)
+
+  // #region Public Getters And Setters (43)
+
+  /** Object's rotation, in degrees */
+  public get angle() { return this.displayObject.angle; }
+
+  public set angle(angle) { this.displayObject.angle = angle; }
+
+  // eslint-disable-next-line @typescript-eslint/class-literal-property-style
+  public get baseHeight(): number { return 0; }
+
+  // eslint-disable-next-line @typescript-eslint/class-literal-property-style
+  public get baseWidth(): number { return 0; }
+
+  public get bottom() { return this.y; }
+  public set bottom(bottom) {
+    this.y = bottom;
+    this.scaledDimensions.y = this.bottom / (this.restrictToVisualArea ? StageManager.VisualBounds.height : window.innerHeight);
+  }
+
+  public get bounds() { return this.displayObject.getBounds(); }
+
+  public get controlled() { return this.selected; }
+
+  public set controlled(value) { this.selected = value; }
+
+  public get destroyed() { return this.displayObject.destroyed; }
+
+  public get displayObject() { return this._displayObject; }
+
+  public get draggable() { return !this.locked && this._draggable; }
+
+  public set draggable(draggable) {
+    this._draggable = draggable;
+    if (this.dragging) this.dragging = false;
+  }
+
+  public get height() { return 0; }
+  public set height(height) { this.scaledDimensions.height = height / window.innerHeight; }
+
+  public get highlighted() { return this._highlighted; }
+
+  public set highlighted(value) {
+    this._highlighted = value;
+    if (value) {
+      this.interfaceContainer.visible = true;
+      this.interfaceContainer.interactiveChildren = true;
+    } else if (!this.selected) {
+      this.interfaceContainer.visible = false;
+      this.interfaceContainer.interactiveChildren = false;
+    }
+  }
+
+  public get layer() {
+    if (this.displayObject.parent instanceof ScreenSpaceCanvasGroup) {
+      return this.displayObject.parent.layer;
+    } else {
+      return "";
+    }
+  }
+
+  public get left() { return this.x; }
+  public set left(left) {
+    this.x = left;
+    this.scaledDimensions.x = this.x / (this.restrictToVisualArea ? StageManager.VisualBounds.width : window.innerWidth);
+  }
+
+
+
+  public get owners() { return StageManager.getOwners(this.id).reduce((prev: User[], curr: string) => game?.users?.get(curr) ? [...prev, game.users.get(curr) as User] : prev, [] as User[]); }
+
+  public get pivot() { return this.displayObject.pivot; }
+
+  public set pivot(pivot) { this.displayObject.pivot = pivot; }
+
+  public get resizable() { return !this.locked && this._resizable; }
+
+  public set resizable(resizable) {
+    this._resizable = resizable;
+    if (!resizable) {
+      if (this.resizeHandle) this.resizeHandle.visible = false;
+    }
+  }
+
+  public get right() { return this.x + this.width; }
+  public set right(right) {
+    this.x = right;
+    this.scaledDimensions.x = this.x / (this.restrictToVisualArea ? StageManager.VisualBounds.width : window.innerWidth);
+  }
+
+  /** Object's rotation, in radians  */
+  public get rotation() { return this.displayObject.rotation; }
+
+  public set rotation(rotation) { this.displayObject.rotation = rotation; }
+
+  public get scale() { return this.displayObject.scale; }
+
+  public get selected() { return this._selected; }
+
+  public set selected(value) {
+    this._selected = value;
+    if (value) {
+      this.interfaceContainer.visible = true;
+      this.interfaceContainer.interactiveChildren = true;
+
+      if (this.resizeHandle && this.resizable) this.resizeHandle.visible = true;
+    } else {
+      if (!this.highlighted) {
+        this.interfaceContainer.visible = false;
+        this.interfaceContainer.interactiveChildren = false;
+      }
+
+      if (this.resizeHandle) this.resizeHandle.visible = false;
+    }
+  }
+
+  public get skew() { return this.displayObject.skew; }
+
+  public set skew(skew) { this.displayObject.skew = skew; }
+
+  public get top() { return this.y; }
+  public set top(top) {
+    this.y = top;
+    this.scaledDimensions.y = top / (this.restrictToVisualArea ? StageManager.VisualBounds.height : window.innerHeight);
+  }
+
+  public get transform() { return this.displayObject.transform; }
+
+  public set transform(transform) {
+    this.displayObject.setTransform(
+      transform.position.x, transform.position.y,
+      transform.scale.x, transform.scale.y,
+      transform.rotation,
+      transform.skew.x, transform.skew.y,
+      transform.pivot.x, transform.pivot.y
+    )
+  }
+
+  public get width() { return 0 }
+  public set width(width) { this.scaledDimensions.width = width / window.innerWidth; }
+
+
+  public get x() { return this.displayObject.x; }
+  public set x(x) {
+    this.displayObject.x = x;
+    this.scaledDimensions.x = x / window.innerWidth;
+  }
+
+  public get y() { return this.displayObject.y; }
+  public set y(y) {
+    this.displayObject.y = y;
+    this.scaledDimensions.y = y / window.innerHeight;
+  }
+
+  // #endregion Public Getters And Setters (43)
+
+  // #region Protected Getters And Setters (5)
 
   protected get contextMenuItems(): ContextMenuEntry[] {
     return [
@@ -70,8 +290,102 @@ export abstract class StageObject {
     ];
   }
 
+  protected set id(id) { this._id = id; }
+  public get id() { return this._id; }
 
-  // #region Constructors (1)
+  public get locked(): boolean { return this._locked; }
+  protected set locked(value) {
+    this._locked = value;
+    if (value && this.resizeHandle) this.resizeHandle.visible = false;
+    else if (this.selected && this.resizeHandle) this.resizeHandle.visible = true;
+  }
+
+  protected get resizeHandle(): ResizeHandle | undefined { return this.interfaceContainer?.children.find(item => item.name === "handle") as ResizeHandle; }
+
+  protected get selectTool() {
+    if (this.displayObject.parent instanceof ScreenSpaceCanvasGroup) {
+      return this.displayObject.parent.selectTool;
+    } else {
+      return "";
+    }
+  }
+
+  // #endregion Protected Getters And Setters (5)
+
+  // #region Public Static Methods (1)
+
+  public static deserialize(serialized: SerializedStageObject): StageObject { throw new CannotDeserializeError(serialized.type) }
+
+  // #endregion Public Static Methods (1)
+
+  // #region Public Methods (6)
+
+  public deserialize(serialized: SerializedStageObject) {
+    this.name = serialized.name;
+    this.id = serialized.id;
+    this.locked = !!serialized.data.locked;
+
+    const dimensions = serialized.data.dimensions as { x: number, y: number, width: number, height: number } | undefined;
+    if (dimensions) {
+      this.x = window.innerWidth * dimensions.x;
+      this.y = window.innerHeight * dimensions.y;
+    }
+  }
+
+  public destroy() {
+    if (!this.destroyed) {
+      if (!this.displayObject.destroyed) this.displayObject.destroy();
+      // StageManager.StageObjects.delete(this.id);
+      StageManager.removeStageObject(this);
+      if (!this.interfaceContainer.destroyed) this.interfaceContainer.destroy();
+    }
+  }
+
+  /**
+   * Scales the current rotation to a number from 0-360 degrees (0-2π radians)
+   */
+  public normalizeRotation() {
+    this.angle = this.angle % 360;
+  }
+
+
+  public scaleToScreen() {
+    // Calculate and apply a new transform.
+
+    const width = this.restrictToVisualArea ? StageManager.VisualBounds.width : window.innerWidth;
+    const height = this.restrictToVisualArea ? StageManager.VisualBounds.height : window.innerHeight;
+
+    this.width = this.scaledDimensions.width * width;
+    this.height = this.scaledDimensions.height * height;
+    this.x = this.scaledDimensions.x * width;
+    this.y = this.scaledDimensions.y * height;
+
+    this.sizeInterfaceContainer();
+  }
+
+  public serialize(): SerializedStageObject {
+    return {
+      id: this.id,
+      layer: this.layer as StageLayer ?? "primary",
+      owners: StageManager.getOwners(this.id),
+      version: __MODULE_VERSION__,
+      type: "",
+      name: this.name ?? this.id,
+      data: {
+        locked: this.locked,
+        dimensions: this.scaledDimensions
+      }
+    }
+  }
+
+  public setLayer(layer: StageLayer) {
+    if (this.layer !== layer) StageManager.setStageObjectLayer(this, layer);
+  }
+
+  // #endregion Public Methods (6)
+
+  // #region Protected Methods (7)
+
   protected onContextMenu(event: PIXI.FederatedMouseEvent) {
     if (game.activeTool !== this.selectTool) return;
 
@@ -84,7 +398,7 @@ export abstract class StageObject {
     elem.style.left = `${event.clientX}px`;
     elem.dataset.object = this.id;
 
-    const hasItems = this.contextMenuItems.some(item => typeof item.condition === "function" ? item.condition($(elem)) : typeof condition === "boolean" ? condition : true);
+    const hasItems = this.contextMenuItems.some(item => typeof item.condition === "function" ? item.condition($(elem)) : typeof item.condition === "boolean" ? item.condition : true);
     if (!hasItems) return;
 
     event.preventDefault();
@@ -124,62 +438,10 @@ export abstract class StageObject {
     }
   }
 
-  constructor(protected _displayObject: PIXI.DisplayObject, public name?: string) {
-    this.name = name ?? this.id;
-    this.displayObject.name = this.name;
-    this.displayObject.interactive = true;
-    this.displayObject.eventMode = "dynamic";
-
-    this.displayObject.on("destroyed", () => { this.destroy(); })
-    this.displayObject.on("pointerdown", this.onPointerDown.bind(this))
-    this.displayObject.on("pointerenter", this.onPointerEnter.bind(this))
-    this.displayObject.on("pointerleave", this.onPointerLeave.bind(this))
-    this.displayObject.on("rightdown", this.onContextMenu.bind(this))
-      ;
-    // this.displayObject.on("prerender", this.onPreRender.bind(this));
-    canvas?.app?.renderer.addListener("prerender", this.onPreRender.bind(this))
-
-
-    // Set up UI frame.
-    const frame = new PIXI.Container();
-    frame.name = this.name;
-    frame.eventMode = "passive";
-    frame.visible = false;
-
-    const interaction = frame.addChild(new PIXI.Container());
-    interaction.name = "interaction";
-    interaction.eventMode = "auto";
-    interaction.hitArea = frame.getBounds(true);
-
-    const border = frame.addChild(new PIXI.Graphics());
-    border.eventMode = "none";
-    border.name = "border";
-
-    const handle = frame.addChild(new ResizeHandle([1, 1]));
-    handle.eventMode = "static";
-    handle.name = "handle";
-    handle.visible = false;
-
-
-    handle.addListener("pointerenter", () => {
-      handle.scale.set(1.5, 1.5);
-    }).addListener("pointerout", () => {
-      handle.scale.set(1.0, 1.0);
-    })
-      .addListener("touchstart", this.onHandleDragStart.bind(this))
-      .addListener("mousedown", this.onHandleDragStart.bind(this))
-    // .addListener("touchmove", this.onHandleDragMove.bind(this))
-    // .addListener("mousemove", this.onHandleDragMove.bind(this))
-    // .addListener("mouseup", this.onHandleDragEnd.bind(this))
-    // .addListener("touchend", this.onHandleDragEnd.bind(this))
-    // .addListener("touchcancel", this.onHandleDragEnd.bind(this))
-
-
-
-
-    // frame.visible = false;
-    this.interfaceContainer = frame;
-    if (StageManager.uiCanvasGroup instanceof ScreenSpaceCanvasGroup) StageManager.uiCanvasGroup.addChild(frame);
+  protected onHandleDragEnd(e: PIXI.FederatedMouseEvent) {
+    e.preventDefault();
+    this.resizing = false;
+    this.synchronize = true;
   }
 
   protected onHandleDragStart(e: PIXI.FederatedMouseEvent) {
@@ -187,237 +449,6 @@ export abstract class StageObject {
     this.resizing = true;
     this.synchronize = false;
   }
-
-
-
-  protected onHandleDragEnd(e: PIXI.FederatedMouseEvent) {
-    e.preventDefault();
-    this.resizing = false;
-    this.synchronize = true;
-  }
-
-  // #endregion Constructors (1)
-
-  // #region Public Getters And Setters (32)
-
-  /** Object's rotation, in degrees */
-  public get angle() { return this.displayObject.angle; }
-
-  public set angle(angle) { this.displayObject.angle = angle; }
-
-  public get bounds() { return this.displayObject.getBounds(); }
-
-  public get controlled() { return this.selected; }
-
-  public set controlled(value) { this.selected = value; }
-
-  public get destroyed() { return this.displayObject.destroyed; }
-
-  public get displayObject() { return this._displayObject; }
-
-  public get draggable() { return !this.locked && this._draggable; }
-
-  public set draggable(draggable) {
-    this._draggable = draggable;
-    if (this.dragging) this.dragging = false;
-  }
-
-
-  public get height(): number { return 0; }
-  public set height(height: number) {
-    ui.notifications?.warn("STAGEMANAGER.WARNINGS.READONLYHEIGHT", { console: false, localize: true });
-    console.warn(localize("STAGEMANAGER.WARNINGS.READONLYHEIGHT"));
-  }
-
-  public get highlighted() { return this._highlighted; }
-
-  public set highlighted(value) {
-    this._highlighted = value;
-    if (value) {
-      this.interfaceContainer.visible = true;
-      this.interfaceContainer.interactiveChildren = true;
-    } else if (!this.selected) {
-      this.interfaceContainer.visible = false;
-      this.interfaceContainer.interactiveChildren = false;
-    }
-  }
-
-
-  public get layer() {
-    if (this.displayObject.parent instanceof ScreenSpaceCanvasGroup) {
-      return this.displayObject.parent.layer;
-    } else {
-      return "";
-    }
-  }
-
-  public get owners() { return StageManager.getOwners(this.id).reduce((prev: User[], curr: string) => game?.users?.get(curr) ? [...prev, game.users.get(curr) as User] : prev, [] as User[]); }
-
-  public get pivot() { return this.displayObject.pivot; }
-
-  public set pivot(pivot) { this.displayObject.pivot = pivot; }
-
-  /** Object's rotation, in radians  */
-  public get rotation() { return this.displayObject.rotation; }
-
-  public set rotation(rotation) { this.displayObject.rotation = rotation; }
-
-  public get scale() { return this.displayObject.scale; }
-
-  public set scale(scale) { this.displayObject.scale = scale; }
-
-  public get selected() { return this._selected; }
-
-  public set selected(value) {
-    this._selected = value;
-    if (value) {
-      this.interfaceContainer.visible = true;
-      this.interfaceContainer.interactiveChildren = true;
-
-      if (this.resizeHandle && this.resizable) this.resizeHandle.visible = true;
-    } else {
-      if (!this.highlighted) {
-        this.interfaceContainer.visible = false;
-        this.interfaceContainer.interactiveChildren = false;
-      }
-
-      if (this.resizeHandle) this.resizeHandle.visible = false;
-    }
-  }
-
-  public get skew() { return this.displayObject.skew; }
-
-  public set skew(skew) { this.displayObject.skew = skew; }
-
-  public get transform() { return this.displayObject.transform; }
-
-  public set transform(transform) {
-    this.displayObject.setTransform(
-      transform.position.x, transform.position.y,
-      transform.scale.x, transform.scale.y,
-      transform.rotation,
-      transform.skew.x, transform.skew.y,
-      transform.pivot.x, transform.pivot.y
-    )
-  }
-
-
-  // eslint-disable-next-line @typescript-eslint/class-literal-property-style
-  public get baseWidth(): number { return 0; }
-  // eslint-disable-next-line @typescript-eslint/class-literal-property-style
-  public get baseHeight(): number { return 0; }
-
-  public get width(): number { return 0; }
-  public set width(width: number) {
-    ui.notifications?.warn("STAGEMANAGER.WARNINGS.READONLYWIDTH", { console: false, localize: true });
-    console.warn(localize("STAGEMANAGER.WARNINGS.READONLYWIDTH"));
-  }
-
-  public get x() { return this.displayObject.x; }
-
-  public set x(x) { this.displayObject.x = x; }
-
-  public get y() { return this.displayObject.y; }
-
-  public set y(y) { this.displayObject.y = y; }
-
-  // #endregion Public Getters And Setters (32)
-
-  // #region Protected Getters And Setters (6)
-
-  public get bottom() { return this.y + this.height; }
-
-  protected set id(id) { this._id = id; }
-  public get id() { return this._id; }
-
-  public get left() { return this.x; }
-
-  public get right() { return this.x + this.width; }
-
-  protected get selectTool() {
-    if (this.displayObject.parent instanceof ScreenSpaceCanvasGroup) {
-      return this.displayObject.parent.selectTool;
-    } else {
-      return "";
-    }
-  }
-
-  public get top() { return this.y; }
-
-  // #endregion Protected Getters And Setters (6)
-
-  // #region Public Static Methods (1)
-
-  public static deserialize(serialized: SerializedStageObject): StageObject { throw new CannotDeserializeError(serialized.type) }
-
-  // #endregion Public Static Methods (1)
-
-  // #region Public Methods (4)
-
-  public deserialize(serialized: SerializedStageObject) {
-    this.name = serialized.name;
-    this.id = serialized.id;
-    this.locked = !!serialized.data.locked;
-
-    const transform = serialized.data.transform as SerializedTransform;
-
-    if (transform) {
-      this.displayObject.setTransform(
-        transform.x,
-        transform.y,
-        transform.scaleX,
-        transform.scaleY,
-        transform.rotation,
-        transform.skewX,
-        transform.skewY,
-        transform.pivotX,
-        transform.pivotY
-      );
-    }
-  }
-
-  public destroy() {
-    if (!this.destroyed) {
-      if (!this.displayObject.destroyed) this.displayObject.destroy();
-      canvas?.app?.renderer.removeListener("prerender", this.onPreRender.bind(this));
-      // StageManager.StageObjects.delete(this.id);
-      StageManager.removeStageObject(this);
-      if (!this.interfaceContainer.destroyed) this.interfaceContainer.destroy();
-    }
-  }
-
-  public serialize(): SerializedStageObject {
-    return {
-      id: this.id,
-      layer: this.layer as StageLayer ?? "primary",
-      owners: StageManager.getOwners(this.id),
-      version: __MODULE_VERSION__,
-      type: "",
-      name: this.name ?? this.id,
-      data: {
-        locked: this.locked,
-        transform: {
-          x: this.x,
-          y: this.y,
-          scaleX: this.transform.scale.x,
-          scaleY: this.transform.scale.y,
-          rotation: this.transform.rotation,
-          skewX: this.transform.skew.x,
-          skewY: this.transform.skew.y,
-          pivotX: this.transform.pivot.x,
-          pivotY: this.transform.pivot.y
-        }
-      }
-    }
-  }
-
-  public setLayer(layer: StageLayer) {
-    if (this.layer !== layer) StageManager.setStageObjectLayer(this, layer);
-  }
-
-  // #endregion Public Methods (4)
-
-  // #region Protected Methods (4)
 
   protected onPointerDown(e: PIXI.FederatedPointerEvent) {
     if (this.placing) {
@@ -440,13 +471,6 @@ export abstract class StageObject {
     }
   }
 
-  /**
-   * Scales the current rotation to a number from 0-360 degrees (0-2π radians)
-   */
-  public normalizeRotation() {
-    this.angle = this.angle % 360;
-  }
-
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected onPointerEnter(e: PIXI.FederatedPointerEvent) {
     if (game.activeTool === this.selectTool && StageManager.canModifyStageObject(game.user?.id ?? "", this.id)) {
@@ -459,7 +483,7 @@ export abstract class StageObject {
     if (this.highlighted) this.highlighted = false;
   }
 
-  protected onPreRender() {
+  public sizeInterfaceContainer() {
     if (this.destroyed) return;
     // Update interface container location
     if (this.interfaceContainer.visible && this.interfaceContainer.renderable) {
@@ -484,5 +508,5 @@ export abstract class StageObject {
     }
   }
 
-  // #endregion Protected Methods (4)
+  // #endregion Protected Methods (7)
 }

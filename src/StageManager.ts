@@ -168,6 +168,11 @@ export class StageManager {
 
 
       if (canvas.app?.renderer) canvas.app.renderer.addListener("postrender", () => { synchronizeStageObjects(); })
+      if (canvas.app?.renderer) canvas.app.renderer.addListener("prerender", () => { sizeObjectInterfaceContainers(); });
+
+      Hooks.on("collapseSidebar", () => {
+        StageManager.StageObjects.forEach(item => { item.scaleToScreen(); });
+      });
     }
     const menuContainer = document.createElement("section");
     menuContainer.id = "sm-menu-container";
@@ -178,6 +183,38 @@ export class StageManager {
     menuContainer.style.width = "100%";
     menuContainer.style.height = "100%";
     document.body.appendChild(menuContainer);
+
+    window.addEventListener("resize", () => {
+      StageManager.ScaleStageObjects();
+    });
+  }
+
+  public static get VisualBounds(): { left: number, right: number, top: number, bottom: number, width: number, height: number } {
+    const left = $("#ui-left").position().left + ($("#ui-left").width() ?? 0);
+    const right = $("#ui-right").position().left;
+    const top = $("#ui-top").position().top + ($("#ui-top").height() ?? 0);
+    const bottom = $("#ui-bottom").position().top;
+
+    return {
+      left, right, top, bottom,
+      width: right - left,
+      height: bottom - top
+    }
+  }
+
+  public static get ScreenBounds(): { left: number, right: number, top: number, bottom: number, width: number, height: number } {
+    return {
+      left: 0,
+      top: 0,
+      right: window.innerWidth,
+      bottom: window.innerHeight,
+      width: window.innerWidth,
+      height: window.innerHeight
+    }
+  }
+
+  public static ScaleStageObjects() {
+    StageManager.StageObjects.forEach(item => { item.scaleToScreen(); });
   }
 
   /**
@@ -265,3 +302,9 @@ const stageObjects = new StageObjects();
 const SYNCHRONIZATION_HASH: Record<string, SerializedStageObject> = {};
 
 // #endregion Variables (7)
+
+function sizeObjectInterfaceContainers() {
+  StageManager.StageObjects.forEach(item => {
+    item.sizeInterfaceContainer();
+  });
+}
