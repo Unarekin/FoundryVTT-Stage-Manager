@@ -21,13 +21,49 @@ export class ImageStageObject extends StageObject {
   }
 
   public scaleToScreen() {
-    const width = this.restrictToVisualArea ? StageManager.VisualBounds.width : window.innerWidth;
-    const height = this.restrictToVisualArea ? StageManager.VisualBounds.height : window.innerHeight;
 
-    this.width = this.scaledDimensions.width * width;
-    this.height = this.scaledDimensions.height * height;
-    this.x = (this.scaledDimensions.x * width)// + (this.width * this.anchor.x);
-    this.y = (this.scaledDimensions.y * height)// + (this.height * this.anchor.y);
+    const effectiveBounds = this.restrictToVisualArea ? StageManager.VisualBounds : StageManager.ScreenBounds;
+
+    const width = effectiveBounds.width * this.scaledDimensions.width;
+    const height = effectiveBounds.height * this.scaledDimensions.height;
+
+    const x = effectiveBounds.width * this.scaledDimensions.x;
+    const y = effectiveBounds.height * this.scaledDimensions.y;
+
+    this.width = width;
+    this.height = height;
+
+    this.x = x;
+    this.y = y;
+
+    // const width = this.restrictToVisualArea ? StageManager.VisualBounds.width : window.innerWidth;
+    // const height = this.restrictToVisualArea ? StageManager.VisualBounds.height : window.innerHeight;
+
+    // if (this.preserveAspectRatio) {
+    //   const desiredWidth = this.scaledDimensions.width * width;
+    //   const desiredHeight = this.scaledDimensions.height * height;
+
+    //   const ratio = Math.min(desiredWidth / this.width, desiredHeight / this.height);
+    //   const origWidth = this.width;
+    //   const origHeight = this.height;
+    //   this.width = this.baseWidth * ratio;
+    //   this.height = this.baseHeight * ratio;
+
+
+    //   console.group("Scaling");
+    //   log("Base size:", this.baseWidth, this.baseHeight);
+    //   log("Original size:", origWidth, origHeight);
+    //   log("Desired size:", desiredWidth, desiredHeight);
+    //   log("Ratio:", ratio);
+    //   log("New size:", this.width, this.height)
+    //   console.groupEnd();
+    // } else {
+    //   this.width = this.scaledDimensions.width * width;
+    //   this.height = this.scaledDimensions.height * height;
+    // }
+
+    // this.x = (this.scaledDimensions.x * width);
+    // this.y = (this.scaledDimensions.y * height);
 
     this.sizeInterfaceContainer();
   }

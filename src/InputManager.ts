@@ -1,5 +1,6 @@
 import { StageManager } from "./StageManager";
 import { CanvasNotInitializedError } from './errors/CanvasNotInitializedError';
+import { log } from "./logging";
 import { StageObject } from "./stageobjects";
 
 // #region Classes (1)
@@ -96,6 +97,7 @@ function resizeItem(event: PIXI.FederatedPointerEvent, item: StageObject) {
     const ratio = Math.max(desiredWidth / item.baseWidth, desiredHeight / item.baseHeight);
     item.width = item.baseWidth * ratio;
     item.height = item.baseHeight * ratio;
+    log("Resizing:", item.width, item.height)
   } else {
     item.width = event.screenX - item.left;
     item.height = event.screenY - item.top;

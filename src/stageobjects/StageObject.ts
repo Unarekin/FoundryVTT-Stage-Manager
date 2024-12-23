@@ -34,6 +34,8 @@ export abstract class StageObject {
   protected _originalScreenHeight: number;
   protected _originalScreenWidth: number;
 
+  public preserveAspectRatio = true;
+
   public readonly interfaceContainer = new PIXI.Container();
 
   // public readonly resizable: boolean = false;
