@@ -64,6 +64,14 @@ export class ImageStageObject extends StageObject {
 
   }
 
+  public destroy() {
+    // Make sure we destroy the video resource so it stops playing.
+    if (!this.destroyed && this.#isVideo && !this.displayObject.texture.baseTexture.resource.destroyed)
+      this.displayObject.texture.baseTexture.resource.destroy();
+    super.destroy();
+
+  }
+
   public deserialize(serialized: SerializedStageObject) {
     super.deserialize(serialized);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -134,6 +142,9 @@ export class ImageStageObject extends StageObject {
       resource.source.volume = volume;
     }
   }
+
+  #isVideo = false;
+
   constructor(protected path: string, name?: string) {
     let sprite: PIXI.Sprite | null = null;
 
@@ -141,8 +152,10 @@ export class ImageStageObject extends StageObject {
     const mimeType = mime(path);
     const split = mimeType.split("/");
 
+    let isVideo = false;
     if (split[0] === "video") {
       // Handle video
+      isVideo = true;
       const vid = document.createElement("video");
       vid.src = path;
       vid.autoplay = true;
@@ -155,7 +168,7 @@ export class ImageStageObject extends StageObject {
     this.anchor.x = 0.5;
     this.anchor.y = 0.5;
     this.resizable = true;
-
+    this.#isVideo = isVideo;
   }
 
   public get baseWidth() { return this.displayObject.texture.width; }
