@@ -113,12 +113,15 @@ export abstract class StageObject {
     this.displayObject.interactive = true;
     this.displayObject.eventMode = "dynamic";
 
-    this.displayObject.on("destroyed", () => { this.destroy(); })
-    this.displayObject.on("pointerdown", this.onPointerDown.bind(this))
-    this.displayObject.on("pointerenter", this.onPointerEnter.bind(this))
-    this.displayObject.on("pointerleave", this.onPointerLeave.bind(this))
-    this.displayObject.on("rightdown", this.onContextMenu.bind(this))
+    this.displayObject
+      .on("destroyed", () => { this.destroy(); })
+      .on("pointerdown", this.onPointerDown.bind(this))
+      .on("pointerenter", this.onPointerEnter.bind(this))
+      .on("pointerleave", this.onPointerLeave.bind(this))
+      .on("rightdown", this.onContextMenu.bind(this))
       ;
+
+
     // this.displayObject.on("prerender", this.onPreRender.bind(this));
     // canvas?.app?.renderer.addListener("prerender", this.onPreRender.bind(this))
 
@@ -383,7 +386,7 @@ export abstract class StageObject {
 
   protected get resizeHandle(): ResizeHandle | undefined { return this.interfaceContainer?.children.find(item => item.name === "handle") as ResizeHandle; }
 
-  protected get selectTool() {
+  public get selectTool() {
     if (this.displayObject.parent instanceof ScreenSpaceCanvasGroup) {
       return this.displayObject.parent.selectTool;
     } else {

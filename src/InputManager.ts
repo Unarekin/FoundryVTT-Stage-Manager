@@ -21,6 +21,9 @@ export class InputManager {
       .on("pointerdown", InputManager.onPointerDown)
       ;
 
+    $("#board").on("wheel", onScrollWheel);
+
+
     // Funky monkey patching for keydown event, to intercept the escape key and prevent Foundry from handling it on its own
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     libWrapper.register(__MODULE_ID__, "game.keyboard._handleKeyboardEvent", escapeWrapper);
@@ -102,6 +105,25 @@ function resizeItem(event: PIXI.FederatedPointerEvent, item: StageObject) {
     item.width = event.screenX - item.left;
     item.height = event.screenY - item.top;
   }
+}
+
+function onScrollWheel(e: JQuery.TriggeredEvent<HTMLElement, undefined, HTMLElement, HTMLElement>) {
+  if (!(e.ctrlKey || e.shiftKey)) return;
+  const event = e.originalEvent as WheelEvent;
+  if (!event.deltaY) return;
+
+  const selected = StageManager.SelectedObjects.filter(obj => game.activeTool === obj.selectTool);
+  if (!selected.length) return;
+
+  for (const obj of selected) {
+    if (e.shiftKey) {
+      obj.angle += event.deltaY > 0 ? 45 : -45;
+    } else if (e.ctrlKey) {
+      obj.angle += event.deltaY > 0 ? 15 : -15;
+    }
+    obj.normalizeRotation();
+  }
+  return false;
 }
 
 // #endregion Functions (3)
