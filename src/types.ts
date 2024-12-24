@@ -23,12 +23,12 @@ export interface SerializedTransform {
   pivotY: number
 }
 
-export enum ScreenAnchors {
-  None = 0,             // 0
-  Left = 1 << 0,        // 1
-  Right = 1 << 1,       // 2
-  Top = 1 << 2,         // 4
-  Bottom = 1 << 3,      // 8
+// export enum ScreenAnchors {
+//   None = 0,             // 0
+//   Left = 1 << 0,        // 1
+//   Right = 1 << 1,       // 2
+//   Top = 1 << 2,         // 4
+//   Bottom = 1 << 3,      // 8
 
-  All = (1 << 4) - 1    // 15
-}
+//   All = (1 << 4) - 1    // 15
+// }

@@ -174,7 +174,7 @@ export class ImageStageObject extends StageObject {
   public get baseWidth() { return this.displayObject.texture.width; }
   public get baseHeight() { return this.displayObject.texture.height; }
 
-  public get left() { return this.x - this.actualBounds.left - (this.width * this.anchor.x); }
+  public get left() { return this.x + this.actualBounds.left - (this.width * this.anchor.x); }
   public set left(val) {
     this.x = val + this.actualBounds.left + (this.width * this.anchor.x);
     this.updateScaledDimensions();

@@ -3,7 +3,7 @@ import { closeAllContextMenus, localize, registerContextMenu } from "../function
 import { ScreenSpaceCanvasGroup } from "../ScreenSpaceCanvasGroup";
 import { SocketManager } from "../SocketManager";
 import { StageManager } from "../StageManager";
-import { ScreenAnchors, SerializedStageObject, StageLayer } from "../types";
+import { SerializedStageObject, StageLayer } from "../types";
 
 type PinHashCallback = (left: boolean, right: boolean, top: boolean, bottom: boolean) => void;
 
@@ -101,7 +101,6 @@ export abstract class StageObject {
   public dragging = false;
   public placing = false;
   public resizing = false;
-  public screenAnchor: ScreenAnchors = ScreenAnchors.None;
   public synchronize = false;
 
   // #endregion Properties (15)
