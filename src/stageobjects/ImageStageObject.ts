@@ -36,35 +36,6 @@ export class ImageStageObject extends StageObject {
     this.x = x;
     this.y = y;
 
-    // const width = this.restrictToVisualArea ? StageManager.VisualBounds.width : window.innerWidth;
-    // const height = this.restrictToVisualArea ? StageManager.VisualBounds.height : window.innerHeight;
-
-    // if (this.preserveAspectRatio) {
-    //   const desiredWidth = this.scaledDimensions.width * width;
-    //   const desiredHeight = this.scaledDimensions.height * height;
-
-    //   const ratio = Math.min(desiredWidth / this.width, desiredHeight / this.height);
-    //   const origWidth = this.width;
-    //   const origHeight = this.height;
-    //   this.width = this.baseWidth * ratio;
-    //   this.height = this.baseHeight * ratio;
-
-
-    //   console.group("Scaling");
-    //   log("Base size:", this.baseWidth, this.baseHeight);
-    //   log("Original size:", origWidth, origHeight);
-    //   log("Desired size:", desiredWidth, desiredHeight);
-    //   log("Ratio:", ratio);
-    //   log("New size:", this.width, this.height)
-    //   console.groupEnd();
-    // } else {
-    //   this.width = this.scaledDimensions.width * width;
-    //   this.height = this.scaledDimensions.height * height;
-    // }
-
-    // this.x = (this.scaledDimensions.x * width);
-    // this.y = (this.scaledDimensions.y * height);
-
     this.sizeInterfaceContainer();
   }
 
@@ -190,15 +161,37 @@ export class ImageStageObject extends StageObject {
   public get baseWidth() { return this.displayObject.texture.width; }
   public get baseHeight() { return this.displayObject.texture.height; }
 
-  public get right() { return this.x + (this.width * this.anchor.x) }
-  public set right(right) { super.right = right; }
+  public get left() { return this.x - this.actualBounds.left - (this.width * this.anchor.x); }
+  public set left(val) {
+    this.x = val + this.actualBounds.left + (this.width * this.anchor.x);
+    this.updateScaledDimensions();
+    this.updatePinLocations();
+  }
 
-  public get bottom() { return this.y + (this.height * this.anchor.y); }
-  public set bottom(bottom) { super.bottom = bottom; }
+  public get right() { return this.actualBounds.right - (this.x + (this.width * this.anchor.x)); }
+  public set right(val) {
+    // Set relative to right side of screen
+    this.displayObject.x = this.actualBounds.right - val - (this.width * this.anchor.x);
 
-  public get left() { return this.x - (this.width * this.anchor.x); }
-  public set left(left) { super.left = left; }
+    this.updateScaledDimensions();
+    this.updatePinLocations();
+  }
 
-  public get top() { return this.y - (this.height * this.anchor.y); }
-  public set top(top) { super.top = top; }
+
+  public get top() { return this.y - this.actualBounds.top - (this.height * this.anchor.y); }
+  public set top(val) {
+    this.y = val + this.actualBounds.top + (this.height * this.anchor.y);
+    this.updateScaledDimensions();
+    this.updatePinLocations();
+  }
+
+  public get bottom() { return this.actualBounds.bottom - (this.y + (this.height * this.anchor.y)); }
+  public set bottom(val) {
+    this.displayObject.y = this.actualBounds.bottom - val - (this.height * this.anchor.y);
+    this.updateScaledDimensions();
+    this.updatePinLocations();
+  }
+
+
+
 }

@@ -5,8 +5,55 @@ import { SocketManager } from "../SocketManager";
 import { StageManager } from "../StageManager";
 import { ScreenAnchors, SerializedStageObject, StageLayer } from "../types";
 
+type PinHashCallback = (left: boolean, right: boolean, top: boolean, bottom: boolean) => void;
+
+class PinHash {
+  #left = false;
+  #right = false;
+  #top = false;
+  #bottom = false;
+
+  public get left() { return this.#left; }
+  public set left(val) {
+    this.#left = val;
+    this.#callCB();
+  }
+
+  public get right() { return this.#right; }
+  public set right(val) {
+    this.#right = val;
+    this.#callCB();
+  }
+
+  public get top() { return this.#top; }
+  public set top(val) {
+    this.#top = val;
+    this.#callCB();
+  }
+
+  public get bottom() { return this.#bottom; }
+  public set bottom(val) {
+    this.#bottom = val;
+    this.#callCB();
+  }
+
+
+  #cb: PinHashCallback
+  #callCB() {
+    this.#cb(this.left, this.right, this.top, this.bottom);
+  }
+  constructor(cb: PinHashCallback) {
+    this.#cb = cb;
+  }
+}
+
 export abstract class StageObject {
   // #region Properties (15)
+
+  private _leftPinPos = -1;
+  private _rightPinPos = -1;
+  private _topPinPos = -1;
+  private _bottomPinPos = -1;
 
   private _draggable = true;
   private _highlighted = false;
@@ -21,18 +68,27 @@ export abstract class StageObject {
     height: 0
   }
 
-  public pin = {
-    right: false,
-    top: false,
-    left: false,
-    bottom: false
-  }
+  protected readonly pin = new PinHash(this.onPinChange.bind(this));
 
   public restrictToVisualArea = false;
 
   protected _id = foundry.utils.randomID();
   protected _originalScreenHeight: number;
   protected _originalScreenWidth: number;
+
+  private onPinChange(left: boolean, right: boolean, top: boolean, bottom: boolean) {
+    if (left) this._leftPinPos = this.left;
+    else this._leftPinPos = -1;
+
+    if (right) this._rightPinPos = this.right;
+    else this._rightPinPos = -1;
+
+    if (top) this._topPinPos = this.top;
+    else this._topPinPos = -1;
+
+    if (bottom) this._bottomPinPos = this.bottom;
+    else this._bottomPinPos = -1;
+  }
 
   public preserveAspectRatio = true;
 
@@ -126,7 +182,8 @@ export abstract class StageObject {
   public get bottom() { return this.y; }
   public set bottom(bottom) {
     this.y = bottom;
-    this.scaledDimensions.y = this.bottom / (this.restrictToVisualArea ? StageManager.VisualBounds.height : window.innerHeight);
+    this.updateScaledDimensions();
+    this.updatePinLocations();
   }
 
   public get bounds() { return this.displayObject.getBounds(); }
@@ -147,7 +204,10 @@ export abstract class StageObject {
   }
 
   public get height() { return 0; }
-  public set height(height) { this.scaledDimensions.height = height / window.innerHeight; }
+  public set height(height) {
+    this.updateScaledDimensions();
+    this.updatePinLocations();
+  }
 
   public get highlighted() { return this._highlighted; }
 
@@ -173,7 +233,8 @@ export abstract class StageObject {
   public get left() { return this.x; }
   public set left(left) {
     this.x = left;
-    this.scaledDimensions.x = this.x / (this.restrictToVisualArea ? StageManager.VisualBounds.width : window.innerWidth);
+    this.updateScaledDimensions();
+    this.updatePinLocations();
   }
 
 
@@ -195,8 +256,10 @@ export abstract class StageObject {
 
   public get right() { return this.x + this.width; }
   public set right(right) {
-    this.x = right;
-    this.scaledDimensions.x = this.x / (this.restrictToVisualArea ? StageManager.VisualBounds.width : window.innerWidth);
+    // this.x = right;
+    this.x = this.actualBounds.right - right;
+    this.updateScaledDimensions();
+    this.updatePinLocations();
   }
 
   /** Object's rotation, in radians  */
@@ -232,7 +295,8 @@ export abstract class StageObject {
   public get top() { return this.y; }
   public set top(top) {
     this.y = top;
-    this.scaledDimensions.y = top / (this.restrictToVisualArea ? StageManager.VisualBounds.height : window.innerHeight);
+    this.updateScaledDimensions();
+    this.updatePinLocations();
   }
 
   public get transform() { return this.displayObject.transform; }
@@ -248,19 +312,37 @@ export abstract class StageObject {
   }
 
   public get width() { return 0 }
-  public set width(width) { this.scaledDimensions.width = width / window.innerWidth; }
+  public set width(width) {
+    this.updateScaledDimensions();
+    this.updatePinLocations();
+  }
 
+  protected updateScaledDimensions() {
+    this.scaledDimensions.x = this.x / this.actualBounds.width;
+    this.scaledDimensions.y = this.y / this.actualBounds.height;
+    this.scaledDimensions.width = this.width / this.actualBounds.width;
+    this.scaledDimensions.height = this.height / this.actualBounds.height;
+  }
+
+  protected updatePinLocations() {
+    if (this.pin.left) this._leftPinPos = this.left;
+    if (this.pin.right) this._rightPinPos = this.right;
+    if (this.pin.top) this._topPinPos = this.top;
+    if (this.pin.bottom) this._bottomPinPos = this.bottom;
+  }
 
   public get x() { return this.displayObject.x; }
   public set x(x) {
     this.displayObject.x = x;
-    this.scaledDimensions.x = x / window.innerWidth;
+    this.updateScaledDimensions();
+    this.updatePinLocations();
   }
 
   public get y() { return this.displayObject.y; }
   public set y(y) {
     this.displayObject.y = y;
-    this.scaledDimensions.y = y / window.innerHeight;
+    this.updateScaledDimensions();
+    this.updatePinLocations();
   }
 
   // #endregion Public Getters And Setters (43)
@@ -349,16 +431,25 @@ export abstract class StageObject {
   }
 
 
+  protected get actualBounds() { return this.restrictToVisualArea ? StageManager.VisualBounds : StageManager.ScreenBounds; }
+
   public scaleToScreen() {
     // Calculate and apply a new transform.
+    if (this.pin.left && this.pin.right) {
+      // Empty
+    } else if (this.pin.left) {
+      this.left = this._leftPinPos;
+    } else if (this.pin.right) {
+      this.right = this._rightPinPos;
+    }
 
-    const width = this.restrictToVisualArea ? StageManager.VisualBounds.width : window.innerWidth;
-    const height = this.restrictToVisualArea ? StageManager.VisualBounds.height : window.innerHeight;
-
-    this.width = this.scaledDimensions.width * width;
-    this.height = this.scaledDimensions.height * height;
-    this.x = this.scaledDimensions.x * width;
-    this.y = this.scaledDimensions.y * height;
+    if (this.pin.top && this.pin.bottom) {
+      // Empty
+    } else if (this.pin.top) {
+      this.top = this._topPinPos;
+    } else if (this.pin.bottom) {
+      this.bottom = this._bottomPinPos;
+    }
 
     this.sizeInterfaceContainer();
   }
@@ -438,6 +529,11 @@ export abstract class StageObject {
     }
   }
 
+  public get absoluteLeft() { return this.left + this.actualBounds.left; }
+  public get absoluteRight() { return this.right + this.actualBounds.left; }
+  public get absoluteTop() { return this.top + this.actualBounds.top; }
+  public get absoluteBottom() { return this.bottom + this.actualBounds.bottom; }
+
   protected onHandleDragEnd(e: PIXI.FederatedMouseEvent) {
     e.preventDefault();
     this.resizing = false;
@@ -488,8 +584,8 @@ export abstract class StageObject {
     // Update interface container location
     if (this.interfaceContainer.visible && this.interfaceContainer.renderable) {
       if (this.resizeHandle) {
-        this.resizeHandle.x = this.right;
-        this.resizeHandle.y = this.bottom;
+        this.resizeHandle.x = this.absoluteLeft + this.width;
+        this.resizeHandle.y = this.absoluteTop + this.height;
       }
 
       const border = this.interfaceContainer.children.find(child => child.name === "border");
