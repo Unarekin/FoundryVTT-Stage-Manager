@@ -16,7 +16,7 @@ export class StageManagerControlsLayer extends InteractionLayer {
   }
 }
 
-const TOOL_LAYERS: Record<string, StageLayer> = {
+export const TOOL_LAYERS: Record<string, StageLayer> = {
   "sm-select-primary": "primary",
   "sm-select-foreground": "foreground",
   "sm-select-background": "background",

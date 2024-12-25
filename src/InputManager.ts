@@ -99,8 +99,9 @@ export class InputManager {
         const highlighted = StageManager.StageObjects.highlighted;
         for (const item of highlighted) item.highlighted = false;
 
-        const highlight = StageManager.StageObjects.within(bounds);
+        const highlight = StageManager.StageObjects.within(bounds).filter(item => item.selectTool === game.activeTool)
         for (const item of highlight) item.highlighted = true;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       } else if (TOOLS.includes(game.activeTool ?? "")) {
         startRectangleSelect(event);
       }
@@ -247,7 +248,7 @@ function stopRectangleSelect(event: PIXI.FederatedPointerEvent) {
   if (!rectangleSelect) return;
   const bounds = new PIXI.Rectangle(Math.min(rectangleSelectStart.x, event.clientX), Math.min(rectangleSelectStart.y, event.clientY), Math.abs(rectangleSelectStart.x - event.clientX), Math.abs(rectangleSelectStart.y - event.clientY));
   StageManager.DeselectAll();
-  const within = StageManager.StageObjects.within(bounds);
+  const within = StageManager.StageObjects.within(bounds).filter(item => item.selectTool === game.activeTool);
   for (const item of within) {
     item.selected = true;
     item.highlighted = false;

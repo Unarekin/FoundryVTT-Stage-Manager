@@ -30,7 +30,7 @@ export class StageObjects extends Collection<StageObject> {
   public get placing() { return this.contents.filter(item => item.placing); }
   public get locked() { return this.contents.filter(item => item.locked); }
 
-  public within(bounds: PIXI.Rectangle) { return this.contents.filter(item => bounds.intersects(item.bounds)); }
+  public within(bounds: PIXI.Rectangle, layer?: StageLayer) { return this.contents.filter(item => bounds.intersects(item.bounds) && (layer ? item.layer === layer : true)); }
 
   /** All objects at the highest zIndex value of a given {@link StageLayer} */
   public highestObjects(layer: StageLayer) {
@@ -55,7 +55,7 @@ export class StageObjects extends Collection<StageObject> {
 
   public clear() {
     if (!game.user) return;
-    const items = [...this.contents.filter(item => StageManager.canDeleteStageObject(game.user?.id, item.id))];
+    const items = [...this.contents.filter(item => StageManager.canDeleteStageObject(game.user?.id ?? "", item.id))];
     for (const item of items) {
       StageManager.removeStageObject(item);
       super.delete(item.id);
