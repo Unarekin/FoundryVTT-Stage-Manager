@@ -23,6 +23,7 @@ const TOOL_LAYERS: Record<string, StageLayer> = {
   "sm-select-text": "text"
 }
 
+export const TOOLS = Object.keys(TOOL_LAYERS);
 
 export class ControlButtonsHandler {
   public static register(controls: SceneControl[]) {

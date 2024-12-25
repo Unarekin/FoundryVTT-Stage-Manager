@@ -30,6 +30,8 @@ export class StageObjects extends Collection<StageObject> {
   public get placing() { return this.contents.filter(item => item.placing); }
   public get locked() { return this.contents.filter(item => item.locked); }
 
+  public within(bounds: PIXI.Rectangle) { return this.contents.filter(item => bounds.intersects(item.bounds)); }
+
   /** All objects at the highest zIndex value of a given {@link StageLayer} */
   public highestObjects(layer: StageLayer) {
     const inLayer = this.inLayer(layer);
