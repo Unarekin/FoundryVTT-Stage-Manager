@@ -20,8 +20,6 @@ export class StageObjects extends Collection<StageObject> {
   public get foreground() { return this.inLayer("foreground"); }
   /** A list of {@link StageObject}s on the text {@link StageLayer} */
   public get text() { return this.inLayer("text"); }
-  /** A list of {@link Stageobject}s on the UI {@link StageLayer} */
-  public get ui() { return this.inLayer("ui"); }
 
   public get selected() { return this.contents.filter(item => item.selected); }
   public get highlighted() { return this.contents.filter(item => item.highlighted); }
