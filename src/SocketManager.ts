@@ -3,7 +3,7 @@ import { SerializedStageObject } from "./types";
 import { StageManager } from "./StageManager";
 import { CannotDeserializeError, InvalidStageObjectError, PermissionDeniedError } from "./errors";
 import * as stageObjectTypes from "./stageobjects";
-
+import { log } from "./logging";
 
 let socket: any;
 
@@ -11,7 +11,7 @@ export class SocketManager {
 
   public static syncStageObjects(stageObjects: SerializedStageObject[]) {
     if (!StageManager.canAddStageObjects(game?.user?.id ?? "")) throw new PermissionDeniedError();
-    // const start = performance.now();
+    log("Synchronizing:", stageObjects);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     void socket.executeForOthers("syncStageObjects", stageObjects);
   }

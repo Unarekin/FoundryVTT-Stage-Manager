@@ -1,4 +1,6 @@
-export type StageLayer = "primary" | "foreground" | "background" | "text" | "ui";
+// export type StageLayer = "primary" | "foreground" | "background" | "text" | "ui";
+export const StageLayers = ["primary", "foreground", "background", "text", "ui"] as const;
+export type StageLayer = typeof StageLayers[number];
 
 
 export interface SerializedStageObject {
@@ -19,6 +21,7 @@ export interface SerializedStageObject {
   locked: boolean;
   filters: SerializedFilter[];
   restrictToVisualArea: boolean;
+  zIndex: number;
 }
 
 export interface SerializedImageStageObject extends SerializedStageObject {

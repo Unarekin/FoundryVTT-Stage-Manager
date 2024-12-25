@@ -1,4 +1,4 @@
-import { CannotDeserializeError } from "../errors";
+import { CannotDeserializeError, InvalidStageObjectError } from "../errors";
 import { closeAllContextMenus, localize, registerContextMenu } from "../functions";
 import { ScreenSpaceCanvasGroup } from "../ScreenSpaceCanvasGroup";
 import { SocketManager } from "../SocketManager";
@@ -137,6 +137,31 @@ export abstract class StageObject {
 
   public resizing = false;
   public synchronize = false;
+
+  public get zIndex() { return this.displayObject.zIndex; }
+  public set zIndex(z) { this.displayObject.zIndex = z; }
+
+  /** Brings this object to the front of the zIndex order for its {@link StageLayer} */
+  public bringToFront() {
+    if (!this.layer) return;
+    const highest = StageManager.StageObjects.highestObjects(this.layer);
+    if (highest.length === 0) throw new InvalidStageObjectError(highest[0]);
+
+    // If this object is already at the front of all other objects on its layer, do nothing
+    if (highest.length === 1 && highest.includes(this)) return;
+    this.zIndex = highest[0].zIndex + 1;
+  }
+
+  /** Sends this object to the back of the zIndex order for its {@link StageLayer} */
+  public sendToBack() {
+    if (!this.layer) return;
+    const lowest = StageManager.StageObjects.lowestObjects(this.layer);
+    if (lowest.length === 0) throw new InvalidStageObjectError(lowest[0]);
+
+    // If we are already at the back, do nothing
+    if (lowest.length === 1 && lowest.includes(this)) return;
+    this.zIndex = lowest[0].zIndex - 1;
+  }
 
   // #endregion Properties (15)
 
@@ -455,6 +480,7 @@ export abstract class StageObject {
     this.skew.y = serialized.skew.y;
     this.rotation = serialized.rotation;
     this.locked = serialized.locked;
+    this.zIndex = serialized.zIndex;
 
     this.x = serialized.bounds.x * this.actualBounds.width;
     this.y = serialized.bounds.y * this.actualBounds.height;
@@ -515,6 +541,7 @@ export abstract class StageObject {
       rotation: this.rotation,
       restrictToVisualArea: this.restrictToVisualArea,
       filters: [],
+      zIndex: this.zIndex,
       skew: {
         x: this.skew.x,
         y: this.skew.y

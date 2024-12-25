@@ -221,7 +221,10 @@ export class StageManager {
       (canvas.stage as any).stagemanager = layers;
 
 
-      if (canvas.app?.renderer) canvas.app.renderer.addListener("postrender", () => { synchronizeStageObjects(); })
+      if (canvas.app?.renderer) canvas.app.renderer.addListener("postrender", () => {
+        // log("postrender");
+        synchronizeStageObjects();
+      })
       if (canvas.app?.renderer) canvas.app.renderer.addListener("prerender", () => { sizeObjectInterfaceContainers(); });
 
       Hooks.on("collapseSidebar", () => {
