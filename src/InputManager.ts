@@ -76,8 +76,13 @@ export class InputManager {
 
 function dragItem(event: PIXI.FederatedPointerEvent, item: StageObject) {
   event.preventDefault();
-  item.x = event.screenX;
-  item.y = event.screenY;
+  if (item.placing) {
+    item.x = event.screenX;
+    item.y = event.screenY;
+  } else if (item.dragging) {
+    item.x += event.movementX;
+    item.y += event.movementY;
+  }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type

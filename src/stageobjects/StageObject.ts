@@ -125,6 +125,7 @@ export abstract class StageObject {
     } else {
       this.alpha = this._dragAlpha;
       this._placing = false;
+      this.bringToFront();
     }
   }
 
