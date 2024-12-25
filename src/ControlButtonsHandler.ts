@@ -7,7 +7,14 @@ import { StageLayer } from "./types";
 let controlsInitialized = false;
 
 
-export class StageManagerControlsLayer extends InteractionLayer { }
+export class StageManagerControlsLayer extends InteractionLayer {
+  public controlAll() {
+    StageManager.StageObjects.forEach(obj => {
+      if (StageManager.canModifyStageObject(game?.user?.id ?? "", obj.id) && obj.selectTool === game.activeTool)
+        obj.selected = true;
+    });
+  }
+}
 
 const TOOL_LAYERS: Record<string, StageLayer> = {
   "sm-select-primary": "primary",
