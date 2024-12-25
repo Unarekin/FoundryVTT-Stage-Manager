@@ -3,7 +3,6 @@ import { SerializedStageObject } from "./types";
 import { StageManager } from "./StageManager";
 import { CannotDeserializeError, InvalidStageObjectError, PermissionDeniedError } from "./errors";
 import * as stageObjectTypes from "./stageobjects";
-import { log } from "./logging";
 
 let socket: any;
 
