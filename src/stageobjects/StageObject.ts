@@ -670,7 +670,7 @@ export abstract class StageObject {
 
       const border = this.interfaceContainer.children.find(child => child.name === "border");
       if (border instanceof PIXI.Graphics) {
-        border.tint = this.selected ? CONFIG.Canvas.dispositionColors.CONTROLLED : this.highlighted ? CONFIG.Canvas.dispositionColors.HOSTILE : CONFIG.Canvas.dispositionColors.INACTIVE;
+        border.tint = this.selected ? CONFIG.Canvas.dispositionColors.CONTROLLED : CONFIG.Canvas.dispositionColors.INACTIVE;  //this.highlighted ? CONFIG.Canvas.dispositionColors.INACTIVE : CONFIG.Canvas.dispositionColors.INACTIVE;
 
         const thickness = CONFIG.Canvas.objectBorderThickness;
 
