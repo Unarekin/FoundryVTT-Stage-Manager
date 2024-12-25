@@ -1,6 +1,5 @@
 import { CannotDeserializeError } from "../errors";
 import { closeAllContextMenus, localize, registerContextMenu } from "../functions";
-import { log } from "../logging";
 import { ScreenSpaceCanvasGroup } from "../ScreenSpaceCanvasGroup";
 import { SocketManager } from "../SocketManager";
 import { StageManager } from "../StageManager";
@@ -61,6 +60,9 @@ export abstract class StageObject {
   private _locked = false;
   private _resizable = false;
   private _selected = false;
+  private _dragging = false;
+  private _placing = false;
+  private _dragAlpha = 1;
 
   protected scaledDimensions = {
     x: 0,
@@ -99,8 +101,40 @@ export abstract class StageObject {
   public static type = "UNKNOWN";
 
   // public readonly id = foundry.utils.randomID();
-  public dragging = false;
-  public placing = false;
+
+  public get dragging() { return this._dragging; }
+  public set dragging(val) {
+    if (this.draggable) {
+      if (val) {
+        this._dragAlpha = this.alpha;
+        if (this.alpha > 0.5) this.alpha = 0.5;
+        this._dragging = true;
+      } else {
+        this.alpha = this._dragAlpha;
+        this._dragging = false;
+      }
+    }
+  }
+
+  public get placing() { return this._placing; }
+  public set placing(val) {
+    if (val) {
+      this._dragAlpha = this.alpha;
+      if (this.alpha > 0.5) this.alpha = 0.5;
+      this._placing = true;
+    } else {
+      this.alpha = this._dragAlpha;
+      this._placing = false;
+    }
+  }
+
+  public get alpha() { return this.displayObject.alpha; }
+  public set alpha(val) { this.displayObject.alpha = val; }
+
+  public get opacity() { return this.alpha; }
+  public set opacity(val) { this.alpha = val; }
+
+
   public resizing = false;
   public synchronize = false;
 
@@ -422,26 +456,10 @@ export abstract class StageObject {
     this.rotation = serialized.rotation;
     this.locked = serialized.locked;
 
-    log("Setting dimensions:");
-    log("Scaled:", serialized.bounds);
-    log("Screen bounds:", this.actualBounds)
-    log({
-      x: serialized.bounds.x * this.actualBounds.width,
-      y: serialized.bounds.y * this.actualBounds.height,
-      width: serialized.bounds.width * this.actualBounds.width,
-      height: serialized.bounds.height * this.actualBounds.height
-    });
-
     this.x = serialized.bounds.x * this.actualBounds.width;
     this.y = serialized.bounds.y * this.actualBounds.height;
     this.width = serialized.bounds.width * this.actualBounds.width;
     this.height = serialized.bounds.height * this.actualBounds.height;
-    log({
-      x: this.x,
-      y: this.y,
-      width: this.width,
-      height: this.height
-    });
   }
 
   public destroy() {
