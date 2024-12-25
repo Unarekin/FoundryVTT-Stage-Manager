@@ -2,6 +2,7 @@ import { StageManager } from "./StageManager";
 import { InvalidStageObjectError } from "./errors";
 import { CanvasNotInitializedError } from './errors/CanvasNotInitializedError';
 import { StageObject } from "./stageobjects";
+import { TOOLS } from "./ControlButtonsHandler";
 
 // #region Classes (1)
 
@@ -33,7 +34,7 @@ export class InputManager {
   }
 
 
-  public static onPointerUp(this: void) {
+  public static onPointerUp(this: void, event: PIXI.FederatedPointerEvent) {
     // Destroy all drag ghosts
     const keys = [...Object.keys(DRAG_GHOSTS)];
     for (const key of keys) {
@@ -41,6 +42,8 @@ export class InputManager {
       delete DRAG_GHOSTS[key];
     }
 
+    if (rectangleSelect)
+      stopRectangleSelect(event);
 
     StageManager.StageObjects.dragging.forEach(item => {
       item.dragging = false;
@@ -81,39 +84,28 @@ export class InputManager {
           dragItem(event, item);
         }
       }
+    } else if (event.buttons === 1 && !selected.length) {
+      // Rectangle select time baby
+      if (rectangleSelect) {
+        // Update dimensions
+        const thickness = CONFIG.Canvas.objectBorderThickness;
+        const bounds = new PIXI.Rectangle(Math.min(rectangleSelectStart.x, event.clientX), Math.min(rectangleSelectStart.y, event.clientY), Math.abs(rectangleSelectStart.x - event.clientX), Math.abs(rectangleSelectStart.y - event.clientY));
+        rectangleSelect.clear();
+        rectangleSelect.lineStyle({ width: thickness, color: 0x000000, join: PIXI.LINE_JOIN.ROUND, alignment: 0.75 })
+          .drawShape(bounds);
+        rectangleSelect.lineStyle({ width: thickness / 2, color: 0xFFFFFF, join: PIXI.LINE_JOIN.ROUND, alignment: 1 })
+          .drawShape(bounds);
+
+        const highlighted = StageManager.StageObjects.highlighted;
+        for (const item of highlighted) item.highlighted = false;
+
+        const highlight = StageManager.StageObjects.within(bounds).filter(item => item.selectTool === game.activeTool)
+        for (const item of highlight) item.highlighted = true;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+      } else if (TOOLS.includes(game.activeTool ?? "")) {
+        startRectangleSelect(event);
+      }
     }
-
-    // // Left mouse is down
-    // if (event.buttons === 1 && StageManager.StageObjects.selected.length) {
-    //   // log("Selected:", StageManager.StageObjects.selected);
-    //   // log("Dragging:", StageManager.StageObjects.dragging);
-    //   // log("Resizing:", StageManager.StageObjects.resizing);
-
-    //   const resizing = StageManager.StageObjects.resizing;
-    //   const dragging = StageManager.StageObjects.dragging;
-    //   const selected = StageManager.StageObjects.selected;
-
-    //   if (resizing.length) {
-    //     for (const item of resizing) resizeItem(event, item);
-    //   } else if (dragging.length) {
-    //     for (const item of selected) {
-    //       item.dragging = true;
-    //       dragItem(event, item);
-    //     }
-    //   }
-
-    //   if (resizing.length)
-    //     for (const item of resizing) resizeItem(event, item);
-    //   else if (dragging.length)
-    //     for (const item of selected) dragItem(event, item);
-
-
-    //   // const hasDragging = !!StageManager.StageObjects.dragging.length;
-    //   // StageManager.StageObjects.selected.forEach(item => {
-    //   //   if (item.selected && hasDragging) dragItem(event, item);
-    //   //   if (item.resizing) resizeItem(event, item);
-    //   // });
-    // }
   }
 
   public static onKeyDown(this: void, e: KeyboardEvent) {
@@ -235,4 +227,32 @@ function createDragGhost(stageObject: StageObject): PIXI.DisplayObject {
   newObj.alpha = 0.5;
 
   return newObj?.displayObject;
+}
+
+let rectangleSelect: PIXI.Graphics | null = null;
+const rectangleSelectStart = { x: -1, y: -1 };
+
+function startRectangleSelect(event: PIXI.FederatedPointerEvent) {
+  if (rectangleSelect) rectangleSelect.destroy();
+  rectangleSelect = new PIXI.Graphics();
+  rectangleSelect.eventMode = "none";
+  rectangleSelect.name = "rectangleSelect";
+  StageManager.uiCanvasGroup.addChild(rectangleSelect);
+
+  rectangleSelect.tint = CONFIG.Canvas.dispositionColors.CONTROLLED;
+  rectangleSelectStart.x = event.clientX;
+  rectangleSelectStart.y = event.clientY;
+}
+
+function stopRectangleSelect(event: PIXI.FederatedPointerEvent) {
+  if (!rectangleSelect) return;
+  const bounds = new PIXI.Rectangle(Math.min(rectangleSelectStart.x, event.clientX), Math.min(rectangleSelectStart.y, event.clientY), Math.abs(rectangleSelectStart.x - event.clientX), Math.abs(rectangleSelectStart.y - event.clientY));
+  StageManager.DeselectAll();
+  const within = StageManager.StageObjects.within(bounds).filter(item => item.selectTool === game.activeTool);
+  for (const item of within) {
+    item.selected = true;
+    item.highlighted = false;
+  }
+  rectangleSelect.destroy();
+  rectangleSelect = null;
 }
