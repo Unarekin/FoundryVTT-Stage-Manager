@@ -1,7 +1,6 @@
 import { StageManager } from "./StageManager";
 import { InvalidStageObjectError } from "./errors";
 import { CanvasNotInitializedError } from './errors/CanvasNotInitializedError';
-import { log } from "./logging";
 import { StageObject } from "./stageobjects";
 
 // #region Classes (1)
@@ -142,12 +141,11 @@ export class InputManager {
       }
     } else if (!resizeHandles.length) {
       const highestObject = objectsUnderCursor.reduce((prev, curr) => curr.zIndex > prev.zIndex ? curr : prev);
-      log("Objects:", objectsUnderCursor);
-      log("Highest:", highestObject);
-      if (!highestObject.selected) {
+
+      if (!highestObject.selected && !e.shiftKey)
         StageManager.DeselectAll();
-        highestObject.selected = true;
-      }
+
+      highestObject.selected = true;
     }
 
     // const interactables = getInteractiveObjectsAtPoint(e.clientX, e.clientY);
