@@ -102,18 +102,10 @@ export abstract class StageObject {
 
   // public readonly id = foundry.utils.randomID();
 
-  public get dragging() { return this._dragging; }
+  public get dragging() { return this._dragging && this.draggable; }
   public set dragging(val) {
-    if (this.draggable) {
-      if (val) {
-        this._dragAlpha = this.alpha;
-        if (this.alpha > 0.5) this.alpha = 0.5;
-        this._dragging = true;
-      } else {
-        this.alpha = this._dragAlpha;
-        this._dragging = false;
-      }
-    }
+    if (this.draggable) this._dragging = val;
+    if (!val && this._dragGhost) this._dragGhost.destroy();
   }
 
   public get placing() { return this._placing; }
@@ -627,6 +619,10 @@ export abstract class StageObject {
     this.synchronize = false;
   }
 
+  private _dragGhost: PIXI.DisplayObject | null = null;
+
+
+
   protected onPointerDown(e: PIXI.FederatedPointerEvent) {
     if (this.placing) {
       e.preventDefault();
@@ -641,6 +637,17 @@ export abstract class StageObject {
         e.preventDefault();
         this.dragging = true;
         this.synchronize = false;
+        const ghost = StageManager.deserialize({
+          ...this.serialize(),
+          id: foundry.utils.randomID()
+        });
+        if (ghost) {
+          this._dragGhost = ghost.displayObject;
+          ghost.synchronize = false;
+          ghost.locked = true;
+          ghost.alpha = .5;
+
+        }
       }
       if (StageManager.canModifyStageObject(game?.user?.id ?? "", this.id) && game.activeTool === this.selectTool) {
         this.selected = true;
