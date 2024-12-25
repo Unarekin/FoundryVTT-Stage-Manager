@@ -43,4 +43,14 @@ export class StageObjects extends Collection<StageObject> {
     if (retVal) StageManager.removeStageObject(obj);
     return retVal;
   }
+
+  public clear() {
+    if (!game.user) return;
+    const items = [...this.contents.filter(item => StageManager.canDeleteStageObject(game.user?.id, item.id))];
+    for (const item of items) {
+      StageManager.removeStageObject(item);
+      super.delete(item.id);
+    }
+  }
+
 }
