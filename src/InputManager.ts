@@ -1,9 +1,12 @@
 import { StageManager } from "./StageManager";
+import { InvalidStageObjectError } from "./errors";
 import { CanvasNotInitializedError } from './errors/CanvasNotInitializedError';
 import { log } from "./logging";
 import { StageObject } from "./stageobjects";
 
 // #region Classes (1)
+
+const DRAG_GHOSTS: Record<string, PIXI.DisplayObject> = {};
 
 export class InputManager {
   // #region Public Static Methods (5)
@@ -15,9 +18,9 @@ export class InputManager {
     if (!canvas?.stage) throw new CanvasNotInitializedError();
 
     canvas.stage
-      .on("mousemove", InputManager.onDragMove)
-      .on("pointerup", InputManager.onDragEnd)
-      .on("pointerupoutside", InputManager.onDragEnd)
+      .on("mousemove", InputManager.onPointerMove)
+      .on("pointerup", InputManager.onPointerUp)
+      .on("pointerupoutside", InputManager.onPointerUp)
       .on("pointerdown", InputManager.onPointerDown)
       ;
 
@@ -30,25 +33,88 @@ export class InputManager {
     document.addEventListener("keydown", InputManager.onKeyDown);
   }
 
-  public static onDragEnd(this: void) {
-    StageManager.StageObjects.forEach(item => {
-      if (item.dragging) {
-        item.dragging = false;
-        item.synchronize = true;
-      }
 
-      if (item.resizing) {
-        item.resizing = false;
-        item.synchronize = true;
-      }
+  public static onPointerUp(this: void) {
+    // Destroy all drag ghosts
+    const keys = [...Object.keys(DRAG_GHOSTS)];
+    for (const key of keys) {
+      DRAG_GHOSTS[key].destroy();
+      delete DRAG_GHOSTS[key];
+    }
+
+
+    StageManager.StageObjects.dragging.forEach(item => {
+      item.dragging = false;
+      item.synchronize = true;
+    });
+
+    StageManager.StageObjects.resizing.forEach(item => {
+      item.resizing = false;
+      item.synchronize = true;
     })
   }
 
-  public static onDragMove(this: void, event: PIXI.FederatedPointerEvent) {
-    StageManager.StageObjects.forEach(item => {
-      if (item.dragging || item.placing) dragItem(event, item);
-      if (item.resizing) resizeItem(event, item);
-    })
+  public static onPointerMove(this: void, event: PIXI.FederatedPointerEvent) {
+    const placing = StageManager.StageObjects.placing;
+    const selected = StageManager.StageObjects.selected;
+
+    if (placing.length) {
+      for (const item of placing) {
+        item.x = event.clientX;
+        item.y = event.clientY;
+      }
+    } else if (event.buttons === 1 && selected.length) {
+      // We are moving with the left mouse down and have objects selected
+
+      const resizing = StageManager.StageObjects.resizing;
+      if (resizing.length) {
+        for (const item of resizing) resizeItem(event, item);
+      } else if (selected.length) {
+        for (const item of selected) {
+          if (!item.dragging) {
+            // Initiate drag
+            item.dragging = true;
+            item.synchronize = false;
+          }
+          if (!DRAG_GHOSTS[item.id])
+            DRAG_GHOSTS[item.id] = createDragGhost(item);
+
+          dragItem(event, item);
+        }
+      }
+    }
+
+    // // Left mouse is down
+    // if (event.buttons === 1 && StageManager.StageObjects.selected.length) {
+    //   // log("Selected:", StageManager.StageObjects.selected);
+    //   // log("Dragging:", StageManager.StageObjects.dragging);
+    //   // log("Resizing:", StageManager.StageObjects.resizing);
+
+    //   const resizing = StageManager.StageObjects.resizing;
+    //   const dragging = StageManager.StageObjects.dragging;
+    //   const selected = StageManager.StageObjects.selected;
+
+    //   if (resizing.length) {
+    //     for (const item of resizing) resizeItem(event, item);
+    //   } else if (dragging.length) {
+    //     for (const item of selected) {
+    //       item.dragging = true;
+    //       dragItem(event, item);
+    //     }
+    //   }
+
+    //   if (resizing.length)
+    //     for (const item of resizing) resizeItem(event, item);
+    //   else if (dragging.length)
+    //     for (const item of selected) dragItem(event, item);
+
+
+    //   // const hasDragging = !!StageManager.StageObjects.dragging.length;
+    //   // StageManager.StageObjects.selected.forEach(item => {
+    //   //   if (item.selected && hasDragging) dragItem(event, item);
+    //   //   if (item.resizing) resizeItem(event, item);
+    //   // });
+    // }
   }
 
   public static onKeyDown(this: void, e: KeyboardEvent) {
@@ -60,11 +126,38 @@ export class InputManager {
   }
 
   public static onPointerDown(this: void, e: PIXI.FederatedPointerEvent) {
-    if (game?.settings?.get("core", "leftClickRelease")) {
-      StageManager.SelectedObjects.forEach(obj => {
-        if (!obj.interfaceContainer.getBounds().contains(e.clientX, e.clientY)) obj.selected = false;
-      });
+
+    // Check for deselection
+    const objectsUnderCursor = StageManager.StageObjects.filter(obj => obj.selectTool === game?.activeTool && obj.bounds.contains(e.clientX, e.clientY));
+    const resizeHandles = StageManager.StageObjects.filter(obj => obj.selectTool === game?.activeTool && !!obj.resizeHandle?.getBounds().contains(e.clientX, e.clientY));
+
+
+    if (!resizeHandles.length && !objectsUnderCursor.length) {
+      // No objects, no resize handles
+      StageManager.DeselectAll();
+    } else if (!resizeHandles.length && objectsUnderCursor.some(obj => obj.selected)) {
+      // Clicked a selected one, draggin' time
+      for (const obj of objectsUnderCursor) {
+        if (obj.selected) obj.dragging = true;
+      }
+    } else if (!resizeHandles.length) {
+      const highestObject = objectsUnderCursor.reduce((prev, curr) => curr.zIndex > prev.zIndex ? curr : prev);
+      log("Objects:", objectsUnderCursor);
+      log("Highest:", highestObject);
+      if (!highestObject.selected) {
+        StageManager.DeselectAll();
+        highestObject.selected = true;
+      }
     }
+
+    // const interactables = getInteractiveObjectsAtPoint(e.clientX, e.clientY);
+    // log("Pointer down:", interactables, StageManager.StageObjects.selected, game?.settings?.get("core", "leftClickRelease"));
+
+    // // Clicked on nothing and some items are selected
+    // if (!interactables.length && StageManager.StageObjects.selected.length && game?.settings?.get("core", "leftClickRelease")) {
+    //   StageManager.DeselectAll();
+    // }
+
   }
 
   // #endregion Public Static Methods (5)
@@ -105,7 +198,6 @@ function resizeItem(event: PIXI.FederatedPointerEvent, item: StageObject) {
     const ratio = Math.max(desiredWidth / item.baseWidth, desiredHeight / item.baseHeight);
     item.width = item.baseWidth * ratio;
     item.height = item.baseHeight * ratio;
-    log("Resizing:", item.width, item.height)
   } else {
     item.width = event.screenX - item.left;
     item.height = event.screenY - item.top;
@@ -132,3 +224,17 @@ function onScrollWheel(e: JQuery.TriggeredEvent<HTMLElement, undefined, HTMLElem
 }
 
 // #endregion Functions (3)
+
+function createDragGhost(stageObject: StageObject): PIXI.DisplayObject {
+  const newObj = StageManager.deserialize({
+    ...stageObject.serialize(),
+    id: foundry.utils.randomID()
+  });
+  if (!newObj) throw new InvalidStageObjectError(undefined);
+
+  stageObject.displayObject.parent.addChild(newObj.displayObject);
+  newObj.displayObject.zIndex = stageObject.displayObject.zIndex - 0.5;
+  newObj.alpha = 0.5;
+
+  return newObj?.displayObject;
+}

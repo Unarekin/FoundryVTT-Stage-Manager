@@ -23,6 +23,13 @@ export class StageObjects extends Collection<StageObject> {
   /** A list of {@link Stageobject}s on the UI {@link StageLayer} */
   public get ui() { return this.inLayer("ui"); }
 
+  public get selected() { return this.contents.filter(item => item.selected); }
+  public get highlighted() { return this.contents.filter(item => item.highlighted); }
+  public get dragging() { return this.contents.filter(item => item.dragging); }
+  public get resizing() { return this.contents.filter(item => item.resizing); }
+  public get placing() { return this.contents.filter(item => item.placing); }
+  public get locked() { return this.contents.filter(item => item.locked); }
+
   /** All objects at the highest zIndex value of a given {@link StageLayer} */
   public highestObjects(layer: StageLayer) {
     const inLayer = this.inLayer(layer);

@@ -1,7 +1,6 @@
 import { CannotDeserializeError, InvalidStageObjectError } from "../errors";
 import { closeAllContextMenus, localize, registerContextMenu } from "../functions";
 import { ScreenSpaceCanvasGroup } from "../ScreenSpaceCanvasGroup";
-import { SocketManager } from "../SocketManager";
 import { StageManager } from "../StageManager";
 import { SerializedStageObject, StageLayer } from "../types";
 
@@ -439,7 +438,7 @@ export abstract class StageObject {
     else if (this.selected && this.resizeHandle) this.resizeHandle.visible = true;
   }
 
-  protected get resizeHandle(): ResizeHandle | undefined { return this.interfaceContainer?.children.find(item => item.name === "handle") as ResizeHandle; }
+  public get resizeHandle(): ResizeHandle | undefined { return this.interfaceContainer?.children.find(item => item.name === "handle") as ResizeHandle; }
 
   public get selectTool() {
     if (this.displayObject.parent instanceof ScreenSpaceCanvasGroup) {
@@ -550,6 +549,12 @@ export abstract class StageObject {
 
   // #region Protected Methods (7)
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected onPointerDown(event: PIXI.FederatedMouseEvent) {
+    // if (StageManager.canModifyStageObject(game?.user?.id ?? "", this.id))
+    //   this.selected = true;
+  }
+
   protected onContextMenu(event: PIXI.FederatedMouseEvent) {
     if (game.activeTool !== this.selectTool) return;
 
@@ -622,38 +627,42 @@ export abstract class StageObject {
   private _dragGhost: PIXI.DisplayObject | null = null;
 
 
+  // protected onPointerDown(e: PIXI.FederatedPointerEvent) {
 
-  protected onPointerDown(e: PIXI.FederatedPointerEvent) {
-    if (this.placing) {
-      e.preventDefault();
-      this.placing = false;
-      SocketManager.addStageObject(this);
-    } else {
-      if (
-        this.draggable &&
-        StageManager.canModifyStageObject(game?.user?.id ?? "", this.id) &&
-        game.activeTool === this.selectTool
-      ) {
-        e.preventDefault();
-        this.dragging = true;
-        this.synchronize = false;
-        const ghost = StageManager.deserialize({
-          ...this.serialize(),
-          id: foundry.utils.randomID()
-        });
-        if (ghost) {
-          this._dragGhost = ghost.displayObject;
-          ghost.synchronize = false;
-          ghost.locked = true;
-          ghost.alpha = .5;
+  // }
 
-        }
-      }
-      if (StageManager.canModifyStageObject(game?.user?.id ?? "", this.id) && game.activeTool === this.selectTool) {
-        this.selected = true;
-      }
-    }
-  }
+  // protected onPointerDown(e: PIXI.FederatedPointerEvent) {
+  //   if (this.placing) {
+  //     e.preventDefault();
+  //     this.placing = false;
+  //     SocketManager.addStageObject(this);
+  //   } else {
+  //     if (
+  //       this.draggable &&
+  //       StageManager.canModifyStageObject(game?.user?.id ?? "", this.id) &&
+  //       game.activeTool === this.selectTool
+  //     ) {
+  //       e.preventDefault();
+  //       this.dragging = true;
+  //       this.synchronize = false;
+  //       const ghost = StageManager.deserialize({
+  //         ...this.serialize(),
+  //         id: foundry.utils.randomID()
+  //       });
+  //       if (ghost) {
+  //         this._dragGhost = ghost.displayObject;
+  //         ghost.synchronize = false;
+  //         ghost.locked = true;
+  //         ghost.alpha = .5;
+  //         ghost.sendToBack();
+
+  //       }
+  //     }
+  //     if (StageManager.canModifyStageObject(game?.user?.id ?? "", this.id) && game.activeTool === this.selectTool) {
+  //       this.selected = true;
+  //     }
+  //   }
+  // }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected onPointerEnter(e: PIXI.FederatedPointerEvent) {
