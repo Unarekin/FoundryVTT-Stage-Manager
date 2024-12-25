@@ -11,7 +11,7 @@ export class SocketManager {
 
   public static syncStageObjects(stageObjects: SerializedStageObject[]) {
     if (!StageManager.canAddStageObjects(game?.user?.id ?? "")) throw new PermissionDeniedError();
-    log("Synchronizing:", stageObjects);
+    // log("Synchronizing:", stageObjects);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     void socket.executeForOthers("syncStageObjects", stageObjects);
   }
