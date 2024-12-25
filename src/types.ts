@@ -7,28 +7,23 @@ export interface SerializedStageObject {
   owners: string[],
   version: string;
   layer: StageLayer;
-  data: Record<string, unknown>;
   name: string;
-}
-
-export interface SerializedTransform {
-  x: number;
-  y: number;
-  scaleX: number;
-  scaleY: number;
+  bounds: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+  skew: { x: number, y: number };
   rotation: number;
-  skewX: number;
-  skewY: number;
-  pivotX: number;
-  pivotY: number
+  locked: boolean;
+  filters: SerializedFilter[];
+  restrictToVisualArea: boolean;
 }
 
-// export enum ScreenAnchors {
-//   None = 0,             // 0
-//   Left = 1 << 0,        // 1
-//   Right = 1 << 1,       // 2
-//   Top = 1 << 2,         // 4
-//   Bottom = 1 << 3,      // 8
+export interface SerializedImageStageObject extends SerializedStageObject {
+  src: string;
+}
 
-//   All = (1 << 4) - 1    // 15
-// }
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface SerializedFilter { }

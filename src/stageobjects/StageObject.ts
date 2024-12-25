@@ -1,5 +1,6 @@
 import { CannotDeserializeError } from "../errors";
 import { closeAllContextMenus, localize, registerContextMenu } from "../functions";
+import { log } from "../logging";
 import { ScreenSpaceCanvasGroup } from "../ScreenSpaceCanvasGroup";
 import { SocketManager } from "../SocketManager";
 import { StageManager } from "../StageManager";
@@ -241,7 +242,9 @@ export abstract class StageObject {
 
 
 
+
   public get owners() { return StageManager.getOwners(this.id).reduce((prev: User[], curr: string) => game?.users?.get(curr) ? [...prev, game.users.get(curr) as User] : prev, [] as User[]); }
+  protected set owners(val) { void StageManager.setOwners(this.id, val.map(user => user.id ?? "")); }
 
   public get pivot() { return this.displayObject.pivot; }
 
@@ -405,15 +408,40 @@ export abstract class StageObject {
   // #region Public Methods (6)
 
   public deserialize(serialized: SerializedStageObject) {
-    this.name = serialized.name;
     this.id = serialized.id;
-    this.locked = !!serialized.data.locked;
+    this.name = serialized.name;
+    // void StageManager.setOwners(this.id, serialized.owners);
+    this.setLayer(serialized.layer ?? "primary");
+    this.restrictToVisualArea = serialized.restrictToVisualArea;
+    this.scaledDimensions.x = serialized.bounds.x;
+    this.scaledDimensions.y = serialized.bounds.y;
+    this.scaledDimensions.width = serialized.bounds.width;
+    this.scaledDimensions.height = serialized.bounds.height;
+    this.skew.x = serialized.skew.x;
+    this.skew.y = serialized.skew.y;
+    this.rotation = serialized.rotation;
+    this.locked = serialized.locked;
 
-    const dimensions = serialized.data.dimensions as { x: number, y: number, width: number, height: number } | undefined;
-    if (dimensions) {
-      this.x = window.innerWidth * dimensions.x;
-      this.y = window.innerHeight * dimensions.y;
-    }
+    log("Setting dimensions:");
+    log("Scaled:", serialized.bounds);
+    log("Screen bounds:", this.actualBounds)
+    log({
+      x: serialized.bounds.x * this.actualBounds.width,
+      y: serialized.bounds.y * this.actualBounds.height,
+      width: serialized.bounds.width * this.actualBounds.width,
+      height: serialized.bounds.height * this.actualBounds.height
+    });
+
+    this.x = serialized.bounds.x * this.actualBounds.width;
+    this.y = serialized.bounds.y * this.actualBounds.height;
+    this.width = serialized.bounds.width * this.actualBounds.width;
+    this.height = serialized.bounds.height * this.actualBounds.height;
+    log({
+      x: this.x,
+      y: this.y,
+      width: this.width,
+      height: this.height
+    });
   }
 
   public destroy() {
@@ -464,9 +492,14 @@ export abstract class StageObject {
       version: __MODULE_VERSION__,
       type: "",
       name: this.name ?? this.id,
-      data: {
-        locked: this.locked,
-        dimensions: this.scaledDimensions
+      locked: this.locked,
+      bounds: { ...this.scaledDimensions },
+      rotation: this.rotation,
+      restrictToVisualArea: this.restrictToVisualArea,
+      filters: [],
+      skew: {
+        x: this.skew.x,
+        y: this.skew.y
       }
     }
   }

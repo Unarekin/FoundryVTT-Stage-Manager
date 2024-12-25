@@ -114,7 +114,8 @@ export class StageManager {
       const newType = Object.values(stageObjectTypes).find(item => item.type === serialized.type);
       if (!newType) throw new InvalidStageObjectError(serialized.type);
 
-      return newType.deserialize(serialized);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      return newType.deserialize(serialized as any);
     } catch (err) {
       ui.notifications?.error((err as Error).message, { console: false });
       console.error(err);
@@ -135,6 +136,59 @@ export class StageManager {
     if (!coerceStageObject(objId)) throw new InvalidStageObjectError(objId);
     const owners = getSetting<Record<string, string[]>>("objectOwnership");
     return owners?.[objId] ?? [];
+  }
+
+  /**
+   * Overrides the list of user IDs that are considered to have ownership over a given {@link StageObject}
+   * @param {string} objId - id of the {@link StageObject}
+   * @param {string[]} owners 
+   */
+  public static async setOwners(objId: string, owners: string[]) {
+    try {
+      if (!game.user) throw new PermissionDeniedError();
+      if (!StageManager.canModifyStageObject(game.user.id, objId)) throw new PermissionDeniedError();
+
+      if (!coerceStageObject(objId)) throw new InvalidStageObjectError(objId);
+      await setSetting("objectOwnership", {
+        [objId]: owners
+      });
+    } catch (err) {
+      if (err instanceof Error) {
+        ui.notifications?.error(err.message, { console: false, localize: true });
+        console.error(err);
+      }
+    }
+  }
+
+  /**
+   * Adds a set of user IDs to the list of owners for a given {@link StageObject}
+   * @param {string} objId - ID of the {@link StageObject}
+   * @param {string[]} owners 
+   */
+  public static async addOwners(objId: string, owners: string[]): Promise<string[] | undefined> {
+    try {
+      if (!game.user) throw new PermissionDeniedError();
+      if (!StageManager.canModifyStageObject(game.user.id, objId)) throw new PermissionDeniedError();
+      if (!coerceStageObject(objId)) throw new InvalidStageObjectError(objId);
+      const current = StageManager.getOwners(objId);
+      const setting = getSetting<object>("objectOwnership") ?? {};
+
+      await setSetting("objectOwnership", foundry.utils.mergeObject(
+        setting,
+        {
+          [objId]: [
+            ...current,
+            ...owners
+          ]
+        }
+      ));
+      return StageManager.getOwners(objId);
+    } catch (err) {
+      if (err instanceof Error) {
+        ui.notifications?.error(err.message, { console: false, localize: true });
+        console.error(err);
+      }
+    }
   }
 
   /** Handles any initiatlization */

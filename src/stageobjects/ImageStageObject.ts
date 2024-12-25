@@ -1,4 +1,4 @@
-import { SerializedStageObject } from "../types";
+import { SerializedImageStageObject } from "../types";
 import { StageObject } from "./StageObject";
 import mime from "../mime";
 import { StageManager } from "../StageManager";
@@ -47,21 +47,12 @@ export class ImageStageObject extends StageObject {
 
   public get scale() { return this.displayObject.scale; }
 
-  public serialize(): SerializedStageObject {
-    const serialized = super.serialize();
-
+  public serialize(): SerializedImageStageObject {
     return {
-      ...serialized,
-      type: "image",
-      data: {
-        ...serialized.data,
-        image: this.path,
-        anchor: { x: this.anchor.x, y: this.anchor.y },
-        width: this.width,
-        height: this.height
-      }
+      ...super.serialize(),
+      type: ImageStageObject.type,
+      src: this.path
     }
-
   }
 
   public destroy() {
@@ -72,21 +63,8 @@ export class ImageStageObject extends StageObject {
 
   }
 
-  public deserialize(serialized: SerializedStageObject) {
-    super.deserialize(serialized);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    this.anchor.x = (serialized.data.anchor as any)?.x as number ?? 0;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    this.anchor.y = (serialized.data.anchor as any)?.y as number ?? 0;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    this.width = (serialized.data.dimensions as any)?.width as number * window.innerWidth;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    this.height = (serialized.data.dimensions as any)?.height as number * window.innerHeight;
-
-  }
-
-  public static deserialize(data: SerializedStageObject): ImageStageObject {
-    const obj = new ImageStageObject(data.data.image as string, data.data.name as string);
+  public static deserialize(data: SerializedImageStageObject): ImageStageObject {
+    const obj = new ImageStageObject(data.src, data.name);
     obj.deserialize(data);
 
     return obj;
@@ -150,7 +128,7 @@ export class ImageStageObject extends StageObject {
 
 
     const mimeType = mime(path);
-    const split = mimeType.split("/");
+    const split = mimeType ? "" : mimeType.split("/");
 
     let isVideo = false;
     if (split[0] === "video") {
