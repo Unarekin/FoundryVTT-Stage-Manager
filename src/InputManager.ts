@@ -131,8 +131,13 @@ export class InputManager {
     const objectsUnderCursor = StageManager.StageObjects.filter(obj => obj.selectTool === game?.activeTool && obj.bounds.contains(e.clientX, e.clientY));
     const resizeHandles = StageManager.StageObjects.filter(obj => obj.selectTool === game?.activeTool && !!obj.resizeHandle?.getBounds().contains(e.clientX, e.clientY));
 
-
-    if (!resizeHandles.length && !objectsUnderCursor.length) {
+    if (StageManager.StageObjects.placing.length) {
+      for (const placing of StageManager.StageObjects.placing) {
+        placing.placing = false;
+        placing.x = e.clientX;
+        placing.y = e.clientY;
+      }
+    } else if (!resizeHandles.length && !objectsUnderCursor.length) {
       // No objects, no resize handles
       StageManager.DeselectAll();
     } else if (!resizeHandles.length && objectsUnderCursor.some(obj => obj.selected)) {
