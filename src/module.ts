@@ -10,7 +10,7 @@ import { InputManager } from './InputManager';
 (window as any).StageManager = StageManager;
 
 
-Hooks.on("canvasReady", () => {
+Hooks.once("canvasReady", () => {
   (window as any).__PIXI_DEVTOOLS__ = {
     stage: canvas?.stage,
     renderer: canvas?.app?.renderer
@@ -30,7 +30,7 @@ Hooks.on("canvasReady", () => {
 Hooks.on("getSceneControlButtons", (controls: SceneControl[]) => { ControlButtonsHandler.register(controls); });
 Hooks.once("socketlib.ready", () => { SocketManager.init(); })
 
-Hooks.on("init", () => {
+Hooks.once("init", () => {
   registerSettings();
 });
 
