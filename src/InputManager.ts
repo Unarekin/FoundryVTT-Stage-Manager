@@ -84,7 +84,6 @@ export class InputManager {
           }
           if (!DRAG_GHOSTS[item.id]) {
             DRAG_GHOSTS[item.id] = createDragGhost(item);
-            log("Ghost:", DRAG_GHOSTS[item.id]);
           }
 
 
