@@ -512,6 +512,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     this.rotation = serialized.rotation;
     this.locked = serialized.locked;
     this.zIndex = serialized.zIndex;
+    this.alpha = serialized.alpha;
 
     this.x = serialized.bounds.x * this.actualBounds.width;
     this.y = serialized.bounds.y * this.actualBounds.height;
@@ -573,6 +574,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       restrictToVisualArea: this.restrictToVisualArea,
       filters: [],
       zIndex: this.zIndex,
+      alpha: this.alpha,
       skew: {
         x: this.skew.x,
         y: this.skew.y

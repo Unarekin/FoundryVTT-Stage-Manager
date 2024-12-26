@@ -22,6 +22,7 @@ export interface SerializedStageObject {
   filters: SerializedFilter[];
   restrictToVisualArea: boolean;
   zIndex: number;
+  alpha: number;
 }
 
 export interface SerializedImageStageObject extends SerializedStageObject {
