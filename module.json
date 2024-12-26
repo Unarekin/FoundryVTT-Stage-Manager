@@ -39,7 +39,7 @@
     ]
   },
   "esmodules": ["module.js"],
-  "scripts": ["greensock/dist/gsap.min.js"],
+  "scripts": ["greensock/dist/gsap.min.js", "vendor/pixi-gif.js"],
   "styles": ["styles/module.css"],
   "languages": [
     {

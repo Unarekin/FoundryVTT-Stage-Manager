@@ -46,7 +46,7 @@ class PinHash {
   }
 }
 
-export abstract class StageObject {
+export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObject> {
   // #region Properties (15)
 
   private _leftPinPos = -1;
@@ -157,22 +157,36 @@ export abstract class StageObject {
 
   // #endregion Properties (15)
 
+  public abstract createDragGhost(): t;
+
   // #region Constructors (1)
-
-  constructor(protected _displayObject: PIXI.DisplayObject, public name?: string) {
-    this.name = name ?? this.id;
-    this.displayObject.name = this.name;
-    this.displayObject.interactive = true;
-    this.displayObject.eventMode = "dynamic";
-
+  protected addDisplayObjectListeners() {
     this.displayObject
-      .on("destroyed", () => { this.destroy(); })
+      .on("destroyed", this.destroy.bind(this))
       .on("pointerdown", this.onPointerDown.bind(this))
       .on("pointerenter", this.onPointerEnter.bind(this))
       .on("pointerleave", this.onPointerLeave.bind(this))
       .on("rightdown", this.onContextMenu.bind(this))
       ;
+  }
 
+  protected removeDisplayObjectListeners() {
+    if (this.displayObject) {
+      this.displayObject
+        .off("destroyed", this.destroy.bind(this))
+        .off("pointerdown", this.onPointerDown.bind(this))
+        .off("pointerenter", this.onPointerEnter.bind(this))
+        .off("pointerleave", this.onPointerLeave.bind(this))
+        .off("rightdown", this.onContextMenu.bind(this))
+        ;
+    }
+  }
+
+  constructor(protected _displayObject: t, public name?: string) {
+    this.name = name ?? this.id;
+    this.displayObject.name = this.name;
+    this.displayObject.interactive = true;
+    this.displayObject.eventMode = "dynamic";
 
     // this.displayObject.on("prerender", this.onPreRender.bind(this));
     // canvas?.app?.renderer.addListener("prerender", this.onPreRender.bind(this))
@@ -249,6 +263,28 @@ export abstract class StageObject {
   public get destroyed() { return this.displayObject.destroyed; }
 
   public get displayObject() { return this._displayObject; }
+  protected set displayObject(val) {
+
+    if (this._displayObject) {
+      this.removeDisplayObjectListeners();
+      val.setParent(this._displayObject.parent);
+
+      const { skew, alpha, angle, x, y, pivot } = this._displayObject;
+      val.skew.x = skew.x;
+      val.skew.y = skew.y;
+      val.alpha = alpha;
+      val.angle = angle;
+      val.x = x;
+      val.y = y;
+      val.pivot.x = pivot.x;
+      val.pivot.y = pivot.y;
+      this._displayObject.destroy();
+    }
+
+    this._displayObject = val;
+    this.addDisplayObjectListeners();
+
+  }
 
   public get draggable() { return !this.locked && this._draggable; }
 

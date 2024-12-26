@@ -2,11 +2,22 @@ import { SerializedImageStageObject } from "../types";
 import { StageObject } from "./StageObject";
 import mime from "../mime";
 import { StageManager } from "../StageManager";
+import { log } from "../logging";
 
-export class ImageStageObject extends StageObject {
+export class ImageStageObject extends StageObject<PIXI.Sprite> {
   public static type = "image";
 
-  public get displayObject(): PIXI.Sprite { return this._displayObject as PIXI.Sprite; }
+  public get displayObject(): PIXI.Sprite { return super.displayObject; }
+  public set displayObject(val) {
+    if (this.displayObject) {
+      const { width, height, anchor } = this.displayObject;
+      val.width = width;
+      val.height = height;
+      val.anchor.x = anchor.x;
+      val.anchor.y = anchor.y;
+    }
+    super.displayObject = val;
+  }
 
   public get width() { return this.displayObject.width; }
   public set width(width) {
@@ -128,7 +139,9 @@ export class ImageStageObject extends StageObject {
 
 
     const mimeType = mime(path);
-    const split = mimeType ? "" : mimeType.split("/");
+    const split = mimeType ? mimeType.split("/") : [];
+
+    log("MIME:", mimeType, mimeType.split("/"));
 
     let isVideo = false;
     if (split[0] === "video") {
@@ -139,6 +152,14 @@ export class ImageStageObject extends StageObject {
       vid.autoplay = true;
       vid.loop = true;
       sprite = PIXI.Sprite.from(vid);
+    } else if (split[1] === "gif") {
+      log("GIF:", path);
+      PIXI.Assets.load(path)
+        .then(img => { this.displayObject = img as PIXI.Sprite; })
+        .catch((err: Error) => {
+          ui.notifications?.error(err.message, { console: false, localize: true });
+          console.error(err);
+        });
     }
 
     if (!sprite) sprite = PIXI.Sprite.from(path);
@@ -147,6 +168,7 @@ export class ImageStageObject extends StageObject {
     this.anchor.y = 0.5;
     this.resizable = true;
     this.#isVideo = isVideo;
+    this.loop = true;
   }
 
   public get baseWidth() { return this.displayObject.texture.width; }
@@ -184,5 +206,14 @@ export class ImageStageObject extends StageObject {
   }
 
 
+  public createDragGhost(): PIXI.Sprite {
+    const tex = this.displayObject.texture.clone();
+    const sprite = new PIXI.Sprite(tex);
+    sprite.width = this.width;
+    sprite.height = this.height;
+    sprite.anchor.x = this.anchor.x;
+    sprite.anchor.y = this.anchor.y;
+    return sprite;
+  }
 
 }

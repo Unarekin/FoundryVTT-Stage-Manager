@@ -1,8 +1,8 @@
 import { StageManager } from "./StageManager";
-import { InvalidStageObjectError } from "./errors";
 import { CanvasNotInitializedError } from './errors/CanvasNotInitializedError';
 import { StageObject } from "./stageobjects";
 import { TOOLS } from "./ControlButtonsHandler";
+import { log } from "./logging";
 
 // #region Classes (1)
 
@@ -38,8 +38,12 @@ export class InputManager {
     // Destroy all drag ghosts
     const keys = [...Object.keys(DRAG_GHOSTS)];
     for (const key of keys) {
-      DRAG_GHOSTS[key].destroy();
-      delete DRAG_GHOSTS[key];
+      try {
+        DRAG_GHOSTS[key].destroy();
+        delete DRAG_GHOSTS[key];
+      } catch {
+        // empty
+      }
     }
 
     if (rectangleSelect)
@@ -78,8 +82,11 @@ export class InputManager {
             item.dragging = true;
             item.synchronize = false;
           }
-          if (!DRAG_GHOSTS[item.id])
+          if (!DRAG_GHOSTS[item.id]) {
             DRAG_GHOSTS[item.id] = createDragGhost(item);
+            log("Ghost:", DRAG_GHOSTS[item.id]);
+          }
+
 
           dragItem(event, item);
         }
@@ -101,7 +108,7 @@ export class InputManager {
 
         const highlight = StageManager.StageObjects.within(bounds).filter(item => item.selectTool === game.activeTool)
         for (const item of highlight) item.highlighted = true;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+
       } else if (TOOLS.includes(game.activeTool ?? "")) {
         startRectangleSelect(event);
       }
@@ -216,17 +223,13 @@ function onScrollWheel(e: JQuery.TriggeredEvent<HTMLElement, undefined, HTMLElem
 // #endregion Functions (3)
 
 function createDragGhost(stageObject: StageObject): PIXI.DisplayObject {
-  const newObj = StageManager.deserialize({
-    ...stageObject.serialize(),
-    id: foundry.utils.randomID()
-  });
-  if (!newObj) throw new InvalidStageObjectError(undefined);
-
-  stageObject.displayObject.parent.addChild(newObj.displayObject);
-  newObj.displayObject.zIndex = stageObject.displayObject.zIndex - 0.5;
+  const newObj = stageObject.createDragGhost();
+  stageObject.displayObject.parent.addChild(newObj);
   newObj.alpha = 0.5;
-
-  return newObj?.displayObject;
+  newObj.zIndex = stageObject.zIndex - 0.5;
+  newObj.x = stageObject.x;
+  newObj.y = stageObject.y;
+  return newObj;
 }
 
 let rectangleSelect: PIXI.Graphics | null = null;
