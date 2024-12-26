@@ -141,8 +141,6 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
     const mimeType = mime(path);
     const split = mimeType ? mimeType.split("/") : [];
 
-    log("MIME:", mimeType, mimeType.split("/"));
-
     let isVideo = false;
     if (split[0] === "video") {
       // Handle video

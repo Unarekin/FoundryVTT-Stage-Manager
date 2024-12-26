@@ -2,7 +2,6 @@ import { StageManager } from "./StageManager";
 import { CanvasNotInitializedError } from './errors/CanvasNotInitializedError';
 import { StageObject } from "./stageobjects";
 import { TOOLS } from "./ControlButtonsHandler";
-import { log } from "./logging";
 
 // #region Classes (1)
 
@@ -102,11 +101,15 @@ export class InputManager {
         rectangleSelect.lineStyle({ width: thickness / 2, color: 0xFFFFFF, join: PIXI.LINE_JOIN.ROUND, alignment: 1 })
           .drawShape(bounds);
 
-        const highlighted = StageManager.StageObjects.highlighted;
-        for (const item of highlighted) item.highlighted = false;
-
         const highlight = StageManager.StageObjects.within(bounds).filter(item => item.selectTool === game.activeTool)
-        for (const item of highlight) item.highlighted = true;
+        const highlighted = StageManager.StageObjects.highlighted;
+        for (const item of highlighted) {
+          if (!highlight.includes(item)) item.highlighted = false;
+        }
+
+        for (const item of highlight) {
+          if (!item.highlighted) item.highlighted = true;
+        }
 
       } else if (TOOLS.includes(game.activeTool ?? "")) {
         startRectangleSelect(event);

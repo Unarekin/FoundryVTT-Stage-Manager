@@ -104,7 +104,6 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   public get dragging() { return this._dragging && this.draggable; }
   public set dragging(val) {
     if (this.draggable) this._dragging = val;
-    if (!val && this._dragGhost) this._dragGhost.destroy();
   }
 
   public get placing() { return this._placing; }
@@ -161,6 +160,8 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
   // #region Constructors (1)
   protected addDisplayObjectListeners() {
+    this.displayObject.interactive = true;
+    this.displayObject.eventMode = "dynamic";
     this.displayObject
       .on("destroyed", this.destroy.bind(this))
       .on("pointerdown", this.onPointerDown.bind(this))
@@ -182,11 +183,10 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     }
   }
 
-  constructor(protected _displayObject: t, public name?: string) {
+  constructor(private _displayObject: t, public name?: string) {
+    this.addDisplayObjectListeners();
+
     this.name = name ?? this.id;
-    this.displayObject.name = this.name;
-    this.displayObject.interactive = true;
-    this.displayObject.eventMode = "dynamic";
 
     // this.displayObject.on("prerender", this.onPreRender.bind(this));
     // canvas?.app?.renderer.addListener("prerender", this.onPreRender.bind(this))
@@ -282,8 +282,10 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     }
 
     this._displayObject = val;
+    val.name = this.name ?? this.id;
+    val.interactive = true;
+    val.eventMode = "dynamic";
     this.addDisplayObjectListeners();
-
   }
 
   public get draggable() { return !this.locked && this._draggable; }
@@ -306,6 +308,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     if (value) {
       this.interfaceContainer.visible = true;
       this.interfaceContainer.interactiveChildren = true;
+      this.sizeInterfaceContainer();
     } else if (!this.selected) {
       this.interfaceContainer.visible = false;
       this.interfaceContainer.interactiveChildren = false;
@@ -659,46 +662,6 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     this.resizing = true;
     this.synchronize = false;
   }
-
-  private _dragGhost: PIXI.DisplayObject | null = null;
-
-
-  // protected onPointerDown(e: PIXI.FederatedPointerEvent) {
-
-  // }
-
-  // protected onPointerDown(e: PIXI.FederatedPointerEvent) {
-  //   if (this.placing) {
-  //     e.preventDefault();
-  //     this.placing = false;
-  //     SocketManager.addStageObject(this);
-  //   } else {
-  //     if (
-  //       this.draggable &&
-  //       StageManager.canModifyStageObject(game?.user?.id ?? "", this.id) &&
-  //       game.activeTool === this.selectTool
-  //     ) {
-  //       e.preventDefault();
-  //       this.dragging = true;
-  //       this.synchronize = false;
-  //       const ghost = StageManager.deserialize({
-  //         ...this.serialize(),
-  //         id: foundry.utils.randomID()
-  //       });
-  //       if (ghost) {
-  //         this._dragGhost = ghost.displayObject;
-  //         ghost.synchronize = false;
-  //         ghost.locked = true;
-  //         ghost.alpha = .5;
-  //         ghost.sendToBack();
-
-  //       }
-  //     }
-  //     if (StageManager.canModifyStageObject(game?.user?.id ?? "", this.id) && game.activeTool === this.selectTool) {
-  //       this.selected = true;
-  //     }
-  //   }
-  // }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected onPointerEnter(e: PIXI.FederatedPointerEvent) {
