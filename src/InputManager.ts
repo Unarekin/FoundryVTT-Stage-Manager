@@ -2,10 +2,12 @@ import { StageManager } from "./StageManager";
 import { CanvasNotInitializedError } from './errors/CanvasNotInitializedError';
 import { StageObject } from "./stageobjects";
 import { TOOLS } from "./ControlButtonsHandler";
+import { StageLayer } from "./types";
 
 // #region Classes (1)
 
 const DRAG_GHOSTS: Record<string, PIXI.DisplayObject> = {};
+const PLACING_GHOSTS: PIXI.DisplayObject[] = [];
 
 export class InputManager {
   // #region Public Static Methods (5)
@@ -59,6 +61,31 @@ export class InputManager {
     })
   }
 
+  public static async PlaceDisplayObject(obj: PIXI.DisplayObject, layer: StageLayer): Promise<PIXI.DisplayObject> {
+
+    return new Promise<PIXI.DisplayObject>((resolve, reject) => {
+      try {
+        if (!canvas?.stage) throw new CanvasNotInitializedError();
+        const group = StageManager.getCanvasGroup(layer);
+        if (!group) throw new CanvasNotInitializedError();
+
+        group.addChild(obj);
+        PLACING_GHOSTS.push(obj);
+        canvas.stage.once("pointerdown", e => {
+          obj.x = e.clientX;
+          obj.y = e.clientY;
+          // Remove from array
+          const index = PLACING_GHOSTS.indexOf(obj);
+          if (index !== -1) PLACING_GHOSTS.splice(index, 1);
+
+          resolve(obj);
+        });
+      } catch (err) {
+        reject(err as Error);
+      }
+    });
+  }
+
   public static onPointerMove(this: void, event: PIXI.FederatedPointerEvent) {
     const selected = StageManager.StageObjects.selected;
 
@@ -108,6 +135,11 @@ export class InputManager {
       } else if (TOOLS.includes(game.activeTool ?? "")) {
         startRectangleSelect(event);
       }
+    } else if (event.buttons === 0 && PLACING_GHOSTS.length) {
+      PLACING_GHOSTS.forEach(item => {
+        item.x = event.clientX;
+        item.y = event.clientY;
+      });
     }
   }
 

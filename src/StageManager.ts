@@ -47,6 +47,16 @@ export class StageManager {
     }
   }
 
+  public static getCanvasGroup(layer: StageLayer): ScreenSpaceCanvasGroup | undefined {
+    return [
+      this.backgroundCanvasGroup,
+      this.foregroundCanvasGroup,
+      this.primaryCanvasGroup,
+      this.textCanvasGroup,
+      this.uiCanvasGroup
+    ].find(item => item.layer === layer);
+  }
+
   public static get backgroundCanvasGroup() { return bgCanvasGroup; }
 
   public static get foregroundCanvasGroup() { return fgCanvasGroup; }

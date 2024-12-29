@@ -1,3 +1,4 @@
+import { InputManager } from "./InputManager";
 import { log } from "./logging";
 import { StageManager } from "./StageManager";
 import { ImageStageObject } from "./stageobjects";
@@ -108,12 +109,22 @@ function addImage() {
     displayMode: "tiles",
     callback: result => {
       if (result) {
-        const obj = new ImageStageObject(result);
-        obj.placing = true;
         const layer = TOOL_LAYERS[game?.activeTool ?? ""];
         if (!layer) return;
-        StageManager.addStageObject(obj, layer, true);
-
+        const sprite = PIXI.Sprite.from(result);
+        sprite.anchor.x = 0.5;
+        sprite.anchor.y = 0.5;
+        InputManager.PlaceDisplayObject(sprite, layer)
+          .then(obj => {
+            const image = new ImageStageObject(result);
+            image.x = obj.x;
+            image.y = obj.y;
+            StageManager.addStageObject(image, layer);
+            obj.destroy();
+          }).catch((err: Error) => {
+            ui.notifications?.error(err.message, { localize: true, console: false });
+            console.error(err);
+          })
       }
     },
   }).render(true);
