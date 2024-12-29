@@ -267,7 +267,6 @@ export class StageManager {
     });
 
     Hooks.on(CUSTOM_HOOKS.REMOTE_REMOVED, (id: string) => {
-
       const obj = StageManager.StageObjects.get(id);
       log("Item removed:", id, obj);
       if (!obj) throw new InvalidStageObjectError(id);
@@ -283,7 +282,8 @@ export class StageManager {
   public static removeStageObject(arg: unknown): boolean {
     const obj = coerceStageObject(arg);
     if (!obj) throw new InvalidStageObjectError(arg);
-    if (!StageManager.canDeleteStageObject(game.user?.id ?? "", obj.id)) throw new PermissionDeniedError();
+
+    if (!obj.destroyed && !StageManager.canDeleteStageObject(game.user?.id ?? "", obj.id)) throw new PermissionDeniedError();
     if (!obj.destroyed) obj.destroy();
     return StageManager.StageObjects.delete(obj.id);
   }

@@ -68,6 +68,8 @@ export class SynchronizationManager {
         // Reverse to keep the most recent elements
         const index = arr.reverse().findIndex(item => item.id === curr.id);
         if (index !== i) return prev;
+        const obj = coerceStageObject(curr.id);
+        if (!obj || obj.destroyed) return prev;
         if (!StageManager.canDeleteStageObject(userId, curr.id)) return prev;
         return [...prev, curr.id]
       }, [] as string[])
