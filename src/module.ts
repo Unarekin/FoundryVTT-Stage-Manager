@@ -6,6 +6,7 @@ import { SocketManager } from "./SocketManager";
 import { SerializedStageObject } from "./types";
 import { getSetting, registerSettings } from './Settings';
 import { InputManager } from './InputManager';
+import { SynchronizationManager } from './SynchronizationManager';
 
 (window as any).StageManager = StageManager;
 
@@ -37,6 +38,7 @@ Hooks.once("init", () => {
 Hooks.once("ready", () => {
   const persisted = getSetting<SerializedStageObject[]>("currentObjects") ?? []
   StageManager.Synchronize(persisted);
+  SynchronizationManager.init();
 });
 
 Hooks.on("deactivateStageManagerControlsLayer", () => {

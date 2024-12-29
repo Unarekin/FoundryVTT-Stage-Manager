@@ -3,48 +3,12 @@ import { closeAllContextMenus, localize, registerContextMenu } from "../function
 import { ScreenSpaceCanvasGroup } from "../ScreenSpaceCanvasGroup";
 import { StageManager } from "../StageManager";
 import { SerializedStageObject, StageLayer } from "../types";
+import { PinHash } from "./PinHash";
+import deepProxy from "../lib/deepProxy";
+import { CUSTOM_HOOKS } from "../hooks";
+import { log } from "../logging";
 
-type PinHashCallback = (left: boolean, right: boolean, top: boolean, bottom: boolean) => void;
-
-class PinHash {
-  #left = false;
-  #right = false;
-  #top = false;
-  #bottom = false;
-
-  public get left() { return this.#left; }
-  public set left(val) {
-    this.#left = val;
-    this.#callCB();
-  }
-
-  public get right() { return this.#right; }
-  public set right(val) {
-    this.#right = val;
-    this.#callCB();
-  }
-
-  public get top() { return this.#top; }
-  public set top(val) {
-    this.#top = val;
-    this.#callCB();
-  }
-
-  public get bottom() { return this.#bottom; }
-  public set bottom(val) {
-    this.#bottom = val;
-    this.#callCB();
-  }
-
-
-  #cb: PinHashCallback
-  #callCB() {
-    this.#cb(this.left, this.right, this.top, this.bottom);
-  }
-  constructor(cb: PinHashCallback) {
-    this.#cb = cb;
-  }
-}
+const KNOWN_OBJECTS: Record<string, StageObject> = {};
 
 export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObject> {
   // #region Properties (15)
@@ -60,8 +24,6 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   private _resizable = false;
   private _selected = false;
   private _dragging = false;
-  private _placing = false;
-  private _dragAlpha = 1;
 
   protected scaledDimensions = {
     x: 0,
@@ -70,9 +32,20 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     height: 0
   }
 
+  public dirty = false;
+
+  // private _dirty = false;
+  // public get dirty() { return this._dirty; }
+  // protected set dirty(val) { this._dirty = val; }
+
   protected readonly pin = new PinHash(this.onPinChange.bind(this));
 
-  public restrictToVisualArea = false;
+  private _restrictToVisualArea = false;
+  public get restrictToVisualArea() { return this._restrictToVisualArea; }
+  public set restrictToVisualArea(val) {
+    if (val !== this._restrictToVisualArea) this.dirty = true;
+    this._restrictToVisualArea = val;
+  }
 
   protected _id = foundry.utils.randomID();
   protected _originalScreenHeight: number;
@@ -90,44 +63,63 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
     if (bottom) this._bottomPinPos = this.bottom;
     else this._bottomPinPos = -1;
+    this.dirty = true;
   }
 
-  public preserveAspectRatio = true;
+  // public preserveAspectRatio = true;
+  private _preserveAspectRatio = true;
+  public get preserveAspectRatio() { return this._preserveAspectRatio; }
+  public set preserveAspectRatio(val) {
+    if (val !== this._preserveAspectRatio) this.dirty = true;
+    this._preserveAspectRatio = val;
+  }
 
   public readonly interfaceContainer = new PIXI.Container();
 
   // public readonly resizable: boolean = false;
-  public static type = "UNKNOWN";
+  public static readonly type: string = "UNKNOWN";
 
   // public readonly id = foundry.utils.randomID();
 
   public get dragging() { return this._dragging && this.draggable; }
   public set dragging(val) {
-    if (this.draggable) this._dragging = val;
-  }
-
-  public get placing() { return this._placing; }
-  public set placing(val) {
-    if (val) {
-      this._dragAlpha = this.alpha;
-      if (this.alpha > 0.5) this.alpha = 0.5;
-      this._placing = true;
-    } else {
-      this.alpha = this._dragAlpha;
-      this._placing = false;
-      this.bringToFront();
+    if (this.draggable && val) {
+      if (val !== this._dragging) this.dirty = true;
+      this._dragging = val;
+    } else if (!val) {
+      if (val !== this._dragging) this.dirty = true;
+      this._dragging = val;
     }
   }
 
   public get alpha() { return this.displayObject.alpha; }
-  public set alpha(val) { this.displayObject.alpha = val; }
+  public set alpha(val) {
+    if (val !== this.alpha) this.dirty = true;
+    this.displayObject.alpha = val;
+  }
 
   public get opacity() { return this.alpha; }
-  public set opacity(val) { this.alpha = val; }
+  public set opacity(val) {
+    if (val !== this.alpha) this.dirty = true;
+    this.alpha = val;
+  }
 
 
-  public resizing = false;
-  public synchronize = false;
+  // public resizing = false;
+  // public synchronize = false;
+  private _resizing = false;
+  private _synchronize = false;
+  public get resizing() { return this._resizing; }
+  public set resizing(val) {
+    if (val !== this.resizing) this.dirty = true;
+    this._resizing = val;
+  }
+
+  public get synchronize() { return this._synchronize; }
+  public set synchronize(val) {
+    if (val !== this.synchronize) this.dirty = true;
+    this._synchronize = val;
+  }
 
   public get zIndex() { return this.displayObject.zIndex; }
   public set zIndex(z) { this.displayObject.zIndex = z; }
@@ -183,10 +175,26 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     }
   }
 
-  constructor(private _displayObject: t, public name?: string) {
+
+  #hookId = 0;
+
+  protected onSynchronize(item: SerializedStageObject) {
+    if (item.id === this.id) {
+      this.deserialize(item);
+      this.dirty = false;
+    }
+  }
+
+  constructor(_displayObject: t, public name?: string) {
+    this.#displayObject = this.proxyDisplayObject(_displayObject);
+    this.#displayObject.interactive = true;
+    this.#displayObject.eventMode = "dynamic";
     this.addDisplayObjectListeners();
 
     this.name = name ?? this.id;
+
+    // this.#hookId = Hooks.on(CUSTOM_HOOKS.SYNC_END, this.synchronizationEnd.bind(this));
+    this.#hookId = Hooks.on(CUSTOM_HOOKS.SYNC_OBJECT, this.onSynchronize.bind(this));
 
     // this.displayObject.on("prerender", this.onPreRender.bind(this));
     // canvas?.app?.renderer.addListener("prerender", this.onPreRender.bind(this))
@@ -230,6 +238,9 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
     this._originalScreenWidth = window.innerWidth;
     this._originalScreenHeight = window.innerHeight;
+    this.dirty = false;
+
+    KNOWN_OBJECTS[this.id] = this;
   }
 
   // #endregion Constructors (1)
@@ -249,6 +260,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
   public get bottom() { return this.y; }
   public set bottom(bottom) {
+    if (bottom !== this.y) this.dirty = true;
     this.y = bottom;
     this.updateScaledDimensions();
     this.updatePinLocations();
@@ -262,35 +274,63 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
   public get destroyed() { return this.displayObject.destroyed; }
 
-  public get displayObject() { return this._displayObject; }
+  #displayObject: t;
+  // #revokeDisplayProxy
+  public get displayObject() { return this.#displayObject; }
   protected set displayObject(val) {
-
-    if (this._displayObject) {
+    this.dirty = true;
+    if (this.#displayObject) {
       this.removeDisplayObjectListeners();
-      val.setParent(this._displayObject.parent);
 
-      const { skew, alpha, angle, x, y, pivot } = this._displayObject;
-      val.skew.x = skew.x;
-      val.skew.y = skew.y;
-      val.alpha = alpha;
-      val.angle = angle;
-      val.x = x;
-      val.y = y;
-      val.pivot.x = pivot.x;
-      val.pivot.y = pivot.y;
-      this._displayObject.destroy();
+      if (val) {
+        val.setParent(this.#displayObject.parent);
+
+        const { skew, alpha, angle, x, y, pivot } = this.#displayObject;
+        val.skew.x = skew.x;
+        val.skew.y = skew.y;
+        val.alpha = alpha;
+        val.angle = angle;
+        val.x = x;
+        val.y = y;
+        val.pivot.x = pivot.x;
+        val.pivot.y = pivot.y;
+        this.#displayObject.destroy();
+      }
     }
 
-    this._displayObject = val;
-    val.name = this.name ?? this.id;
-    val.interactive = true;
-    val.eventMode = "dynamic";
-    this.addDisplayObjectListeners();
+    if (!val) {
+      this.#displayObject = val;
+    } else {
+      this.#displayObject = this.proxyDisplayObject(val);
+      // this._displayObject = val;
+      this.#displayObject.name = this.name ?? this.id;
+      this.#displayObject.interactive = true;
+      this.#displayObject.eventMode = "dynamic";
+      this.addDisplayObjectListeners();
+    }
+  }
+
+  #revokeProxy: (() => void) | null = null;
+
+  private proxyDisplayObject(val: t): t {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const temp = this;
+    const { proxy, revoke } = deepProxy<t>(val, {
+      set(target, prop, value) {
+        if (typeof prop === "string" && !prop.startsWith("_") && prop !== "worldAlpha")
+          temp.dirty = true;
+
+        return Reflect.set(target, prop, value);
+      }
+    });
+    this.#revokeProxy = revoke;
+    return proxy
   }
 
   public get draggable() { return !this.locked && this._draggable; }
 
   public set draggable(draggable) {
+    if (draggable !== this._draggable) this.dirty = true;
     this._draggable = draggable;
     if (this.dragging) this.dragging = false;
   }
@@ -325,6 +365,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
   public get left() { return this.x; }
   public set left(left) {
+    if (left !== this.x) this.dirty = true;
     this.x = left;
     this.updateScaledDimensions();
     this.updatePinLocations();
@@ -334,7 +375,13 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
 
   public get owners() { return StageManager.getOwners(this.id).reduce((prev: User[], curr: string) => game?.users?.get(curr) ? [...prev, game.users.get(curr) as User] : prev, [] as User[]); }
-  protected set owners(val) { void StageManager.setOwners(this.id, val.map(user => user.id ?? "")); }
+  protected set owners(val) {
+    if (!foundry.utils.objectsEqual(this.owners, val)) {
+      this.dirty = true;
+      void StageManager.setOwners(this.id, val.map(user => user.id ?? ""));
+    }
+
+  }
 
   public get pivot() { return this.displayObject.pivot; }
 
@@ -343,7 +390,9 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   public get resizable() { return !this.locked && this._resizable; }
 
   public set resizable(resizable) {
+    if (resizable !== this._resizable) this.dirty = true;
     this._resizable = resizable;
+
     if (!resizable) {
       if (this.resizeHandle) this.resizeHandle.visible = false;
     }
@@ -352,6 +401,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   public get right() { return this.x + this.width; }
   public set right(right) {
     // this.x = right;
+    if (this.x !== this.actualBounds.right - right) this.dirty = true;
     this.x = this.actualBounds.right - right;
     this.updateScaledDimensions();
     this.updatePinLocations();
@@ -368,6 +418,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
   public set selected(value) {
     this._selected = value;
+    // this.dirty = true;
     if (value) {
       this.interfaceContainer.visible = true;
       this.interfaceContainer.interactiveChildren = true;
@@ -389,6 +440,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
   public get top() { return this.y; }
   public set top(top) {
+    if (top !== this.y) this.dirty = true;
     this.y = top;
     this.updateScaledDimensions();
     this.updatePinLocations();
@@ -397,6 +449,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   public get transform() { return this.displayObject.transform; }
 
   public set transform(transform) {
+    if (!foundry.utils.objectsEqual(transform, this.displayObject.transform)) this.dirty = true;
     this.displayObject.setTransform(
       transform.position.x, transform.position.y,
       transform.scale.x, transform.scale.y,
@@ -467,11 +520,31 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     ];
   }
 
-  protected set id(id) { this._id = id; }
+  protected set id(id) {
+    if (id !== this._id) {
+      this.dirty = true;
+      if (Object.keys(KNOWN_OBJECTS).includes(this._id)) delete KNOWN_OBJECTS[this._id];
+      this._id = id;
+      KNOWN_OBJECTS[id] = this;
+    }
+
+  }
   public get id() { return this._id; }
+
+  /**
+   * Attempts to locate a StageObject by name or ID.
+   * @param id 
+   * @returns 
+   */
+  public static find(id: string): StageObject | undefined {
+    if (KNOWN_OBJECTS[id]) return KNOWN_OBJECTS[id];
+    const obj = Object.values(KNOWN_OBJECTS).find(item => item.name === id);
+    if (obj) return obj;
+  }
 
   public get locked(): boolean { return this._locked; }
   protected set locked(value) {
+    if (value !== this._locked) this.dirty = true;
     this._locked = value;
     if (value && this.resizeHandle) this.resizeHandle.visible = false;
     else if (this.selected && this.resizeHandle) this.resizeHandle.visible = true;
@@ -518,14 +591,23 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     this.y = serialized.bounds.y * this.actualBounds.height;
     this.width = serialized.bounds.width * this.actualBounds.width;
     this.height = serialized.bounds.height * this.actualBounds.height;
+
+    this.dirty = false;
   }
 
   public destroy() {
     if (!this.destroyed) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+      TweenMax.killTweensOf(this.displayObject);
       if (!this.displayObject.destroyed) this.displayObject.destroy();
       // StageManager.StageObjects.delete(this.id);
       StageManager.removeStageObject(this);
       if (!this.interfaceContainer.destroyed) this.interfaceContainer.destroy();
+      if (this.#revokeProxy) this.#revokeProxy();
+      Hooks.off(CUSTOM_HOOKS.SYNC_OBJECT, this.#hookId);
+      delete KNOWN_OBJECTS[this.id];
+      // This is a terrible idea, but we are releasing the reference to our Proxy at this point to let things get properly garbage collected
+      (this.#displayObject as any) = null;
     }
   }
 
@@ -561,6 +643,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   }
 
   public serialize(): SerializedStageObject {
+    log("Serializing:", this.scaledDimensions);
     return {
       id: this.id,
       layer: this.layer as StageLayer ?? "primary",
@@ -583,7 +666,10 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   }
 
   public setLayer(layer: StageLayer) {
-    if (this.layer !== layer) StageManager.setStageObjectLayer(this, layer);
+    if (this.layer !== layer) {
+      this.dirty = true;
+      StageManager.setStageObjectLayer(this, layer);
+    }
   }
 
   // #endregion Public Methods (6)
@@ -667,7 +753,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected onPointerEnter(e: PIXI.FederatedPointerEvent) {
-    if (!this.placing && game.activeTool === this.selectTool && StageManager.canModifyStageObject(game.user?.id ?? "", this.id)) {
+    if (game.activeTool === this.selectTool && StageManager.canModifyStageObject(game.user?.id ?? "", this.id)) {
       this.highlighted = true;
     }
   }

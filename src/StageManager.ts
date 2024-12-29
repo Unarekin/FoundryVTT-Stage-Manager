@@ -3,10 +3,11 @@ import { ImageStageObject, StageObject } from './stageobjects/';
 import { SerializedStageObject, StageLayer } from './types';
 import { coerceStageObject, coerceUser } from './coercion';
 import { StageObjects } from './StageObjectCollection';
-import { InvalidStageObjectError, PermissionDeniedError } from './errors';
+import { CannotDeserializeError, InvalidStageObjectError, PermissionDeniedError } from './errors';
 import * as stageObjectTypes from "./stageobjects";
-import { SocketManager } from './SocketManager';
 import { getSetting, setSetting } from './Settings';
+import { CUSTOM_HOOKS } from './hooks';
+import { log } from './logging';
 
 // #region Classes (1)
 
@@ -14,13 +15,37 @@ import { getSetting, setSetting } from './Settings';
  * Core class for Stage Manager
  */
 export class StageManager {
-  // #region Public Static Getters And Setters (8)
+  // #region Public Static Getters And Setters (10)
 
   public static get HighlightedObjects(): StageObject[] { return StageManager.StageObjects.filter(obj => obj.highlighted); }
+
+  public static get ScreenBounds(): { left: number, right: number, top: number, bottom: number, width: number, height: number } {
+    return {
+      left: 0,
+      top: 0,
+      right: window.innerWidth,
+      bottom: window.innerHeight,
+      width: window.innerWidth,
+      height: window.innerHeight
+    }
+  }
 
   public static get SelectedObjects(): StageObject[] { return StageManager.StageObjects.filter(obj => obj.selected); }
 
   public static get StageObjects() { return stageObjects; }
+
+  public static get VisualBounds(): { left: number, right: number, top: number, bottom: number, width: number, height: number } {
+    const left = $("#ui-left").position().left + ($("#ui-left").width() ?? 0);
+    const right = $("#ui-right").position().left;
+    const top = $("#ui-top").position().top + ($("#ui-top").height() ?? 0);
+    const bottom = $("#ui-bottom").position().top;
+
+    return {
+      left, right, top, bottom,
+      width: right - left,
+      height: bottom - top
+    }
+  }
 
   public static get backgroundCanvasGroup() { return bgCanvasGroup; }
 
@@ -32,12 +57,20 @@ export class StageManager {
 
   public static get uiCanvasGroup() { return uiCanvasGroup; }
 
-  // #endregion Public Static Getters And Setters (8)
+  // #endregion Public Static Getters And Setters (10)
 
-  // #region Public Static Methods (13)
+  // #region Public Static Methods (16)
 
   public static DeselectAll() {
     StageManager.StageObjects.forEach(child => child.selected = false)
+  }
+
+  public static ScaleStageObjects() {
+    StageManager.StageObjects.forEach(item => { item.scaleToScreen(); });
+  }
+
+  public static StageObjectsAtPoint(x: number, y: number): StageObject[] {
+    return StageManager.StageObjects.filter(obj => obj.bounds.contains(x, y));
   }
 
   public static Synchronize(data: SerializedStageObject[]) {
@@ -77,15 +110,46 @@ export class StageManager {
     }
   }
 
-  public static addStageObject(stageObject: StageObject, layer: StageLayer = "primary", placing = false) {
+  /**
+   * Adds a set of user IDs to the list of owners for a given {@link StageObject}
+   * @param {string} objId - ID of the {@link StageObject}
+   * @param {string[]} owners 
+   */
+  public static async addOwners(objId: string, owners: string[]): Promise<string[] | undefined> {
+    try {
+      if (!game.user) throw new PermissionDeniedError();
+      if (!StageManager.canModifyStageObject(game.user.id, objId)) throw new PermissionDeniedError();
+      if (!coerceStageObject(objId)) throw new InvalidStageObjectError(objId);
+      const current = StageManager.getOwners(objId);
+      const setting = getSetting<object>("objectOwnership") ?? {};
+
+      await setSetting("objectOwnership", foundry.utils.mergeObject(
+        setting,
+        {
+          [objId]: [
+            ...current,
+            ...owners
+          ]
+        }
+      ));
+      return StageManager.getOwners(objId);
+    } catch (err) {
+      if (err instanceof Error) {
+        ui.notifications?.error(err.message, { console: false, localize: true });
+        console.error(err);
+      }
+    }
+  }
+
+  /**
+   * Add an existing {@link StageObject} to the stage.
+   * @param {StageObject} stageObject - {@link StageObject} to be added.
+   * @param {StageLayer} layer - {@link StageLayer} to which to add the object.
+   */
+  public static addStageObject(stageObject: StageObject, layer: StageLayer = "primary") {
+    if (!StageManager.canAddStageObjects(game.user?.id ?? "")) throw new PermissionDeniedError();
     StageManager.StageObjects.set(stageObject.id, stageObject);
     StageManager.setStageObjectLayer(stageObject, layer);
-
-    SYNCHRONIZATION_HASH[stageObject.id] = stageObject.serialize();
-    if (StageManager.canAddStageObjects(game.user?.id ?? "")) {
-      void setSetting("currentObjects", SYNCHRONIZATION_HASH);
-      if (!placing) SocketManager.addStageObject(stageObject);
-    }
   }
 
   public static canAddStageObjects(userId: string): boolean {
@@ -122,11 +186,6 @@ export class StageManager {
     }
   }
 
-  public static fullSync(data: SerializedStageObject[]) {
-    for (const item of data)
-      SYNCHRONIZATION_HASH[item.id] = item;
-  }
-
   /**
    * Returns a list of user IDs that are considered to have ownership over a given {@link StageObject}
    * @param {string} objId - id of the {@link StageObject} for which to get owners
@@ -136,59 +195,6 @@ export class StageManager {
     if (!coerceStageObject(objId)) throw new InvalidStageObjectError(objId);
     const owners = getSetting<Record<string, string[]>>("objectOwnership");
     return owners?.[objId] ?? [];
-  }
-
-  /**
-   * Overrides the list of user IDs that are considered to have ownership over a given {@link StageObject}
-   * @param {string} objId - id of the {@link StageObject}
-   * @param {string[]} owners 
-   */
-  public static async setOwners(objId: string, owners: string[]) {
-    try {
-      if (!game.user) throw new PermissionDeniedError();
-      if (!StageManager.canModifyStageObject(game.user.id, objId)) throw new PermissionDeniedError();
-
-      if (!coerceStageObject(objId)) throw new InvalidStageObjectError(objId);
-      await setSetting("objectOwnership", {
-        [objId]: owners
-      });
-    } catch (err) {
-      if (err instanceof Error) {
-        ui.notifications?.error(err.message, { console: false, localize: true });
-        console.error(err);
-      }
-    }
-  }
-
-  /**
-   * Adds a set of user IDs to the list of owners for a given {@link StageObject}
-   * @param {string} objId - ID of the {@link StageObject}
-   * @param {string[]} owners 
-   */
-  public static async addOwners(objId: string, owners: string[]): Promise<string[] | undefined> {
-    try {
-      if (!game.user) throw new PermissionDeniedError();
-      if (!StageManager.canModifyStageObject(game.user.id, objId)) throw new PermissionDeniedError();
-      if (!coerceStageObject(objId)) throw new InvalidStageObjectError(objId);
-      const current = StageManager.getOwners(objId);
-      const setting = getSetting<object>("objectOwnership") ?? {};
-
-      await setSetting("objectOwnership", foundry.utils.mergeObject(
-        setting,
-        {
-          [objId]: [
-            ...current,
-            ...owners
-          ]
-        }
-      ));
-      return StageManager.getOwners(objId);
-    } catch (err) {
-      if (err instanceof Error) {
-        ui.notifications?.error(err.message, { console: false, localize: true });
-        console.error(err);
-      }
-    }
   }
 
   /** Handles any initiatlization */
@@ -219,17 +225,7 @@ export class StageManager {
 
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       (canvas.stage as any).stagemanager = layers;
-
-
-      if (canvas.app?.renderer) canvas.app.renderer.addListener("postrender", () => {
-        // log("postrender");
-        synchronizeStageObjects();
-      })
       if (canvas.app?.renderer) canvas.app.renderer.addListener("prerender", () => { sizeObjectInterfaceContainers(); });
-
-      Hooks.on("collapseSidebar", () => {
-        StageManager.StageObjects.forEach(item => { item.scaleToScreen(); });
-      });
     }
     const menuContainer = document.createElement("section");
     menuContainer.id = "sm-menu-container";
@@ -241,37 +237,32 @@ export class StageManager {
     menuContainer.style.height = "100%";
     document.body.appendChild(menuContainer);
 
+    // Sizing hooks
+    Hooks.on("collapseSidebar", () => {
+      StageManager.ScaleStageObjects();
+    });
     window.addEventListener("resize", () => {
       StageManager.ScaleStageObjects();
     });
-  }
 
-  public static get VisualBounds(): { left: number, right: number, top: number, bottom: number, width: number, height: number } {
-    const left = $("#ui-left").position().left + ($("#ui-left").width() ?? 0);
-    const right = $("#ui-right").position().left;
-    const top = $("#ui-top").position().top + ($("#ui-top").height() ?? 0);
-    const bottom = $("#ui-bottom").position().top;
+    Hooks.on(CUSTOM_HOOKS.REMOTE_ADDED, (item: SerializedStageObject) => {
 
-    return {
-      left, right, top, bottom,
-      width: right - left,
-      height: bottom - top
-    }
-  }
+      const deserialized = StageManager.deserialize(item);
+      log("Item added:", item, deserialized);
+      if (!deserialized) throw new CannotDeserializeError(item.type);
 
-  public static get ScreenBounds(): { left: number, right: number, top: number, bottom: number, width: number, height: number } {
-    return {
-      left: 0,
-      top: 0,
-      right: window.innerWidth,
-      bottom: window.innerHeight,
-      width: window.innerWidth,
-      height: window.innerHeight
-    }
-  }
+      StageManager.StageObjects.set(deserialized.id, deserialized);
+      StageManager.setStageObjectLayer(deserialized, item.layer);
+      deserialized.dirty = false;
+    });
 
-  public static ScaleStageObjects() {
-    StageManager.StageObjects.forEach(item => { item.scaleToScreen(); });
+    Hooks.on(CUSTOM_HOOKS.REMOTE_REMOVED, (id: string) => {
+
+      const obj = StageManager.StageObjects.get(id);
+      log("Item removed:", id, obj);
+      if (!obj) throw new InvalidStageObjectError(id);
+      obj.destroy();
+    });
   }
 
   /**
@@ -282,15 +273,31 @@ export class StageManager {
   public static removeStageObject(arg: unknown): boolean {
     const obj = coerceStageObject(arg);
     if (!obj) throw new InvalidStageObjectError(arg);
-    delete SYNCHRONIZATION_HASH[obj.id];
-
-    if (StageManager.canDeleteStageObject(game.user?.id ?? "", obj.id)) {
-      void setSetting("currentObjects", Object.values(SYNCHRONIZATION_HASH))
-      SocketManager.removeStageObject(obj);
-    }
-
+    if (!StageManager.canDeleteStageObject(game.user?.id ?? "", obj.id)) throw new PermissionDeniedError();
     if (!obj.destroyed) obj.destroy();
     return StageManager.StageObjects.delete(obj.id);
+  }
+
+  /**
+   * Overrides the list of user IDs that are considered to have ownership over a given {@link StageObject}
+   * @param {string} objId - id of the {@link StageObject}
+   * @param {string[]} owners 
+   */
+  public static async setOwners(objId: string, owners: string[]) {
+    try {
+      if (!game.user) throw new PermissionDeniedError();
+      if (!StageManager.canModifyStageObject(game.user.id, objId)) throw new PermissionDeniedError();
+
+      if (!coerceStageObject(objId)) throw new InvalidStageObjectError(objId);
+      await setSetting("objectOwnership", {
+        [objId]: owners
+      });
+    } catch (err) {
+      if (err instanceof Error) {
+        ui.notifications?.error(err.message, { console: false, localize: true });
+        console.error(err);
+      }
+    }
   }
 
   public static setStageObjectLayer(stageObject: StageObject, layer: StageLayer) {
@@ -309,46 +316,22 @@ export class StageManager {
     }
   }
 
-  public static StageObjectsAtPoint(x: number, y: number): StageObject[] {
-    return StageManager.StageObjects.filter(obj => obj.bounds.contains(x, y));
-  }
-
-  // #endregion Public Static Methods (13)
+  // #endregion Public Static Methods (16)
 }
 
 // #endregion Classes (1)
 
-// #region Functions (4)
+// #region Functions (1)
 
-
-
-
-function synchronizeStageObjects() {
-  if (StageManager.canAddStageObjects(game?.user?.id ?? "")) {
-    const updates: SerializedStageObject[] = [];
-
-    StageManager.StageObjects.forEach(stageObject => {
-      if (!stageObject.synchronize) return;
-      const previous = SYNCHRONIZATION_HASH[stageObject.id];
-      if (previous) {
-        const serialized = stageObject.serialize();
-
-        if (!foundry.utils.objectsEqual(serialized, previous)) {
-          updates.push(serialized);
-          SYNCHRONIZATION_HASH[stageObject.id] = serialized;
-        }
-      }
-    });
-
-    if (updates.length) SocketManager.syncStageObjects(updates);
-    if (!foundry.utils.objectsEqual({ wrap: getSetting<StageObject[]>("currentObjects") }, { wrap: Object.values(SYNCHRONIZATION_HASH) }))
-      void setSetting("currentObjects", Object.values(SYNCHRONIZATION_HASH));
-  }
+function sizeObjectInterfaceContainers() {
+  StageManager.StageObjects.forEach(item => {
+    item.sizeInterfaceContainer();
+  });
 }
 
-// #endregion Functions (4)
+// #endregion Functions (1)
 
-// #region Variables (7)
+// #region Variables (6)
 
 let primaryCanvasGroup: ScreenSpaceCanvasGroup;
 let bgCanvasGroup: ScreenSpaceCanvasGroup;
@@ -356,12 +339,5 @@ let fgCanvasGroup: ScreenSpaceCanvasGroup;
 let textCanvasGroup: ScreenSpaceCanvasGroup;
 let uiCanvasGroup: ScreenSpaceCanvasGroup;
 const stageObjects = new StageObjects();
-const SYNCHRONIZATION_HASH: Record<string, SerializedStageObject> = {};
 
-// #endregion Variables (7)
-
-function sizeObjectInterfaceContainers() {
-  StageManager.StageObjects.forEach(item => {
-    item.sizeInterfaceContainer();
-  });
-}
+// #endregion Variables (6)

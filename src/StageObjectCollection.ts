@@ -1,3 +1,4 @@
+import { CUSTOM_HOOKS } from './hooks';
 import { StageManager } from './StageManager';
 import { StageObject } from './stageobjects';
 import { StageLayer } from './types';
@@ -25,8 +26,8 @@ export class StageObjects extends Collection<StageObject> {
   public get highlighted() { return this.contents.filter(item => item.highlighted); }
   public get dragging() { return this.contents.filter(item => item.dragging); }
   public get resizing() { return this.contents.filter(item => item.resizing); }
-  public get placing() { return this.contents.filter(item => item.placing); }
   public get locked() { return this.contents.filter(item => item.locked); }
+  public get dirty() { return this.contents.filter(item => item.dirty); }
 
   public within(bounds: PIXI.Rectangle, layer?: StageLayer) { return this.contents.filter(item => bounds.intersects(item.bounds) && (layer ? item.layer === layer : true)); }
 
@@ -44,18 +45,31 @@ export class StageObjects extends Collection<StageObject> {
     return inLayer.filter(obj => obj.zIndex === lowest);
   }
 
+
+  public set(key: string, obj: StageObject) {
+    const alreadyHad = super.has(key);
+    if (!alreadyHad) Hooks.callAll(CUSTOM_HOOKS.OBJECT_ADDED, obj);
+    return super.set(key, obj);
+  }
+
   public delete(key: string): boolean {
+
     const obj = this.get(key);
     const retVal = super.delete(key);
-    if (retVal) StageManager.removeStageObject(obj);
+    if (retVal) {
+      StageManager.removeStageObject(obj);
+      Hooks.callAll(CUSTOM_HOOKS.OBJECT_REMOVED, obj);
+    }
     return retVal;
   }
 
   public clear() {
     if (!game.user) return;
     const items = [...this.contents.filter(item => StageManager.canDeleteStageObject(game.user?.id ?? "", item.id))];
+
     for (const item of items) {
       StageManager.removeStageObject(item);
+      Hooks.callAll(CUSTOM_HOOKS.OBJECT_REMOVED, item);
       super.delete(item.id);
     }
   }

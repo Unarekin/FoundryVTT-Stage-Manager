@@ -60,15 +60,9 @@ export class InputManager {
   }
 
   public static onPointerMove(this: void, event: PIXI.FederatedPointerEvent) {
-    const placing = StageManager.StageObjects.placing;
     const selected = StageManager.StageObjects.selected;
 
-    if (placing.length) {
-      for (const item of placing) {
-        item.x = event.clientX;
-        item.y = event.clientY;
-      }
-    } else if (event.buttons === 1 && selected.length) {
+    if (event.buttons === 1 && selected.length) {
       // We are moving with the left mouse down and have objects selected
 
       const resizing = StageManager.StageObjects.resizing;
@@ -131,13 +125,7 @@ export class InputManager {
     const objectsUnderCursor = StageManager.StageObjects.filter(obj => obj.selectTool === game?.activeTool && obj.bounds.contains(e.clientX, e.clientY));
     const resizeHandles = StageManager.StageObjects.filter(obj => obj.selectTool === game?.activeTool && !!obj.resizeHandle?.getBounds().contains(e.clientX, e.clientY));
 
-    if (StageManager.StageObjects.placing.length) {
-      for (const placing of StageManager.StageObjects.placing) {
-        placing.placing = false;
-        placing.x = e.clientX;
-        placing.y = e.clientY;
-      }
-    } else if (!resizeHandles.length && !objectsUnderCursor.length) {
+    if (!resizeHandles.length && !objectsUnderCursor.length) {
       // No objects, no resize handles
       StageManager.DeselectAll();
     } else if (!resizeHandles.length && objectsUnderCursor.some(obj => obj.selected)) {

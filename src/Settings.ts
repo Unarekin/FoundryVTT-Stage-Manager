@@ -22,9 +22,9 @@ export function registerSettings() {
   }
 }
 
-export async function setSetting<t = any>(setting: string, value: t): Promise<t | null> {
+export function setSetting<t = any>(setting: string, value: t): Promise<t | null> {
   if (!game?.settings) return null;
-  return game.settings.set(__MODULE_ID__, setting, value);
+  return game.settings.set(__MODULE_ID__, setting, value) as t | null;
 }
 
 export function getSetting<t = any>(setting: string): t | undefined {

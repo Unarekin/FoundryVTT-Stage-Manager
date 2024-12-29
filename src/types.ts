@@ -31,3 +31,10 @@ export interface SerializedImageStageObject extends SerializedStageObject {
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface SerializedFilter { }
+
+export interface SynchronizationMessage {
+  timestamp: number;
+  added: SerializedStageObject[];
+  updated: SerializedStageObject[];
+  removed: string[];
+}

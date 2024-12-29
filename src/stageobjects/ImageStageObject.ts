@@ -5,7 +5,7 @@ import { StageManager } from "../StageManager";
 import { log } from "../logging";
 
 export class ImageStageObject extends StageObject<PIXI.Sprite> {
-  public static type = "image";
+  public static readonly type: string = "image";
 
   public get displayObject(): PIXI.Sprite { return super.displayObject; }
   public set displayObject(val) {
@@ -78,9 +78,34 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
     const obj = new ImageStageObject(data.src, data.name);
     obj.deserialize(data);
 
+    log("Deserialized:", obj.width, obj.height);
+
     return obj;
   }
 
+  public deserialize(serialized: SerializedImageStageObject): void {
+    super.deserialize(serialized);
+    // If the texture isn't loaded into memory, wait for it to be then set the width/height
+    log("Texture validity:", this.displayObject.texture.baseTexture.valid)
+    log("Scaled dimensions:", serialized.bounds);
+
+    if (!this.displayObject.texture.baseTexture.valid) {
+      this.displayObject.texture.baseTexture.once("loaded", () => {
+        log("Texture loaded");
+        this.scaledDimensions.x = serialized.bounds.x;
+        this.scaledDimensions.y = serialized.bounds.y;
+        this.scaledDimensions.width = serialized.bounds.width;
+        this.scaledDimensions.height = serialized.bounds.height;
+
+        this.width = this.actualBounds.width * this.scaledDimensions.width;
+        this.height = this.actualBounds.height * this.scaledDimensions.height;
+        log("Serialized dimensions:", serialized.bounds);
+        log("Expected:", serialized.bounds.width * this.actualBounds.width, serialized.bounds.height * this.actualBounds.height);
+        log("Actual dimensions:", this.width, this.height)
+        this.dirty = true;
+      })
+    }
+  }
 
   public get animated() {
     return this.displayObject.texture.baseTexture.resource instanceof PIXI.VideoResource;
@@ -151,7 +176,6 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
       vid.loop = true;
       sprite = PIXI.Sprite.from(vid);
     } else if (split[1] === "gif") {
-      log("GIF:", path);
       PIXI.Assets.load(path)
         .then(img => { this.displayObject = img as PIXI.Sprite; })
         .catch((err: Error) => {
@@ -167,6 +191,14 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
     this.resizable = true;
     this.#isVideo = isVideo;
     this.loop = true;
+
+    if (!this.displayObject.texture.valid) {
+      this.displayObject.texture.baseTexture.once("loaded", () => {
+        log("Loaded:", this.displayObject.texture.width, this.displayObject.texture.height);
+        this.width = this.displayObject.texture.width;
+        this.height = this.displayObject.texture.height;
+      });
+    }
   }
 
   public get baseWidth() { return this.displayObject.texture.width; }
