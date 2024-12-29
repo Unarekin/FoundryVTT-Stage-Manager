@@ -131,7 +131,10 @@ export class InputManager {
     } else if (!resizeHandles.length && objectsUnderCursor.some(obj => obj.selected)) {
       // Clicked a selected one, draggin' time
       for (const obj of objectsUnderCursor) {
-        if (obj.selected) obj.dragging = true;
+        if (obj.selected) {
+          obj.dragging = true;
+          obj.synchronize = false;
+        }
       }
     } else if (!resizeHandles.length) {
       const highestObject = objectsUnderCursor.reduce((prev, curr) => curr.zIndex > prev.zIndex ? curr : prev);

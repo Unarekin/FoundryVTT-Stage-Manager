@@ -194,7 +194,6 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
 
     if (!this.displayObject.texture.valid) {
       this.displayObject.texture.baseTexture.once("loaded", () => {
-        log("Loaded:", this.displayObject.texture.width, this.displayObject.texture.height);
         this.width = this.displayObject.texture.width;
         this.height = this.displayObject.texture.height;
       });

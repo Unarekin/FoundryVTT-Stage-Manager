@@ -6,7 +6,6 @@ import { SerializedStageObject, StageLayer } from "../types";
 import { PinHash } from "./PinHash";
 import deepProxy from "../lib/deepProxy";
 import { CUSTOM_HOOKS } from "../hooks";
-import { log } from "../logging";
 
 const KNOWN_OBJECTS: Record<string, StageObject> = {};
 
@@ -643,7 +642,6 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   }
 
   public serialize(): SerializedStageObject {
-    log("Serializing:", this.scaledDimensions);
     return {
       id: this.id,
       layer: this.layer as StageLayer ?? "primary",
