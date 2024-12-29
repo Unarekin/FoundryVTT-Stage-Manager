@@ -602,11 +602,11 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       // StageManager.StageObjects.delete(this.id);
       StageManager.removeStageObject(this);
       if (!this.interfaceContainer.destroyed) this.interfaceContainer.destroy();
-      if (this.#revokeProxy) this.#revokeProxy();
       Hooks.off(CUSTOM_HOOKS.SYNC_OBJECT, this.#hookId);
       delete KNOWN_OBJECTS[this.id];
       // This is a terrible idea, but we are releasing the reference to our Proxy at this point to let things get properly garbage collected
       (this.#displayObject as any) = null;
+      if (this.#revokeProxy) this.#revokeProxy();
     }
   }
 

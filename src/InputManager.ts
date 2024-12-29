@@ -97,6 +97,7 @@ export class InputManager {
         for (const item of resizing) resizeItem(event, item);
       } else if (selected.length) {
         for (const item of selected) {
+          if (item.destroyed) continue;
           if (!item.dragging) {
             // Initiate drag
             item.dragging = true;
