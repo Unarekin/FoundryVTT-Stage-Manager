@@ -142,17 +142,9 @@ export class InputManager {
       if (!highestObject.selected && !e.shiftKey)
         StageManager.DeselectAll();
 
-      highestObject.selected = true;
+      if (StageManager.canModifyStageObject(game.user?.id ?? "", highestObject.id))
+        highestObject.selected = true;
     }
-
-    // const interactables = getInteractiveObjectsAtPoint(e.clientX, e.clientY);
-    // log("Pointer down:", interactables, StageManager.StageObjects.selected, game?.settings?.get("core", "leftClickRelease"));
-
-    // // Clicked on nothing and some items are selected
-    // if (!interactables.length && StageManager.StageObjects.selected.length && game?.settings?.get("core", "leftClickRelease")) {
-    //   StageManager.DeselectAll();
-    // }
-
   }
 
   // #endregion Public Static Methods (5)
@@ -164,13 +156,15 @@ export class InputManager {
 
 function dragItem(event: PIXI.FederatedPointerEvent, item: StageObject) {
   event.preventDefault();
-  if (item.placing) {
-    item.x = event.screenX;
-    item.y = event.screenY;
-  } else if (item.dragging) {
-    item.x += event.movementX;
-    item.y += event.movementY;
-  }
+  item.x += event.movementX;
+  item.y += event.movementY;
+  // if (item.placing) {
+  //   item.x = event.screenX;
+  //   item.y = event.screenY;
+  // } else if (item.dragging) {
+  //   item.x += event.movementX;
+  //   item.y += event.movementY;
+  // }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
@@ -251,8 +245,10 @@ function stopRectangleSelect(event: PIXI.FederatedPointerEvent) {
   StageManager.DeselectAll();
   const within = StageManager.StageObjects.within(bounds).filter(item => item.selectTool === game.activeTool);
   for (const item of within) {
-    item.selected = true;
+    if (StageManager.canModifyStageObject(game.user?.id ?? "", item.id))
+      item.selected = true;
     item.highlighted = false;
+
   }
   rectangleSelect.destroy();
   rectangleSelect = null;
