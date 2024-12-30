@@ -2,7 +2,6 @@ import { SerializedImageStageObject } from "../types";
 import { StageObject } from "./StageObject";
 import mime from "../mime";
 import { StageManager } from "../StageManager";
-import { log } from "../logging";
 
 export class ImageStageObject extends StageObject<PIXI.Sprite> {
   public static readonly type: string = "image";
@@ -77,21 +76,14 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
   public static deserialize(data: SerializedImageStageObject): ImageStageObject {
     const obj = new ImageStageObject(data.src, data.name);
     obj.deserialize(data);
-
-    log("Deserialized:", obj.width, obj.height);
-
     return obj;
   }
 
   public deserialize(serialized: SerializedImageStageObject): void {
     super.deserialize(serialized);
     // If the texture isn't loaded into memory, wait for it to be then set the width/height
-    log("Texture validity:", this.displayObject.texture.baseTexture.valid)
-    log("Scaled dimensions:", serialized.bounds);
-
     if (!this.displayObject.texture.baseTexture.valid) {
       this.displayObject.texture.baseTexture.once("loaded", () => {
-        log("Texture loaded");
         this.scaledDimensions.x = serialized.bounds.x;
         this.scaledDimensions.y = serialized.bounds.y;
         this.scaledDimensions.width = serialized.bounds.width;
@@ -99,9 +91,6 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
 
         this.width = this.actualBounds.width * this.scaledDimensions.width;
         this.height = this.actualBounds.height * this.scaledDimensions.height;
-        log("Serialized dimensions:", serialized.bounds);
-        log("Expected:", serialized.bounds.width * this.actualBounds.width, serialized.bounds.height * this.actualBounds.height);
-        log("Actual dimensions:", this.width, this.height)
         this.dirty = true;
       })
     }
@@ -245,4 +234,6 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
     return sprite;
   }
 
+
+  public readonly type: string = "image";
 }

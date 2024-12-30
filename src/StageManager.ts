@@ -1,6 +1,6 @@
 import { ScreenSpaceCanvasGroup } from './ScreenSpaceCanvasGroup';
 import { ImageStageObject, StageObject } from './stageobjects/';
-import { SerializedStageObject, StageLayer } from './types';
+import { PartialWithRequired, SerializedStageObject, StageLayer } from './types';
 import { coerceStageObject, coerceUser } from './coercion';
 import { StageObjects } from './StageObjectCollection';
 import { CannotDeserializeError, InvalidStageObjectError, PermissionDeniedError } from './errors';
@@ -8,6 +8,11 @@ import * as stageObjectTypes from "./stageobjects";
 import { getSetting, setSetting } from './Settings';
 import { CUSTOM_HOOKS } from './hooks';
 import { log } from './logging';
+import { ImageStageObjectApplication, StageObjectApplication } from './applications';
+
+const ApplicationHash: Record<string, typeof StageObjectApplication> = {
+  "image": ImageStageObjectApplication as typeof StageObjectApplication
+}
 
 // #region Classes (1)
 
@@ -45,6 +50,31 @@ export class StageManager {
       width: right - left,
       height: bottom - top
     }
+  }
+
+  public static ShowVisualBounds() {
+    StageManager.HideVisualBounds();
+    const bounds = new PIXI.Graphics();
+    bounds.eventMode = "none";
+    bounds.name = "visual-bounds";
+
+    bounds.clear();
+    bounds.lineStyle({ width: 2, color: CONFIG.Canvas.dispositionColors.HOSTILE, join: PIXI.LINE_JOIN.MITER })
+      .drawShape(new PIXI.Rectangle(
+        StageManager.VisualBounds.left,
+        StageManager.VisualBounds.top,
+        StageManager.VisualBounds.width,
+        StageManager.VisualBounds.height
+      ));
+
+    StageManager.uiCanvasGroup.addChild(bounds);
+    bounds.zIndex = 5000;
+
+  }
+
+  public static HideVisualBounds() {
+    const children = StageManager.uiCanvasGroup.children.filter(child => child.name === "visual-bounds");
+    for (const child of children) child.destroy();
   }
 
   public static getCanvasGroup(layer: StageLayer): ScreenSpaceCanvasGroup | undefined {
@@ -118,6 +148,53 @@ export class StageManager {
     } else {
       throw new PermissionDeniedError();
     }
+  }
+
+  public static async CreateStageObject<t extends StageObject = StageObject>(serialized: PartialWithRequired<SerializedStageObject, "type">): Promise<t | undefined> {
+    if (!ApplicationHash[serialized.type]) throw new InvalidStageObjectError(serialized.type);
+
+    const obj = StageManager.deserialize(serialized as SerializedStageObject);
+    if (!(obj instanceof StageObject)) throw new InvalidStageObjectError(serialized.type);
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    const app = (new (ApplicationHash[serialized.type] as any)(obj) as StageObjectApplication);
+    void app.render(true);
+    return app.closed
+      .then(data => {
+        log("Returning;", data);
+        if (data) return StageManager.deserialize(data) as t;
+      })
+  }
+
+  public static async EditStageObject(id: string): Promise<SerializedStageObject>
+  public static async EditStageObject(name: string): Promise<SerializedStageObject>
+  public static async EditStageObject(stageObject: StageObject): Promise<SerializedStageObject>
+  public static async EditStageObject(arg: unknown): Promise<SerializedStageObject> {
+    const obj = coerceStageObject(arg);
+    if (!(obj instanceof StageObject)) throw new InvalidStageObjectError(arg);
+
+    return new Promise<SerializedStageObject>((resolve, reject) => {
+      try {
+        const appClass = ApplicationHash[obj.type];
+        if (!appClass) throw new InvalidStageObjectError(obj.type);
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+        const app = new (appClass as any)(obj, {
+
+        }, (newObj: SerializedStageObject) => {
+          log("Edited:", newObj);
+          obj.deserialize(newObj);
+          resolve(newObj);
+        });
+        if (!(app instanceof StageObjectApplication)) throw new InvalidStageObjectError(obj.type);
+
+        app
+          .render(true)
+          .catch(reject);
+      } catch (err) {
+        reject(err as Error);
+      }
+    });
   }
 
   /**
@@ -207,6 +284,8 @@ export class StageManager {
     return owners?.[objId] ?? [];
   }
 
+  public static layers: Record<string, ScreenSpaceCanvasGroup> = {};
+
   /** Handles any initiatlization */
   public static init() {
     if (canvas?.stage) {
@@ -233,6 +312,7 @@ export class StageManager {
         fg: bgCanvasGroup
       };
 
+      StageManager.layers = layers;
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       (canvas.stage as any).stagemanager = layers;
       if (canvas.app?.renderer) canvas.app.renderer.addListener("prerender", () => { sizeObjectInterfaceContainers(); });
@@ -264,6 +344,14 @@ export class StageManager {
       StageManager.StageObjects.set(deserialized.id, deserialized);
       StageManager.setStageObjectLayer(deserialized, item.layer);
       deserialized.dirty = false;
+    });
+
+    Hooks.on("collapseSidebar", () => {
+      if (StageManager.uiCanvasGroup.children.some(child => child.name === "visual-bounds")) {
+        StageManager.HideVisualBounds();
+        StageManager.ShowVisualBounds();
+      }
+
     });
 
     Hooks.on(CUSTOM_HOOKS.REMOTE_REMOVED, (id: string) => {

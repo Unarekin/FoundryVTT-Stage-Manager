@@ -2,7 +2,7 @@ import { InputManager } from "./InputManager";
 import { log } from "./logging";
 import { StageManager } from "./StageManager";
 import { ImageStageObject } from "./stageobjects";
-import { StageLayer } from "./types";
+import { TOOL_LAYERS } from "./types";
 // import { StageManager } from "./StageManager";
 
 let controlsInitialized = false;
@@ -17,12 +17,6 @@ export class StageManagerControlsLayer extends InteractionLayer {
   }
 }
 
-export const TOOL_LAYERS: Record<string, StageLayer> = {
-  "sm-select-primary": "primary",
-  "sm-select-foreground": "foreground",
-  "sm-select-background": "background",
-  "sm-select-text": "text"
-}
 
 export const TOOLS = Object.keys(TOOL_LAYERS);
 
@@ -109,22 +103,39 @@ function addImage() {
     displayMode: "tiles",
     callback: result => {
       if (result) {
+
+
         const layer = TOOL_LAYERS[game?.activeTool ?? ""];
         if (!layer) return;
+
         const sprite = PIXI.Sprite.from(result);
         sprite.anchor.x = 0.5;
         sprite.anchor.y = 0.5;
+
         InputManager.PlaceDisplayObject(sprite, layer)
           .then(obj => {
             const image = new ImageStageObject(result);
             image.x = obj.x;
             image.y = obj.y;
-            StageManager.addStageObject(image, layer);
-            obj.destroy();
-          }).catch((err: Error) => {
+            sprite.destroy();
+
+            return StageManager.CreateStageObject<ImageStageObject>({
+              ...image.serialize()
+            });
+          })
+          .then(obj => {
+            if (obj) {
+              if (obj) StageManager.addStageObject(obj);
+
+              // const stageObject = StageManager.deserialize(obj.deserialize());
+              // StageManager.addStageObject(stageObject);
+            }
+          })
+          .catch((err: Error) => {
             ui.notifications?.error(err.message, { localize: true, console: false });
             console.error(err);
           })
+
       }
     },
   }).render(true);

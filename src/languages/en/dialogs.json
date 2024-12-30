@@ -1,0 +1,30 @@
+{
+  "STAGEMANAGER": {
+    "TABS": {
+      "BASICS": "Basics",
+      "TRIGGERS": "Triggers",
+      "IMAGE": "Image",
+      "VIDEO": "Video"
+    },
+    "EDITDIALOG": {
+      "TITLE": "Edit {name}",
+      "NAME": "Name",
+      "LOCATION": "Screen Location",
+      "POSX": "X",
+      "POSY": "Y",
+      "SIZE": "Size",
+      "WIDTH": "Width",
+      "HEIGHT": "Height",
+      "ANGLE": "Rotation",
+      "ANGLEHINT": "(In degrees)",
+      "ALPHA": "Opacity",
+      "ZINDEX": "Sort Index",
+      "VISUALBOUNDS": "Relative to Visual Bounds",
+      "VISUALBOUNDSHINT": "The 'visual bounds' is an area of the screen calculated to ensure that elements placed will not be covered by Foundry's standard UI.",
+      "VISUALBOUNDSSHOW": "Show Visual Bounds",
+      "VISUALBOUNDSHIDE": "Hide Visual Bounds",
+      "SRC": "Image source",
+      "SKEW": "Skew"
+    }
+  }
+}

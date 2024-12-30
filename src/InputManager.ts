@@ -3,8 +3,11 @@ import { CanvasNotInitializedError } from './errors/CanvasNotInitializedError';
 import { StageObject } from "./stageobjects";
 import { TOOLS } from "./ControlButtonsHandler";
 import { StageLayer } from "./types";
+import { log } from "./logging";
 
 // #region Classes (1)
+
+let POINTER_DOWN = false;
 
 const DRAG_GHOSTS: Record<string, PIXI.DisplayObject> = {};
 const PLACING_GHOSTS: PIXI.DisplayObject[] = [];
@@ -25,7 +28,11 @@ export class InputManager {
       .on("pointerdown", InputManager.onPointerDown)
       ;
 
-    $("#board").on("wheel", onScrollWheel);
+    $("#board")
+      .on("wheel", onScrollWheel)
+      .on("mousedown", () => { POINTER_DOWN = true; })
+      .on("mouseup", () => { POINTER_DOWN = false; })
+      ;
 
 
     // Funky monkey patching for keydown event, to intercept the escape key and prevent Foundry from handling it on its own
@@ -58,7 +65,8 @@ export class InputManager {
     StageManager.StageObjects.resizing.forEach(item => {
       item.resizing = false;
       item.synchronize = true;
-    })
+    });
+
   }
 
   public static async PlaceDisplayObject(obj: PIXI.DisplayObject, layer: StageLayer): Promise<PIXI.DisplayObject> {
@@ -71,6 +79,7 @@ export class InputManager {
 
         group.addChild(obj);
         PLACING_GHOSTS.push(obj);
+        log("Placing:", obj, layer);
         canvas.stage.once("pointerdown", e => {
           obj.x = e.clientX;
           obj.y = e.clientY;
@@ -89,7 +98,7 @@ export class InputManager {
   public static onPointerMove(this: void, event: PIXI.FederatedPointerEvent) {
     const selected = StageManager.StageObjects.selected;
 
-    if (event.buttons === 1 && selected.length) {
+    if (event.buttons === 1 && selected.length && POINTER_DOWN) {
       // We are moving with the left mouse down and have objects selected
 
       const resizing = StageManager.StageObjects.resizing;
@@ -111,7 +120,7 @@ export class InputManager {
           dragItem(event, item);
         }
       }
-    } else if (event.buttons === 1 && !selected.length) {
+    } else if (event.buttons === 1 && !selected.length && POINTER_DOWN) {
       // Rectangle select time baby
       if (rectangleSelect) {
         // Update dimensions
@@ -133,7 +142,7 @@ export class InputManager {
           if (!item.highlighted) item.highlighted = true;
         }
 
-      } else if (TOOLS.includes(game.activeTool ?? "")) {
+      } else if (TOOLS.includes(game.activeTool ?? "") && POINTER_DOWN) {
         startRectangleSelect(event);
       }
     } else if (event.buttons === 0 && PLACING_GHOSTS.length) {
@@ -153,7 +162,6 @@ export class InputManager {
   }
 
   public static onPointerDown(this: void, e: PIXI.FederatedPointerEvent) {
-
     // Check for deselection
     const objectsUnderCursor = StageManager.StageObjects.filter(obj => obj.selectTool === game?.activeTool && obj.bounds.contains(e.clientX, e.clientY));
     const resizeHandles = StageManager.StageObjects.filter(obj => obj.selectTool === game?.activeTool && !!obj.resizeHandle?.getBounds().contains(e.clientX, e.clientY));

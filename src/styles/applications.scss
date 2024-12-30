@@ -1,0 +1,22 @@
+.stage-manager {
+  .form-group.slim .form-fields label {
+    min-width: 40px;
+  }
+
+  &.standard-form [data-role="toggle-visual-bounds"] {
+    flex-grow: 0;
+
+    .disabled {
+      color: #a9a9a9;
+      pointer-events: inherit;
+      cursor: pointer;
+    }
+  }
+
+  .icon-button {
+    cursor: pointer;
+  }
+  .hidden {
+    display: none;
+  }
+}
