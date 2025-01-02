@@ -42,7 +42,7 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
         sprite = PIXI.Sprite.from(path);
         vid.onplay = () => {
           this.displayObject = PIXI.Sprite.from(vid);
-          if (sprite) sprite.destroy();
+          // if (sprite) sprite.destroy();
         }
       } else {
         sprite = PIXI.Sprite.from(vid);
