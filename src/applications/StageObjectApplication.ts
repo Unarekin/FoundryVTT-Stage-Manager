@@ -174,7 +174,7 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
       this.#resolve();
     }
     this.stageObject.displayObject.removeFromParent();
-    if (this.#ghost) this.#ghost.destroy();
+    if (this.ghost) this.ghost.destroy();
   }
 
   protected abstract getTabs(): Record<string, Tab>;
@@ -231,7 +231,7 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
   }
 
 
-  #ghost: PIXI.DisplayObject | null = null;
+  protected ghost: PIXI.DisplayObject | null = null;
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected _onRender(context: StageObjectApplicationContext, options: StageObjectApplicationOptions): void {
@@ -263,15 +263,15 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
 
     const layer = StageManager.layers[options?.layer ?? "primary"];
 
-    this.#ghost = this.stageObject.createDragGhost();
-    this.#ghost.alpha = 0.5;
-    this.#ghost.x = this.stageObject.x;
-    this.#ghost.y = this.stageObject.y;
+    this.ghost = this.stageObject.createDragGhost();
+    this.ghost.alpha = 0.5;
+    this.ghost.x = this.stageObject.x;
+    this.ghost.y = this.stageObject.y;
 
     if (layer) {
       layer.addChild(stageObject.displayObject);
-      layer.addChild(this.#ghost);
-      this.#ghost.zIndex = stageObject.displayObject.zIndex - 0.5;
+      layer.addChild(this.ghost);
+      this.ghost.zIndex = stageObject.displayObject.zIndex - 0.5;
     }
 
 

@@ -74,6 +74,16 @@ export class ImageStageObjectApplication extends StageObjectApplication<ImageSta
     }
   }
 
+  _onChangeForm(): void {
+    super._onChangeForm();
+    const form = this.element instanceof HTMLFormElement ? new FormDataExtended(this.element) : new FormDataExtended($(this.element).find("form")[0]);
+    const data = this.parseFormData(form.object);
+    if (this.ghost instanceof PIXI.Sprite) {
+      if (this.ghost.texture.baseTexture.resource.src !== data.src)
+        this.ghost.texture = PIXI.Texture.from(data.src);
+    }
+  }
+
   protected parseFormData(data: Record<string, unknown>): SerializedImageStageObject {
     const parsed = super.parseFormData(data);
 
