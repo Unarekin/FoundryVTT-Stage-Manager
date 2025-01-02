@@ -275,7 +275,15 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
   #displayObject: t;
   // #revokeDisplayProxy
-  public get displayObject() { return this.#displayObject; }
+  public get displayObject() {
+    try {
+      new Proxy(this.#displayObject, {});
+      return this.#displayObject;
+    } catch {
+      throw new Error("Display object proxy is revoked");
+    }
+
+  }
   protected set displayObject(val) {
     this.dirty = true;
     if (this.#displayObject) {
@@ -309,6 +317,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     }
   }
 
+  // eslint-disable-next-line no-unused-private-class-members
   #revokeProxy: (() => void) | null = null;
 
   private proxyDisplayObject(val: t): t {
@@ -615,7 +624,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       delete KNOWN_OBJECTS[this.id];
       // This is a terrible idea, but we are releasing the reference to our Proxy at this point to let things get properly garbage collected
       (this.#displayObject as any) = null;
-      if (this.#revokeProxy) this.#revokeProxy();
+      // if (this.#revokeProxy) this.#revokeProxy();
     }
   }
 
