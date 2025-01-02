@@ -6,7 +6,6 @@ import { StageManager } from "../StageManager";
 import ApplicationV2 from "Foundry-VTT/src/foundry/client-esm/applications/api/application.mjs";
 import HandlebarsApplicationMixin from "Foundry-VTT/src/foundry/client-esm/applications/api/handlebars-application.mjs";
 import { localize } from "../functions";
-import { log } from "../logging";
 
 export abstract class StageObjectApplication<t extends StageObject = StageObject, v extends SerializedStageObject = SerializedStageObject> extends foundry.applications.api.HandlebarsApplicationMixin(foundry.applications.api.ApplicationV2<
   StageObjectApplicationContext,
@@ -215,7 +214,7 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
 
     const form = this.element instanceof HTMLFormElement ? new FormDataExtended(this.element) : new FormDataExtended($(this.element).find("form")[0]);
     const data = this.parseFormData(form.object);
-    log("Form change:", data);
+    // log("Form change:", data);
     this.stageObject.deserialize(data);
   }
 
