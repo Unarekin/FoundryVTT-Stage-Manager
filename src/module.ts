@@ -3,8 +3,8 @@ import { StageManager } from "./StageManager"
 import { ControlButtonsHandler } from "./ControlButtonsHandler"
 import { log } from "./logging";
 import { SocketManager } from "./SocketManager";
-import { SerializedStageObject } from "./types";
-import { getSetting, registerSettings } from './Settings';
+//import { SerializedStageObject } from "./types";
+import { /* getSetting ,*/ registerSettings } from './Settings';
 import { InputManager } from './InputManager';
 import { SynchronizationManager } from './SynchronizationManager';
 
@@ -28,6 +28,10 @@ Hooks.once("canvasReady", () => {
   log("Initialized.");
 });
 
+Hooks.on("canvasReady", () => {
+  StageManager.HydrateStageObjects();
+})
+
 Hooks.on("getSceneControlButtons", (controls: SceneControl[]) => { ControlButtonsHandler.register(controls); });
 Hooks.once("socketlib.ready", () => { SocketManager.init(); })
 
@@ -36,8 +40,6 @@ Hooks.once("init", () => {
 });
 
 Hooks.once("ready", () => {
-  const persisted = getSetting<SerializedStageObject[]>("currentObjects") ?? []
-  StageManager.Synchronize(persisted);
   SynchronizationManager.init();
 });
 

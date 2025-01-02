@@ -2,6 +2,9 @@
 export const StageLayers = ["primary", "foreground", "background", "text", "ui"] as const;
 export type StageLayer = typeof StageLayers[number];
 
+export const Scopes = ["scene", "global", "user", "temp"] as const;
+export type Scope = typeof Scopes[number];
+
 
 export interface SerializedStageObject {
   type: string;
@@ -10,6 +13,8 @@ export interface SerializedStageObject {
   version: string;
   layer: StageLayer;
   name: string;
+  scope: Scope;
+  scopeOwners: string[];
   bounds: {
     x: number;
     y: number;

@@ -30,10 +30,11 @@ export class SocketManager {
   // }
 
   public static onSynchronizationMessageReceived(this: void, message: SynchronizationMessage) {
-    Hooks.callAll(CUSTOM_HOOKS.SYNC_RECEIVED, message);
+    Hooks.callAll(CUSTOM_HOOKS.SYNC_START, message);
     for (const item of message.added) Hooks.callAll(CUSTOM_HOOKS.REMOTE_ADDED, item);
     for (const id of message.removed) Hooks.callAll(CUSTOM_HOOKS.REMOTE_REMOVED, id);
     for (const item of message.updated) Hooks.callAll(CUSTOM_HOOKS.SYNC_OBJECT, item);
+    Hooks.callAll(CUSTOM_HOOKS.SYNC_END, message);
   }
 
   public static init() {

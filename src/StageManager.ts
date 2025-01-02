@@ -3,9 +3,9 @@ import { ImageStageObject, StageObject } from './stageobjects/';
 import { PartialWithRequired, SerializedStageObject, StageLayer } from './types';
 import { coerceStageObject, coerceUser } from './coercion';
 import { StageObjects } from './StageObjectCollection';
-import { CannotDeserializeError, InvalidStageObjectError, PermissionDeniedError } from './errors';
+import { CannotDeserializeError, CanvasNotInitializedError, InvalidStageObjectError, InvalidUserError, PermissionDeniedError } from './errors';
 import * as stageObjectTypes from "./stageobjects";
-import { getSetting, setSetting } from './Settings';
+import { getGlobalObjects, getSceneObjects, getSetting, getUserObjects, setGlobalObjects, setSceneObjects, setSetting, setUserObjects } from './Settings';
 import { CUSTOM_HOOKS } from './hooks';
 import { log } from './logging';
 import { ImageStageObjectApplication, StageObjectApplication } from './applications';
@@ -194,6 +194,64 @@ export class StageManager {
     });
   }
 
+  public static HydrateStageObjects() {
+    log("Hydrating");
+    if (!canvas?.scene) throw new CanvasNotInitializedError();
+    if (!game.user) throw new InvalidUserError(game.user);
+    const objects = [
+      ...getGlobalObjects(),
+      ...getSceneObjects(canvas.scene),
+      ...getUserObjects(game.user)
+    ];
+
+    const objIds = objects.map(obj => obj.id);
+    const toRemove = StageManager.StageObjects.filter(obj => !objIds.includes(obj.id));
+    for (const obj of toRemove)
+      obj.destroy();
+
+    for (const obj of objects) {
+      if (!StageManager.StageObjects.has(obj.id)) {
+        const deserialized = StageManager.deserialize(obj);
+        if (!deserialized) throw new CannotDeserializeError(obj);
+        StageManager.StageObjects.set(deserialized.id, deserialized);
+        StageManager.setStageObjectLayer(deserialized, obj.layer);
+        deserialized.dirty = false;
+      }
+    }
+  }
+
+  public static async PersistStageObjects() {
+    try {
+      if (!canvas?.scene) throw new CanvasNotInitializedError();
+
+      if (game.user?.can("SETTINGS_MODIFY"))
+        await setGlobalObjects(StageManager.StageObjects.global);
+      if (canvas.scene.canUserModify(game.user as User, "update"))
+        await setSceneObjects(canvas.scene, StageManager.StageObjects.scene);
+
+      if (!game.users?.contents) return;
+      const activeUsers: User[] = game.users.contents.filter(user => user instanceof User && user.active) as User[];
+      for (const user of activeUsers) {
+        if (user.canUserModify(game.user as User, "update")) {
+          const objects = [
+            ...StageManager.StageObjects.reduce((prev, curr) => {
+              if (!curr.scopeOwners.includes(user.id ?? "")) return prev;
+              return [
+                ...prev,
+                curr.serialize()
+              ]
+            }, [] as SerializedStageObject[]),
+
+            ...getUserObjects(user)
+          ].filter((item, i, arr) => arr.findIndex(el => el.id === item.id) === i);
+          await setUserObjects(user, objects);
+        }
+      }
+    } catch (err) {
+      ui.notifications?.error((err as Error).message, { localize: true });
+    }
+  }
+
   /**
    * Adds a set of user IDs to the list of owners for a given {@link StageObject}
    * @param {string} objId - ID of the {@link StageObject}
@@ -328,8 +386,13 @@ export class StageManager {
     Hooks.on("collapseSidebar", () => {
       StageManager.ScaleStageObjects();
     });
+
     window.addEventListener("resize", () => {
       StageManager.ScaleStageObjects();
+    });
+
+    Hooks.on(CUSTOM_HOOKS.SYNC_END, () => {
+      void StageManager.PersistStageObjects();
     });
 
     Hooks.on(CUSTOM_HOOKS.REMOTE_ADDED, (item: SerializedStageObject) => {

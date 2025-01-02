@@ -43,3 +43,20 @@ export function coerceStageObject<t extends StageObject>(arg: unknown): t | unde
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   if (typeof (arg as any).id === "string") return coerceStageObject((arg as any).id);
 }
+
+export function coerceScene(id: string): Scene | undefined
+export function coerceScene(name: string): Scene | undefined
+export function coerceScene(uuid: string): Scene | undefined
+export function coerceScene(scene: Scene): Scene
+export function coerceScene(arg: unknown): Scene | undefined {
+  if (arg instanceof Scene) return arg;
+  if (typeof arg === "string") {
+    let scene: unknown = fromUuidSync(arg);
+    if (scene instanceof Scene) return scene;
+    if (!game.scenes) return;
+    scene = game.scenes.get(arg);
+    if (scene instanceof Scene) return scene;
+    scene = game.scenes.getName(arg);
+    if (scene instanceof Scene) return scene;
+  }
+}

@@ -2,10 +2,11 @@ import { CannotDeserializeError, InvalidStageObjectError } from "../errors";
 import { closeAllContextMenus, localize, registerContextMenu } from "../functions";
 import { ScreenSpaceCanvasGroup } from "../ScreenSpaceCanvasGroup";
 import { StageManager } from "../StageManager";
-import { SerializedStageObject, StageLayer } from "../types";
+import { Scope, SerializedStageObject, StageLayer } from "../types";
 import { PinHash } from "./PinHash";
 import deepProxy from "../lib/deepProxy";
 import { CUSTOM_HOOKS } from "../hooks";
+import { log } from "../logging";
 
 const KNOWN_OBJECTS: Record<string, StageObject> = {};
 
@@ -31,7 +32,9 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     height: 0
   }
 
-  public dirty = false;
+  private _dirty = false;
+  public get dirty() { return this._dirty; }
+  public set dirty(val) { this._dirty = val; }
 
   // private _dirty = false;
   // public get dirty() { return this._dirty; }
@@ -184,13 +187,23 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     }
   }
 
-  constructor(_displayObject: t, public name?: string) {
+  private _name: string = this.id;
+  public get name() { return this._name; }
+  public set name(val) {
+    log("Setting name:", val);
+    if (this._name !== val) {
+      this._name = val;
+      this.dirty = true;
+    }
+  }
+
+  constructor(_displayObject: t, name?: string) {
     this.#displayObject = this.proxyDisplayObject(_displayObject);
     this.#displayObject.interactive = true;
     this.#displayObject.eventMode = "dynamic";
     this.addDisplayObjectListeners();
 
-    this.name = name ?? this.id;
+    this._name = name ?? this.id;
 
     // this.#hookId = Hooks.on(CUSTOM_HOOKS.SYNC_END, this.synchronizationEnd.bind(this));
     this.#hookId = Hooks.on(CUSTOM_HOOKS.SYNC_OBJECT, this.onSynchronize.bind(this));
@@ -312,12 +325,14 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   // eslint-disable-next-line no-unused-private-class-members
   #revokeProxy: (() => void) | null = null;
 
+  #ignoredProperties = ["worldAlpha", "uvs"];
+
   private proxyDisplayObject(val: t): t {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const temp = this;
     const { proxy, revoke } = deepProxy<t>(val, {
       set(target, prop, value) {
-        if (typeof prop === "string" && !prop.startsWith("_") && prop !== "worldAlpha")
+        if (typeof prop === "string" && !prop.startsWith("_") && !temp.#ignoredProperties.includes(prop))
           temp.dirty = true;
 
         return Reflect.set(target, prop, value);
@@ -592,6 +607,8 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     this.locked = serialized.locked;
     this.zIndex = serialized.zIndex;
     this.alpha = serialized.alpha;
+    this.scope = serialized.scope;
+    this.scopeOwners = serialized.scopeOwners;
 
     this.x = serialized.bounds.x * this.actualBounds.width;
     this.y = serialized.bounds.y * this.actualBounds.height;
@@ -651,6 +668,20 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     this.sizeInterfaceContainer();
   }
 
+  private _scope: Scope = "global";
+  public get scope() { return this._scope; }
+  public set scope(val) {
+    this._scope = val;
+    this.dirty = true;
+  }
+
+  private _scopeOwners: string[] = [];
+  public get scopeOwners() { return this._scopeOwners; }
+  public set scopeOwners(val) {
+    this._scopeOwners = val;
+    this.dirty = true;
+  }
+
   public serialize(): SerializedStageObject {
     return {
       id: this.id,
@@ -663,6 +694,8 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       bounds: { ...this.scaledDimensions },
       angle: this.angle,
       restrictToVisualArea: this.restrictToVisualArea,
+      scope: this.scope,
+      scopeOwners: this.scopeOwners,
       filters: [],
       zIndex: this.zIndex,
       alpha: this.alpha,
