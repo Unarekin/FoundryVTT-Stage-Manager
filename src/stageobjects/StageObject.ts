@@ -275,15 +275,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
   #displayObject: t;
   // #revokeDisplayProxy
-  public get displayObject() {
-    try {
-      new Proxy(this.#displayObject, {});
-      return this.#displayObject;
-    } catch {
-      throw new Error("Display object proxy is revoked");
-    }
-
-  }
+  public get displayObject() { return this.#displayObject; }
   protected set displayObject(val) {
     this.dirty = true;
     if (this.#displayObject) {
