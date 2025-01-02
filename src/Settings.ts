@@ -37,7 +37,7 @@ export function getSetting<t = any>(setting: string): t | undefined {
 export async function setGlobalObjects(objects: StageObject[]) {
   const current = getGlobalObjects();
   const serialized = objects.map(obj => obj.serialize());
-  if (!foundry.utils.objectsEqual(current, serialized))
+  if (!foundry.utils.objectsEqual({ wrap: current }, { wrap: serialized }))
     return setSetting<SerializedStageObject[]>("stageObjects", serialized);
   else
     return current;
@@ -52,7 +52,7 @@ export async function setSceneObjects(scene: Scene, objects: SerializedStageObje
 export async function setSceneObjects(scene: Scene, objects: StageObject[] | SerializedStageObject[]): Promise<void> {
   const serialized = objects.map(obj => obj instanceof StageObject ? obj.serialize() : obj);
   const current = getSceneObjects(scene);
-  if (!foundry.utils.objectsEqual(current, serialized))
+  if (!foundry.utils.objectsEqual({ wrap: current }, { wrap: serialized }))
     await scene.setFlag(__MODULE_ID__, "stageObjects", serialized);
 }
 
@@ -65,7 +65,7 @@ export async function setUserObjects(user: User, objects: SerializedStageObject[
 export async function setUserObjects(user: User, objects: StageObject[] | SerializedStageObject[]): Promise<void> {
   const serialized = objects.map(obj => obj instanceof StageObject ? obj.serialize() : obj);
   const current = getUserObjects(user);
-  if (!foundry.utils.objectsEqual(current, serialized))
+  if (!foundry.utils.objectsEqual({ wrap: current }, { wrap: serialized }))
     await user.setFlag(__MODULE_ID__, "stageObjects", serialized);
 }
 

@@ -71,7 +71,7 @@ export class StageObjects extends Collection<StageObject> {
 
     for (const item of items) {
       StageManager.removeStageObject(item);
-      Hooks.callAll(CUSTOM_HOOKS.OBJECT_REMOVED, item);
+      // Hooks.callAll(CUSTOM_HOOKS.OBJECT_REMOVED, item);
       super.delete(item.id);
     }
   }

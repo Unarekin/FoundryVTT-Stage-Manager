@@ -386,8 +386,13 @@ export class StageManager {
     Hooks.on("collapseSidebar", () => {
       StageManager.ScaleStageObjects();
     });
+
     window.addEventListener("resize", () => {
       StageManager.ScaleStageObjects();
+    });
+
+    Hooks.on(CUSTOM_HOOKS.SYNC_END, () => {
+      void StageManager.PersistStageObjects();
     });
 
     Hooks.on(CUSTOM_HOOKS.REMOTE_ADDED, (item: SerializedStageObject) => {
