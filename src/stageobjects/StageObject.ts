@@ -2,7 +2,7 @@ import { CannotDeserializeError, InvalidStageObjectError } from "../errors";
 import { closeAllContextMenus, localize, registerContextMenu } from "../functions";
 import { ScreenSpaceCanvasGroup } from "../ScreenSpaceCanvasGroup";
 import { StageManager } from "../StageManager";
-import { SerializedStageObject, StageLayer } from "../types";
+import { Scope, SerializedStageObject, StageLayer } from "../types";
 import { PinHash } from "./PinHash";
 import deepProxy from "../lib/deepProxy";
 import { CUSTOM_HOOKS } from "../hooks";
@@ -592,6 +592,8 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     this.locked = serialized.locked;
     this.zIndex = serialized.zIndex;
     this.alpha = serialized.alpha;
+    this.scope = serialized.scope;
+    this.scopeOwners = serialized.scopeOwners;
 
     this.x = serialized.bounds.x * this.actualBounds.width;
     this.y = serialized.bounds.y * this.actualBounds.height;
@@ -651,6 +653,20 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     this.sizeInterfaceContainer();
   }
 
+  private _scope: Scope = "global";
+  public get scope() { return this._scope; }
+  public set scope(val) {
+    this._scope = val;
+    this.dirty = true;
+  }
+
+  private _scopeOwners: string[] = [];
+  public get scopeOwners() { return this._scopeOwners; }
+  public set scopeOwners(val) {
+    this._scopeOwners = val;
+    this.dirty = true;
+  }
+
   public serialize(): SerializedStageObject {
     return {
       id: this.id,
@@ -663,6 +679,8 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       bounds: { ...this.scaledDimensions },
       angle: this.angle,
       restrictToVisualArea: this.restrictToVisualArea,
+      scope: this.scope,
+      scopeOwners: this.scopeOwners,
       filters: [],
       zIndex: this.zIndex,
       alpha: this.alpha,

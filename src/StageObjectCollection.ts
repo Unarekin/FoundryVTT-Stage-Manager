@@ -28,6 +28,8 @@ export class StageObjects extends Collection<StageObject> {
   public get resizing() { return this.contents.filter(item => item.resizing); }
   public get locked() { return this.contents.filter(item => item.locked); }
   public get dirty() { return this.contents.filter(item => item.dirty); }
+  public get global() { return this.contents.filter(item => item.scope === "global"); }
+  public get scene() { return this.contents.filter(item => item.scope === "scene"); }
 
   public within(bounds: PIXI.Rectangle, layer?: StageLayer) { return this.contents.filter(item => bounds.intersects(item.bounds) && (layer ? item.layer === layer : true)); }
 
