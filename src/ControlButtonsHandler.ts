@@ -121,11 +121,13 @@ function addImage() {
 
             return StageManager.CreateStageObject<ImageStageObject>({
               ...image.serialize()
-            });
+            })
           })
           .then(obj => {
+            // this.stageObject.displayObject.removeFromParent();
+
             if (obj) {
-              if (obj) StageManager.addStageObject(obj);
+              if (obj) StageManager.addStageObject(obj, layer);
 
               // const stageObject = StageManager.deserialize(obj.deserialize());
               // StageManager.addStageObject(stageObject);

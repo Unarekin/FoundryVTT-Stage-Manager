@@ -161,36 +161,33 @@ export class StageManager {
     void app.render(true);
     return app.closed
       .then(data => {
-        log("Returning;", data);
         if (data) return StageManager.deserialize(data) as t;
       })
   }
 
-  public static async EditStageObject(id: string): Promise<SerializedStageObject>
-  public static async EditStageObject(name: string): Promise<SerializedStageObject>
-  public static async EditStageObject(stageObject: StageObject): Promise<SerializedStageObject>
-  public static async EditStageObject(arg: unknown): Promise<SerializedStageObject> {
+  public static async EditStageObject(id: string): Promise<SerializedStageObject | undefined>
+  public static async EditStageObject(name: string): Promise<SerializedStageObject | undefined>
+  public static async EditStageObject(stageObject: StageObject): Promise<SerializedStageObject | undefined>
+  public static async EditStageObject(arg: unknown): Promise<SerializedStageObject | undefined> {
     const obj = coerceStageObject(arg);
     if (!(obj instanceof StageObject)) throw new InvalidStageObjectError(arg);
 
-    return new Promise<SerializedStageObject>((resolve, reject) => {
+    return new Promise<SerializedStageObject | undefined>((resolve, reject) => {
       try {
         const appClass = ApplicationHash[obj.type];
         if (!appClass) throw new InvalidStageObjectError(obj.type);
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
-        const app = new (appClass as any)(obj, {
+        const layer = obj.layer;
 
-        }, (newObj: SerializedStageObject) => {
-          log("Edited:", newObj);
-          obj.deserialize(newObj);
-          resolve(newObj);
-        });
-        if (!(app instanceof StageObjectApplication)) throw new InvalidStageObjectError(obj.type);
-
-        app
-          .render(true)
-          .catch(reject);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        const app = new (appClass as any)(obj, { layer: obj.layer ?? "primary" }) as StageObjectApplication;
+        app.render(true).catch(reject);
+        app.closed
+          .then(data => {
+            if (layer && StageManager.layers[layer]) StageManager.layers[layer].addChild(obj.displayObject);
+            resolve(data);
+          })
+          .catch(reject)
       } catch (err) {
         reject(err as Error);
       }

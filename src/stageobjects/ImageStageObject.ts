@@ -231,6 +231,8 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
     sprite.height = this.height;
     sprite.anchor.x = this.anchor.x;
     sprite.anchor.y = this.anchor.y;
+    sprite.x = this.x;
+    sprite.y = this.y;
     return sprite;
   }
 

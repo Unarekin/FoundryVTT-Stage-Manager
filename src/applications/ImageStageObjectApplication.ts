@@ -33,6 +33,34 @@ export class ImageStageObjectApplication extends StageObjectApplication<ImageSta
     }
   }
 
+  protected toLeft(): this {
+    const elem = $(this.element);
+    const bounds = elem.find("#restrictToVisualArea").is(":checked") ? StageManager.VisualBounds : StageManager.ScreenBounds;
+    elem.find("[name='bounds.x']").val(bounds.left + (this.stageObject.width * this.stageObject.anchor.x))
+    return this;
+  }
+
+  protected topTop(): this {
+    const elem = $(this.element);
+    const bounds = elem.find("#restrictToVisualArea").is(":checked") ? StageManager.VisualBounds : StageManager.ScreenBounds;
+    elem.find("[name='bounds.y']").val(bounds.top + (this.stageObject.height * this.stageObject.anchor.y))
+    return this;
+  }
+
+  protected toRight(): this {
+    const elem = $(this.element);
+    const bounds = elem.find("#restrictToVisualArea").is(":checked") ? StageManager.VisualBounds : StageManager.ScreenBounds;
+    elem.find("[name='bounds.x']").val(bounds.right - (this.stageObject.width * this.stageObject.anchor.x));
+    return this;
+  }
+
+  protected toBottom(): this {
+    const elem = $(this.element);
+    const bounds = elem.find("#restrictToVisualArea").is(":checked") ? StageManager.VisualBounds : StageManager.ScreenBounds;
+    elem.find("[name='bounds.y']").val(bounds.bottom - (this.stageObject.height * this.stageObject.anchor.y));
+    return this;
+  }
+
   protected prepareStageObject(): SerializedImageStageObject {
     const prep = super.prepareStageObject();
     const bounds = this.originalObject.restrictToVisualArea ? StageManager.VisualBounds : StageManager.ScreenBounds;

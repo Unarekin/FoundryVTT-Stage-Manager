@@ -14,8 +14,35 @@
         <input type="number" name="bounds.x" id="bounds.x" value="{{bounds.x}}" step="any">
         <label for="bounds.y">{{localize "STAGEMANAGER.EDITDIALOG.POSY"}}</label>
         <input type="number" name="bounds.y" id="bounds.y" value="{{bounds.y}}" step="any">
+        <button id="location-preset" data-action="locationPresets" type="button" title="{{localize "STAGEMANAGER.EDITDIALOG.LOCATIONPRESET"}}">
+          <i class="fas fa-fw fa-location-crosshairs"></i>
+        </button>
       </div>
     </div>
+    <section id="location-presets" style="display:none">
+      <div class="flexrow">
+        <div class="flex1"></div>
+        <div class="flex0">
+          <table class="location-presets">
+            <tr>
+              <td><button type="button" data-action="presetTopLeft"><i class="fas fa-fw fa-arrow-up fa-rotate-by" style="--fa-rotate-angle: -45deg"></i></button></td>
+              <td><button type="button" data-action="presetTop"><i class="fas fa-fw fa-arrow-up"></i></button></td>
+              <td><button type="button" data-action="presetTopRight"><i class="fas fa-fw fa-arrow-up fa-rotate-by" style="--fa-rotate-angle: 45deg"></i></button></td>
+            </tr>
+            <tr>
+              <td><button type="button" data-action="presetLeft"><i class="fas fa-fw fa-arrow-left"></i></button></td>
+              <td><button type="button" data-action="presetCenter"><i class="fas fa-fw fa-arrows-to-dot"></i></button></td>
+              <td><button type="button" data-action="presetRight"><i class="fas fa-fw fa-arrow-right"></i></button></td>
+            </tr>
+            <tr>
+              <td><button type="button" data-action="presetBottomLeft"><i class="fas fa-fw fa-arrow-down fa-rotate-by" style="--fa-rotate-angle: 45deg"></i></button></td>
+              <td><button type="button" data-action="presetBottom"><i class="fas fa-fw fa-arrow-down"></i></button></td>
+              <td><button type="button" data-action="presetBottomRight"><i class="fas fa-fw fa-arrow-down fa-rotate-by" style="--fa-rotate-angle: -45deg"></i></button></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </section>
 
     <div class="form-group">
       <label for="restrictToVisualBounds">{{localize "STAGEMANAGER.EDITDIALOG.VISUALBOUNDS"}}</label>
