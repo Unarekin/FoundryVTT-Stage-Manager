@@ -499,17 +499,23 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   protected get contextMenuItems(): ContextMenuEntry[] {
     return [
       {
-        name: localize("STAGEMANAGER.MENUS.LOCKOBJECT", { name: this.name ?? this.id }),
-        icon: `<i class="fas fa-lock"></i>`,
-        callback: () => { this.locked = true; },
-        condition: !this.locked
+        name: localize("STAGEMANAGER.MENUS.EDITOBJECT", { name: this.name ?? this.id }),
+        icon: `<i class="fas fa-cogs"></i>`,
+        callback: () => { void StageManager.EditStageObject(this); },
+        condition: StageManager.canModifyStageObject(game.user?.id ?? "", this.id)
       },
-      {
-        name: localize("STAGEMANAGER.MENUS.UNLOCKOBJECT", { name: this.name ?? this.id }),
-        icon: `<i class="fas fa-lock-open"></i>`,
-        callback: () => { this.locked = false; },
-        condition: this.locked
-      },
+      // {
+      //   name: localize("STAGEMANAGER.MENUS.LOCKOBJECT", { name: this.name ?? this.id }),
+      //   icon: `<i class="fas fa-lock"></i>`,
+      //   callback: () => { this.locked = true; },
+      //   condition: !this.locked
+      // },
+      // {
+      //   name: localize("STAGEMANAGER.MENUS.UNLOCKOBJECT", { name: this.name ?? this.id }),
+      //   icon: `<i class="fas fa-lock-open"></i>`,
+      //   callback: () => { this.locked = false; },
+      //   condition: this.locked
+      // },
       {
         name: localize("STAGEMANAGER.MENUS.DELETEOBJECT", { name: this.name ?? this.id }),
         icon: `<i class="fas fa-trash"></i>`,
@@ -581,7 +587,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     this.scaledDimensions.height = serialized.bounds.height;
     this.skew.x = serialized.skew.x;
     this.skew.y = serialized.skew.y;
-    this.rotation = serialized.rotation;
+    this.angle = serialized.angle;
     this.locked = serialized.locked;
     this.zIndex = serialized.zIndex;
     this.alpha = serialized.alpha;
@@ -654,7 +660,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       name: this.name ?? this.id,
       locked: this.locked,
       bounds: { ...this.scaledDimensions },
-      rotation: this.rotation,
+      angle: this.angle,
       restrictToVisualArea: this.restrictToVisualArea,
       filters: [],
       zIndex: this.zIndex,
@@ -788,6 +794,6 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       }
     }
   }
-
+  public readonly abstract type: string;
   // #endregion Protected Methods (7)
 }

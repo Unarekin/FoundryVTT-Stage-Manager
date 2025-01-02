@@ -17,7 +17,7 @@ export interface SerializedStageObject {
     height: number;
   };
   skew: { x: number, y: number };
-  rotation: number;
+  angle: number;
   locked: boolean;
   filters: SerializedFilter[];
   restrictToVisualArea: boolean;
@@ -37,4 +37,13 @@ export interface SynchronizationMessage {
   added: SerializedStageObject[];
   updated: SerializedStageObject[];
   removed: string[];
+}
+
+export type PartialWithRequired<t, k extends keyof t> = Partial<t> & Pick<Required<t>, k>;
+
+export const TOOL_LAYERS: Record<string, StageLayer> = {
+  "sm-select-primary": "primary",
+  "sm-select-foreground": "foreground",
+  "sm-select-background": "background",
+  "sm-select-text": "text"
 }

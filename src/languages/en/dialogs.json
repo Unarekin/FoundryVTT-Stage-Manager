@@ -1,0 +1,42 @@
+{
+  "STAGEMANAGER": {
+    "EDITDIALOG": {
+      "ALPHA": "Opacity",
+      "ANGLE": "Rotation",
+      "ANGLEHINT": "(In degrees)",
+      "HEIGHT": "Height",
+      "LOCATION": "Screen Location",
+      "LOCATIONPRESET": "Screen location presets",
+      "NAME": "Name",
+      "POSX": "X",
+      "POSY": "Y",
+      "SIZE": "Size",
+      "SKEW": "Skew",
+      "SRC": "Image source",
+      "TITLE": "Edit {name}",
+      "VISUALBOUNDS": "Relative to Visual Bounds",
+      "VISUALBOUNDSHIDE": "Hide Visual Bounds",
+      "VISUALBOUNDSHINT": "The 'visual bounds' is an area of the screen calculated to ensure that elements placed will not be covered by Foundry's standard UI.",
+      "VISUALBOUNDSSHOW": "Show Visual Bounds",
+      "WIDTH": "Width",
+      "ZINDEX": "Sort Index",
+      "LOCATIONPRESETS": {
+        "TOPLEFT": "Top left",
+        "TOP": "Top",
+        "TOPRIGHT": "Top right",
+        "LEFT": "Left",
+        "CENTER": "Center",
+        "RIGHT": "Right",
+        "BOTTOMLEFT": "Bottom left",
+        "BOTTOM": "Bottom",
+        "BOTTOMRIGHT": "Bottom right"
+      }
+    },
+    "TABS": {
+      "BASICS": "Basics",
+      "IMAGE": "Image",
+      "TRIGGERS": "Triggers",
+      "VIDEO": "Video"
+    }
+  }
+}
