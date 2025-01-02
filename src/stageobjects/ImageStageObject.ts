@@ -35,9 +35,19 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
       isVideo = true;
       const vid = document.createElement("video");
       vid.src = path;
-      vid.autoplay = true;
-      vid.loop = true;
-      sprite = PIXI.Sprite.from(vid);
+      // vid.autoplay = true;
+      // vid.loop = true;
+      game.video?.play(vid);
+      if (game.video?.locked) {
+        sprite = PIXI.Sprite.from(path);
+        vid.onplay = () => {
+          this.displayObject = PIXI.Sprite.from(vid);
+          if (sprite) sprite.destroy();
+        }
+      } else {
+        sprite = PIXI.Sprite.from(vid);
+      }
+
     } else if (split[1] === "gif") {
       PIXI.Assets.load(path)
         .then(img => { this.displayObject = img as PIXI.Sprite; })
