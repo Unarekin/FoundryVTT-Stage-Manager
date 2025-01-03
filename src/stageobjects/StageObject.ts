@@ -784,8 +784,9 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     this.synchronize = true;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected onHandleDragStart(e: PIXI.FederatedMouseEvent) {
-    e.preventDefault();
+    // e.preventDefault();
     this.resizing = true;
     this.synchronize = false;
   }
