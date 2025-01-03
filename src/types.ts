@@ -32,6 +32,8 @@ export interface SerializedStageObject {
 
 export interface SerializedImageStageObject extends SerializedStageObject {
   src: string;
+  // playing: boolean;
+  loop: boolean;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type

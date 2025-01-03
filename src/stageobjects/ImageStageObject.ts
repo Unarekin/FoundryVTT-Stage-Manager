@@ -141,21 +141,31 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
     }
   }
 
-  public get playing() {
-    const resource = this.displayObject.texture.baseTexture.resource;
-    if (resource instanceof PIXI.VideoResource) {
-      return !resource.source.paused
-    }
-    return false;
-  }
+  // public get playing() {
+  //   const resource = this.displayObject.texture.baseTexture.resource;
+  //   if (resource instanceof PIXI.VideoResource) {
+  //     return !resource.source.paused
+  //   }
+  //   return false;
+  // }
 
-  public set playing(playing) {
-    const resource = this.displayObject.texture.baseTexture.resource;
-    if (resource instanceof PIXI.VideoResource) {
-      if (playing) void resource.source.play();
-      else void resource.source.pause();
-    }
-  }
+  // public set playing(playing) {
+  //   const resource = this.displayObject.texture.baseTexture.resource;
+  //   if (resource instanceof PIXI.VideoResource) {
+  //     if (this.playing !== playing) this.dirty = true;
+  //     if (playing) {
+  //       if (game.video?.locked)
+  //         game.video?.play(resource.source);
+  //       else
+  //         resource.source.play().catch(console.error);
+  //       log("Beginning video playback:", this.path);
+  //     } else {
+  //       resource.source.pause();
+  //       log("Pausing video playback:", this.path);
+  //     }
+
+  //   }
+  // }
 
   public get right() { return this.actualBounds.right - (this.x + (this.width * this.anchor.x)); }
 
@@ -239,11 +249,13 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
 
         this.width = this.actualBounds.width * this.scaledDimensions.width;
         this.height = this.actualBounds.height * this.scaledDimensions.height;
-        this.dirty = true;
       });
     } else {
       this.path = serialized.src;
+      // this.playing = serialized.playing;
+      this.loop = serialized.loop;
     }
+    this.dirty = true;
   }
 
   public destroy() {
@@ -275,7 +287,9 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
     return {
       ...super.serialize(),
       type: ImageStageObject.type,
-      src: this.path
+      src: this.path,
+      // playing: this.playing,
+      loop: this.loop,
     }
   }
 

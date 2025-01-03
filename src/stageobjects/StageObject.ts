@@ -6,7 +6,6 @@ import { Scope, SerializedStageObject, StageLayer } from "../types";
 import { PinHash } from "./PinHash";
 import deepProxy from "../lib/deepProxy";
 import { CUSTOM_HOOKS } from "../hooks";
-import { log } from "../logging";
 
 const KNOWN_OBJECTS: Record<string, StageObject> = {};
 
@@ -190,7 +189,6 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   private _name: string = this.id;
   public get name() { return this._name; }
   public set name(val) {
-    log("Setting name:", val);
     if (this._name !== val) {
       this._name = val;
       this.dirty = true;
@@ -238,11 +236,11 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     })
       .addListener("touchstart", this.onHandleDragStart.bind(this))
       .addListener("mousedown", this.onHandleDragStart.bind(this))
-    // .addListener("touchmove", this.onHandleDragMove.bind(this))
-    // .addListener("mousemove", this.onHandleDragMove.bind(this))
-    // .addListener("mouseup", this.onHandleDragEnd.bind(this))
-    // .addListener("touchend", this.onHandleDragEnd.bind(this))
-    // .addListener("touchcancel", this.onHandleDragEnd.bind(this))
+      // .addListener("touchmove", this.onHandleDragMove.bind(this))
+      // .addListener("mousemove", this.onHandleDragMove.bind(this))
+      .addListener("mouseup", this.onHandleDragEnd.bind(this))
+      .addListener("touchend", this.onHandleDragEnd.bind(this))
+      .addListener("touchcancel", this.onHandleDragEnd.bind(this))
 
     // frame.visible = false;
     this.interfaceContainer = frame;
@@ -461,7 +459,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     this.updatePinLocations();
   }
 
-  public get transform() { return this.displayObject.transform; }
+  public get transform() { return this.displayObject.transform }
 
   public set transform(transform) {
     if (!foundry.utils.objectsEqual(transform, this.displayObject.transform)) this.dirty = true;
