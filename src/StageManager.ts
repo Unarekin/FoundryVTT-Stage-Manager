@@ -289,9 +289,15 @@ export class StageManager {
    * @param {StageLayer} layer - {@link StageLayer} to which to add the object.
    */
   public static addStageObject(stageObject: StageObject, layer: StageLayer = "primary") {
-    if (!StageManager.canAddStageObjects(game.user?.id ?? "")) throw new PermissionDeniedError();
-    StageManager.StageObjects.set(stageObject.id, stageObject);
-    StageManager.setStageObjectLayer(stageObject, layer);
+    try {
+      if (!(stageObject instanceof StageObject)) throw new InvalidStageObjectError(stageObject);
+      if (!StageManager.canAddStageObjects(game.user?.id ?? "")) throw new PermissionDeniedError();
+      StageManager.StageObjects.set(stageObject.id, stageObject);
+      StageManager.setStageObjectLayer(stageObject, layer);
+    } catch (err) {
+      ui.notifications?.error((err as Error).message, { localize: true, console: false });
+      console.error(err);
+    }
   }
 
   public static canAddStageObjects(userId: string): boolean {
