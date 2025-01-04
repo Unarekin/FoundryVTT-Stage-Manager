@@ -1,3 +1,5 @@
+import { StageObject } from "./stageobjects";
+
 // export type StageLayer = "primary" | "foreground" | "background" | "text" | "ui";
 export const StageLayers = ["primary", "foreground", "background", "text", "ui"] as const;
 export type StageLayer = typeof StageLayers[number];
@@ -54,3 +56,5 @@ export const TOOL_LAYERS: Record<string, StageLayer> = {
   "sm-select-background": "background",
   "sm-select-text": "text"
 }
+
+export type StageObjectLike = string | StageObject | PIXI.DisplayObject;

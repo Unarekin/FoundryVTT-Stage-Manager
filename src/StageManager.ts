@@ -1,5 +1,5 @@
 import { ScreenSpaceCanvasGroup } from './ScreenSpaceCanvasGroup';
-import { ImageStageObject, StageObject } from './stageobjects/';
+import { ImageStageObject, StageObject } from './stageobjects';
 import { PartialWithRequired, SerializedStageObject, StageLayer } from './types';
 import { coerceStageObject, coerceUser } from './coercion';
 import { StageObjects } from './StageObjectCollection';
@@ -137,16 +137,18 @@ export class StageManager {
    * @param {StageLayer} [layer="primary"] - {@link StageLayer} to which to add this object.
    * @returns 
    */
-  public static addImage(path: string, x?: number, y?: number, name?: string, layer: StageLayer = "primary"): ImageStageObject {
-    if (StageManager.canAddStageObjects(game.user?.id ?? "")) {
+  public static addImage(path: string, x?: number, y?: number, name?: string, layer: StageLayer = "primary"): ImageStageObject | undefined {
+    try {
+      if (!StageManager.canAddStageObjects(game.user?.id ?? "")) throw new PermissionDeniedError();
       const obj = new ImageStageObject(path, name);
       obj.x = typeof x === "number" ? x : window.innerWidth / 2;
       obj.y = typeof y === "number" ? y : window.innerHeight / 2;
 
       StageManager.addStageObject(obj, layer);
       return obj;
-    } else {
-      throw new PermissionDeniedError();
+    } catch (err) {
+      ui.notifications?.error((err as Error).message, { localize: true, console: false });
+      console.error(err);
     }
   }
 
@@ -288,12 +290,13 @@ export class StageManager {
    * @param {StageObject} stageObject - {@link StageObject} to be added.
    * @param {StageLayer} layer - {@link StageLayer} to which to add the object.
    */
-  public static addStageObject(stageObject: StageObject, layer: StageLayer = "primary") {
+  public static addStageObject(stageObject: StageObject, layer: StageLayer = "primary"): StageObject | undefined {
     try {
       if (!(stageObject instanceof StageObject)) throw new InvalidStageObjectError(stageObject);
       if (!StageManager.canAddStageObjects(game.user?.id ?? "")) throw new PermissionDeniedError();
       StageManager.StageObjects.set(stageObject.id, stageObject);
       StageManager.setStageObjectLayer(stageObject, layer);
+      return stageObject;
     } catch (err) {
       ui.notifications?.error((err as Error).message, { localize: true, console: false });
       console.error(err);

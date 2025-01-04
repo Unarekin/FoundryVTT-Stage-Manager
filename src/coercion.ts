@@ -25,7 +25,7 @@ export function coerceUser(arg: unknown): User | undefined {
 }
 
 /**
- * Will attempt to locate a StageObject by id, or name
+ * Will attempt to locate a StageObject by id, name, or its associated {@link PIXI.DisplayObject}
  * @param {unknown} arg 
  * @returns {StageObject | undefined}
  */
@@ -37,6 +37,9 @@ export function coerceStageObject<t extends StageObject>(arg: unknown): t | unde
     obj = StageManager.StageObjects.get(arg);
     if (obj instanceof StageObject) return obj as t;
     obj = StageManager.StageObjects.getName(arg);
+    if (obj instanceof StageObject) return obj as t;
+  } else if (arg instanceof PIXI.DisplayObject) {
+    const obj = StageManager.StageObjects.find(item => item.displayObject === arg);
     if (obj instanceof StageObject) return obj as t;
   }
 
