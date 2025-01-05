@@ -605,8 +605,8 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     this.locked = serialized.locked;
     this.zIndex = serialized.zIndex;
     this.alpha = serialized.alpha;
-    this.scope = serialized.scope;
-    this.scopeOwners = serialized.scopeOwners;
+    this.scope = serialized.scope ?? "global";
+    this.scopeOwners = serialized.scopeOwners ?? [];
 
     this.x = serialized.bounds.x * this.actualBounds.width;
     this.y = serialized.bounds.y * this.actualBounds.height;
@@ -692,8 +692,8 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       bounds: { ...this.scaledDimensions },
       angle: this.angle,
       restrictToVisualArea: this.restrictToVisualArea,
-      scope: this.scope,
-      scopeOwners: this.scopeOwners,
+      scope: this.scope ?? "global",
+      scopeOwners: this.scopeOwners ?? [],
       filters: [],
       zIndex: this.zIndex,
       alpha: this.alpha,

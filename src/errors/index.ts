@@ -1,5 +1,6 @@
 export * from './CannotDeserializeError';
 export * from './CanvasNotInitializedError';
+export * from './InvalidActorError';
 export * from './InvalidStageObjectError';
 export * from './InvalidUserError';
 export * from './LocalizedError';

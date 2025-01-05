@@ -1,5 +1,5 @@
 import { ScreenSpaceCanvasGroup } from './ScreenSpaceCanvasGroup';
-import { ImageStageObject, StageObject } from './stageobjects';
+import { ActorStageObject, ImageStageObject, StageObject } from './stageobjects';
 import { PartialWithRequired, SerializedStageObject, StageLayer } from './types';
 import { coerceStageObject, coerceUser } from './coercion';
 import { StageObjects } from './StageObjectCollection';
@@ -8,10 +8,11 @@ import * as stageObjectTypes from "./stageobjects";
 import { getGlobalObjects, getSceneObjects, getSetting, getUserObjects, setGlobalObjects, setSceneObjects, setSetting, setUserObjects } from './Settings';
 import { CUSTOM_HOOKS } from './hooks';
 import { log } from './logging';
-import { ImageStageObjectApplication, StageObjectApplication } from './applications';
+import { ActorStageObjectApplication, ImageStageObjectApplication, StageObjectApplication } from './applications';
 
 const ApplicationHash: Record<string, typeof StageObjectApplication> = {
-  "image": ImageStageObjectApplication as typeof StageObjectApplication
+  "image": ImageStageObjectApplication as typeof StageObjectApplication,
+  "actor": ActorStageObjectApplication as typeof StageObjectApplication
 }
 
 // #region Classes (1)
@@ -152,6 +153,20 @@ export class StageManager {
     }
   }
 
+  public static addActor(actor: Actor, x?: number, y?: number, layer: StageLayer = "primary"): ActorStageObject | undefined {
+    try {
+      if (!StageManager.canAddStageObjects(game.user?.id ?? "")) throw new PermissionDeniedError();
+      const obj = new ActorStageObject(actor);
+      obj.x = typeof x === "number" ? x : window.innerWidth / 2;
+      obj.y = typeof y === "number" ? y : window.innerHeight / 2;
+      StageManager.addStageObject(obj, layer);
+      return obj;
+    } catch (err) {
+      ui.notifications?.error((err as Error).message, { localize: true, console: false });
+      console.error(err);
+    }
+  }
+
   public static async CreateStageObject<t extends StageObject = StageObject>(serialized: PartialWithRequired<SerializedStageObject, "type">): Promise<t | undefined> {
     if (!ApplicationHash[serialized.type]) throw new InvalidStageObjectError(serialized.type);
 
@@ -250,7 +265,8 @@ export class StageManager {
         }
       }
     } catch (err) {
-      ui.notifications?.error((err as Error).message, { localize: true });
+      ui.notifications?.error((err as Error).message, { localize: true, console: false });
+      console.error(err);
     }
   }
 

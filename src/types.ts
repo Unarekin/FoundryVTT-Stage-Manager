@@ -38,6 +38,10 @@ export interface SerializedImageStageObject extends SerializedStageObject {
   loop: boolean;
 }
 
+export interface SerializedActorStageObject extends SerializedImageStageObject {
+  actor: string;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface SerializedFilter { }
 
@@ -58,3 +62,8 @@ export const TOOL_LAYERS: Record<string, StageLayer> = {
 }
 
 export type StageObjectLike = string | StageObject | PIXI.DisplayObject;
+
+export interface ActorSettings {
+  name: string;
+  image: string;
+}

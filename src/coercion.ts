@@ -63,3 +63,24 @@ export function coerceScene(arg: unknown): Scene | undefined {
     if (scene instanceof Scene) return scene;
   }
 }
+
+export function coerceActor(id: string): Actor | undefined
+export function coerceActor(name: string): Actor | undefined
+export function coerceActor(uuid: string): Actor | undefined
+export function coerceActor(token: Token): Actor | undefined
+export function coerceActor(token: TokenDocument): undefined
+export function coerceActor(actor: Actor): Actor
+export function coerceActor(arg: unknown): Actor | undefined {
+  if (arg instanceof Actor) return arg;
+  if (arg instanceof Token) return arg.actor as Actor ?? undefined;
+  if (arg instanceof TokenDocument) return arg.actor ?? undefined;
+  if (typeof arg === "string") {
+    let actor: unknown = fromUuidSync(arg);
+    if (actor instanceof Actor) return actor;
+    if (!game.actors) return;
+    actor = game.actors.get(arg);
+    if (actor instanceof Actor) return actor;
+    actor = game.actors.getName(arg);
+    if (actor instanceof Actor) return actor;
+  }
+}

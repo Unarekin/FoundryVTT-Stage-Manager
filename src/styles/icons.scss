@@ -31,6 +31,14 @@ nav .sm-icon {
     background-color: var(--color-text-light-heading);
   }
 
+  &.context-menu {
+    background-color: var(--color-text-light-1) !important;
+  }
+
+  &.actor-sheet {
+    background-color: var(--color-text-primary);
+  }
+
   // Individual icons
   &.curtains {
     @include mask-icon("../assets/icons/theater-curtains.svg");
@@ -50,5 +58,9 @@ nav .sm-icon {
 
   &.select-text {
     @include mask-icon("../assets/icons/select-text.svg");
+  }
+
+  &.actor-sheet {
+    @include mask-icon("../assets/icons/actor-sheet.svg");
   }
 }

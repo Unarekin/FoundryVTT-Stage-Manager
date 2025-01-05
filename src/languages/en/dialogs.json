@@ -30,13 +30,15 @@
         "BOTTOMLEFT": "Bottom left",
         "BOTTOM": "Bottom",
         "BOTTOMRIGHT": "Bottom right"
-      }
+      },
+      "ACTOR": "Actor"
     },
     "TABS": {
       "BASICS": "Basics",
       "IMAGE": "Image",
       "TRIGGERS": "Triggers",
-      "VIDEO": "Video"
+      "VIDEO": "Video",
+      "ACTOR": "Actor"
     }
   }
 }

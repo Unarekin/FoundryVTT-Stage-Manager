@@ -1,5 +1,7 @@
+import { coerceActor } from "./coercion";
+import { InvalidActorError } from "./errors";
 import { StageObject } from "./stageobjects";
-import { SerializedStageObject } from "./types";
+import { ActorSettings, SerializedStageObject } from "./types";
 
 export function registerSettings() {
   if (game?.settings) {
@@ -71,4 +73,22 @@ export async function setUserObjects(user: User, objects: StageObject[] | Serial
 
 export function getUserObjects(user: User): SerializedStageObject[] {
   return user.getFlag(__MODULE_ID__, "stageObjects") ?? [];
+}
+
+export function getActorSettings(id: string): ActorSettings | undefined
+export function getActorSettings(name: string): ActorSettings | undefined
+export function getActorSettings(uuid: string): ActorSettings | undefined
+export function getActorSettings(actor: Actor): ActorSettings | undefined
+export function getActorSettings(token: Token): ActorSettings | undefined
+export function getActorSettings(token: TokenDocument): ActorSettings | undefined
+export function getActorSettings(arg: unknown): ActorSettings | undefined {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+  const actor = coerceActor(arg as any);
+  if (!(actor instanceof Actor)) throw new InvalidActorError(arg);
+
+  return {
+    name: actor.getFlag(__MODULE_ID__, "name") ?? actor.name,
+    image: actor.getFlag(__MODULE_ID__, "image") ?? actor.img
+  };
+
 }

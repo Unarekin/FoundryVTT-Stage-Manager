@@ -13,6 +13,18 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
   StageObjectApplicationOptions>
 ) {
 
+  static PARTS = {
+    tabs: {
+      template: "templates/generic/tab-navigation.hbs"
+    },
+    basics: {
+      template: `modules/${__MODULE_ID__}/templates/editObject/basics.hbs`
+    },
+    footer: {
+      template: "templates/generic/form-footer.hbs"
+    }
+  }
+
   static DEFAULT_OPTIONS = {
     tag: "form",
     position: {
@@ -199,6 +211,7 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
       }
     }
   }
+
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected async _preparePartContext(partId: string, context: this extends ApplicationV2.Internal.Instance<any, any, infer RenderContext extends AnyObject> ? RenderContext : unknown, options: DeepPartial<HandlebarsApplicationMixin.HandlebarsRenderOptions>): Promise<this extends ApplicationV2.Internal.Instance<any, any, infer RenderContext extends AnyObject> ? RenderContext : unknown> {
