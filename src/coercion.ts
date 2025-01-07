@@ -84,3 +84,32 @@ export function coerceActor(arg: unknown): Actor | undefined {
     if (actor instanceof Actor) return actor;
   }
 }
+
+export function getActorFromCombatant(id: string): Actor | undefined {
+  if (!id) return;
+  if (!(game.combat instanceof Combat)) return;
+  const combatant = game.combat.combatants.get(id);
+  if (!(combatant instanceof Combatant)) return;
+  if (!combatant.actorId) return;
+  const actor = game.actors?.get(combatant.actorId) as Actor | undefined;
+  if (!(actor instanceof Actor)) return;
+  return actor;
+}
+
+export function coerceMacro(id: string): Macro | undefined
+export function coerceMacro(name: string): Macro | undefined
+export function coerceMacro(uuid: string): Macro | undefined
+export function coerceMacro(macro: Macro): Macro | undefined
+export function coerceMacro(arg: unknown): Macro | undefined {
+  if (arg instanceof Macro) return arg;
+  if (typeof arg === "string") {
+    let macro = fromUuidSync(arg) as Macro | undefined;
+    if (macro instanceof Macro) return macro;
+    // if (!(game instanceof Game && game.macros)) return;
+    if (!game.macros) return;
+    macro = game.macros.get(arg) as Macro | undefined;
+    if (macro instanceof Macro) return macro;
+    macro = game.macros.getName(arg) as Macro | undefined;
+    if (macro instanceof Macro) return macro;
+  }
+}

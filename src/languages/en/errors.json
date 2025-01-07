@@ -8,7 +8,9 @@
       "NOTIMPLEMENTED": "Not Implemented",
       "UNKNOWNUSER": "Unknown user: {user}",
       "CANVASNOTINITIALIZED": "PIXI canvas not initialized, function likely called too early in the application's lifetime.",
-      "INVALIDACTOR": "Actor not found: {name}"
+      "INVALIDACTOR": "Actor not found: {name}",
+      "INVALIDMACRO": "Invalid macro: {name}",
+      "MACROPERMDENIED": "Permission denied execting macro {name}"
     }
   }
 }

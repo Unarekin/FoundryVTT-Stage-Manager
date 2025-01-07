@@ -2,13 +2,27 @@ import { coerceActor } from '../coercion';
 import { InvalidActorError } from '../errors';
 import { localize } from '../functions';
 import { getActorSettings } from '../Settings';
-import { SerializedActorStageObject } from '../types';
+import { StageManager } from '../StageManager';
+import { SerializedActorStageObject, TriggerEventSignatures } from '../types';
 import { ImageStageObject } from './ImageStageObject';
 
 export class ActorStageObject extends ImageStageObject {
 
   public static readonly type: string = "actor";
   public readonly type: string = "actor";
+
+  public static GetActorObjects(id: string): ActorStageObject[]
+  public static GetActorObjects(name: string): ActorStageObject[]
+  public static GetActorObjects(uuid: string): ActorStageObject[]
+  public static GetActorObjects(actor: Actor): ActorStageObject[]
+  public static GetActorObjects(token: Token): ActorStageObject[]
+  public static GetActorObjects(token: TokenDocument): ActorStageObject[]
+  public static GetActorObjects(arg: unknown): ActorStageObject[] {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    const actor = coerceActor(arg as any);
+    if (!(actor instanceof Actor)) throw new InvalidActorError(arg);
+    return StageManager.StageObjects.filter(obj => obj instanceof ActorStageObject && obj.actor === actor) as ActorStageObject[]
+  }
 
   private _actor: Actor;
   public get actor() { return this._actor; }
@@ -54,6 +68,12 @@ export class ActorStageObject extends ImageStageObject {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected getTriggerArguments<k extends keyof TriggerEventSignatures>(event: k, args: TriggerEventSignatures[k]): Partial<TriggerEventSignatures[k]> | Record<string, unknown> {
+    return {
+      actor: this.actor
+    };
+  }
 
   public deserialize(serialized: SerializedActorStageObject) {
     const actor = coerceActor(serialized.actor);

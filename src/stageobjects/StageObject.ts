@@ -2,15 +2,24 @@ import { CannotDeserializeError, InvalidStageObjectError } from "../errors";
 import { closeAllContextMenus, localize, registerContextMenu } from "../functions";
 import { ScreenSpaceCanvasGroup } from "../ScreenSpaceCanvasGroup";
 import { StageManager } from "../StageManager";
-import { Scope, SerializedStageObject, StageLayer } from "../types";
+import { Scope, SerializedStageObject, SerializedTrigger, StageLayer, TriggerEventSignatures } from '../types';
 import { PinHash } from "./PinHash";
 import deepProxy from "../lib/deepProxy";
 import { CUSTOM_HOOKS } from "../hooks";
+import * as tempTriggers from "../triggeractions";
+import { log } from "../logging";
+import { StageManagerControlsLayer } from "../ControlButtonsHandler";
+
+
+const TriggerActions = Object.fromEntries(Object.values(tempTriggers).map(val => [val.type, val]));
+log("Actions:", tempTriggers, TriggerActions);
 
 const KNOWN_OBJECTS: Record<string, StageObject> = {};
 
 export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObject> {
   // #region Properties (15)
+
+  public toString() { return JSON.stringify(this.serialize()); }
 
   private _leftPinPos = -1;
   private _rightPinPos = -1;
@@ -33,7 +42,11 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
   private _dirty = false;
   public get dirty() { return this._dirty; }
-  public set dirty(val) { this._dirty = val; }
+  public set dirty(val) {
+    this._dirty = val;
+  }
+
+
 
   // private _dirty = false;
   // public get dirty() { return this._dirty; }
@@ -149,6 +162,37 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
   // #endregion Properties (15)
 
+  #lastClick = 0;
+  protected dblClickDelay = 500;
+
+  protected onClick(e: PIXI.FederatedPointerEvent) {
+    if (Date.now() - this.#lastClick <= this.dblClickDelay) {
+      // Set to 0 to prevent a triple click from triggering 2 double clicks
+      this.#lastClick = 0;
+      this.onDblClick(e);
+    } else {
+      this.#lastClick = Date.now();
+
+      if (!(canvas?.activeLayer instanceof StageManagerControlsLayer)) {
+        const { x, y } = this.displayObject.toLocal(e);
+        void this.triggerEvent("click", { pos: { x, y, clientX: e.clientX, clientY: e.clientY } });
+      }
+    }
+  }
+  protected onDblClick(e: PIXI.FederatedPointerEvent) {
+    if (!(canvas?.activeLayer instanceof StageManagerControlsLayer)) {
+      const { x, y } = this.displayObject.toLocal({ x: e.x, y: e.y });
+      void this.triggerEvent("doubleClick", { pos: { x, y, clientX: e.clientX, clientY: e.clientY } })
+    }
+  }
+  protected onRightClick(e: PIXI.FederatedPointerEvent) {
+    if (!(canvas?.activeLayer instanceof StageManagerControlsLayer)) {
+      const { x, y } = this.displayObject.toLocal({ x: e.x, y: e.y });
+      void this.triggerEvent("rightClick", { pos: { x, y, clientX: e.clientX, clientY: e.clientY } });
+    }
+  }
+
+
   public abstract createDragGhost(): t;
 
   // #region Constructors (1)
@@ -160,7 +204,9 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       .on("pointerdown", this.onPointerDown.bind(this))
       .on("pointerenter", this.onPointerEnter.bind(this))
       .on("pointerleave", this.onPointerLeave.bind(this))
-      .on("rightdown", this.onContextMenu.bind(this))
+      .on("click", this.onClick.bind(this))
+      .on("rightclick", this.onRightClick.bind(this))
+      .on("rightclick", this.onContextMenu.bind(this))
       ;
   }
 
@@ -171,13 +217,15 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
         .off("pointerdown", this.onPointerDown.bind(this))
         .off("pointerenter", this.onPointerEnter.bind(this))
         .off("pointerleave", this.onPointerLeave.bind(this))
-        .off("rightdown", this.onContextMenu.bind(this))
+        .off("click", this.onClick.bind(this))
+        .off("rightclick", this.onRightClick.bind(this))
+        .off("rightclick", this.onContextMenu.bind(this))
         ;
     }
   }
 
 
-  #hookId = 0;
+  // #hookId = 0;
 
   protected onSynchronize(item: SerializedStageObject) {
     if (item.id === this.id) {
@@ -195,6 +243,71 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     }
   }
 
+  protected addHook(event: string, id: number) {
+    if (!Array.isArray(this.#hookIds[event])) this.#hookIds[event] = [id];
+    else this.#hookIds[event].push(id);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected getTriggerArguments<k extends keyof TriggerEventSignatures>(event: k, args: TriggerEventSignatures[k]): Partial<TriggerEventSignatures[k]> | Record<string, unknown> {
+    return {};
+  }
+
+  // protected readonly triggers: Record<TriggerEvent, SerializedTrigger[]> = {};
+  // private _triggers: Record<keyof TriggerEventSignatures, SerializedTrigger[]> = {};
+
+  private _triggers: Record<keyof TriggerEventSignatures, SerializedTrigger[]> = {
+    hoverIn: [],
+    hoverOut: [],
+    click: [],
+    doubleClick: [],
+    rightClick: [],
+    combatStart: [],
+    combatEnd: [],
+    combatRound: [],
+    combatTurnStart: [],
+    combatTurnEnd: [],
+    sceneChange: [],
+    pause: [],
+    unPause: [],
+    userConnected: [],
+    addActiveEffect: [],
+    removeActiveEffect: [],
+    addStatusEffect: [],
+    removeStatusEffect: [],
+    selectToken: [],
+    deselectToken: [],
+    targetToken: [],
+    untargetToken: [],
+    worldTimeChange: []
+  };
+  public get triggers() { return this._triggers; }
+  protected set triggers(val) {
+    if (!foundry.utils.objectsEqual(this.triggers, val)) {
+      this._triggers = val;
+      this.dirty = true;
+    }
+  }
+
+  public async triggerEvent<k extends keyof TriggerEventSignatures>(event: k, args: TriggerEventSignatures[k]) {
+    log("Event triggered:", event, args);
+    if (this.triggers[event]) {
+      for (const trigger of this.triggers[event]) {
+
+        if (TriggerActions[trigger.type]) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+          const exec = TriggerActions[trigger.type].execute(trigger as any, {
+            stageObject: this.serialize(),
+            ...args,
+            ...this.getTriggerArguments(event, args)
+          });
+          if (exec instanceof Promise) await exec;
+        }
+      }
+    }
+  }
+
+
   constructor(_displayObject: t, name?: string) {
     this.#displayObject = this.proxyDisplayObject(_displayObject);
     this.#displayObject.interactive = true;
@@ -203,8 +316,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
     this._name = name ?? this.id;
 
-    // this.#hookId = Hooks.on(CUSTOM_HOOKS.SYNC_END, this.synchronizationEnd.bind(this));
-    this.#hookId = Hooks.on(CUSTOM_HOOKS.SYNC_OBJECT, this.onSynchronize.bind(this));
+    this.addHook(CUSTOM_HOOKS.SYNC_OBJECT, Hooks.on(CUSTOM_HOOKS.SYNC_OBJECT, this.onSynchronize.bind(this)));
 
     // this.displayObject.on("prerender", this.onPreRender.bind(this));
     // canvas?.app?.renderer.addListener("prerender", this.onPreRender.bind(this))
@@ -288,7 +400,6 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   // #revokeDisplayProxy
   public get displayObject() { return this.#displayObject; }
   protected set displayObject(val) {
-    this.dirty = true;
     if (this.#displayObject) {
       this.removeDisplayObjectListeners();
 
@@ -607,6 +718,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     this.alpha = serialized.alpha;
     this.scope = serialized.scope ?? "global";
     this.scopeOwners = serialized.scopeOwners ?? [];
+    this.triggers = serialized.triggers ?? {};
 
     this.x = serialized.bounds.x * this.actualBounds.width;
     this.y = serialized.bounds.y * this.actualBounds.height;
@@ -615,6 +727,8 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
     this.dirty = false;
   }
+
+  #hookIds: Record<string, number[]> = {};
 
   public destroy() {
     if (!this.destroyed) {
@@ -627,7 +741,14 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       // StageManager.StageObjects.delete(this.id);
       StageManager.removeStageObject(this);
       if (!this.interfaceContainer.destroyed) this.interfaceContainer.destroy();
-      Hooks.off(CUSTOM_HOOKS.SYNC_OBJECT, this.#hookId);
+
+      const hooks = Object.entries(this.#hookIds);
+      for (const [hook, ids] of hooks) {
+        for (const id of ids)
+          Hooks.off(hook, id);
+      }
+
+
       delete KNOWN_OBJECTS[this.id];
       // This is a terrible idea, but we are releasing the reference to our Proxy at this point to let things get properly garbage collected
       (this.#displayObject as any) = null;
@@ -695,6 +816,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       scope: this.scope ?? "global",
       scopeOwners: this.scopeOwners ?? [],
       filters: [],
+      triggers: this.triggers ?? {},
       zIndex: this.zIndex,
       alpha: this.alpha,
       skew: {
@@ -791,16 +913,28 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     this.synchronize = false;
   }
 
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected onPointerEnter(e: PIXI.FederatedPointerEvent) {
     if (game.activeTool === this.selectTool && StageManager.canModifyStageObject(game.user?.id ?? "", this.id)) {
       this.highlighted = true;
     }
+
+    if (!(canvas?.activeLayer instanceof StageManagerControlsLayer)) {
+      const { x, y } = this.displayObject.toLocal({ x: e.x, y: e.y });
+      void this.triggerEvent("hoverIn", { pos: { x, y, clientX: e.clientX, clientY: e.clientY } });
+    }
+
   }
+
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected onPointerLeave(e: PIXI.FederatedPointerEvent) {
     if (this.highlighted) this.highlighted = false;
+    if (!(canvas?.activeLayer instanceof StageManagerControlsLayer)) {
+      const { x, y } = this.displayObject.toLocal({ x: e.x, y: e.y });
+      void this.triggerEvent("hoverOut", { pos: { x, y, clientX: e.clientX, clientY: e.clientY } });
+    }
   }
 
   public sizeInterfaceContainer() {

@@ -17,6 +17,7 @@ export interface SerializedStageObject {
   name: string;
   scope: Scope;
   scopeOwners: string[];
+  triggers: Record<keyof TriggerEventSignatures, SerializedTrigger[]>;
   bounds: {
     x: number;
     y: number;
@@ -66,4 +67,46 @@ export type StageObjectLike = string | StageObject | PIXI.DisplayObject;
 export interface ActorSettings {
   name: string;
   image: string;
+}
+
+
+
+export interface TriggerEventSignatures {
+  hoverIn: { pos: { x: number, y: number, clientX: number; clientY: number } };
+  hoverOut: { pos: { x: number, y: number, clientX: number; clientY: number } };
+  click: { pos: { x: number, y: number, clientX: number; clientY: number } };
+  doubleClick: { pos: { x: number, y: number, clientX: number; clientY: number } };
+  rightClick: { pos: { x: number, y: number, clientX: number; clientY: number } };
+  combatStart: { combat: Combat };
+  combatEnd: { combat: Combat };
+  combatRound: { combat: Combat };
+  combatTurnStart: { combat: Combat, actor: Actor };
+  combatTurnEnd: { combat: Combat, actor: Actor };
+  sceneChange: { scene: Scene };
+  pause: undefined;
+  unPause: undefined;
+  userConnected: { user: User };
+  userDisconnected: { user: User };
+  addActiveEffect: { actor: Actor, effect: ActiveEffect };
+  removeActiveEffect: { actor: Actor, effect: ActiveEffect };
+  addStatusEffect: { actor: Actor, effect: ActiveEffect, status: string };
+  removeStatusEffect: { actor: Actor, effect: ActiveEffect, status: string };
+  selectToken: { token: Token, actor: Actor };
+  deselectToken: { token: Token, actor: Actor };
+  targetToken: { user: User, token: Token, actor: Actor };
+  untargetToken: { user: User, token: Token, actor: Actor };
+  worldTimeChange: { time: number };
+  actorChanged: { actor: Actor };
+}
+
+
+// export type TriggerEvent = typeof TriggerEvents[number];
+
+export interface SerializedTrigger {
+  type: string;
+}
+
+export interface SerializedMacroTrigger extends SerializedTrigger {
+  macro: string;
+  arguments: Record<string, any>
 }

@@ -223,14 +223,14 @@ function escapeWrapper(wrapped: Function, ...args: unknown[]) {
 function resizeItem(event: PIXI.FederatedPointerEvent, item: StageObject) {
   event.preventDefault();
   if (event.ctrlKey) {
-    const desiredWidth = event.screenX - item.left;
-    const desiredHeight = event.screenY - item.top;
+    const desiredWidth = event.clientX - item.left;
+    const desiredHeight = event.clientY - item.top;
     const ratio = Math.max(desiredWidth / item.baseWidth, desiredHeight / item.baseHeight);
     item.width = item.baseWidth * ratio;
     item.height = item.baseHeight * ratio;
   } else {
-    item.width = event.screenX - item.left;
-    item.height = event.screenY - item.top;
+    item.width = event.clientX - item.left;
+    item.height = event.clientY - item.top;
   }
 }
 
