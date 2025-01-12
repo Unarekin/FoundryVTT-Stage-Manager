@@ -1,16 +1,17 @@
 {
   "STAGEMANAGER": {
     "ERRORS": {
-      "INVALIDUSER": "Invalid user: {user}",
-      "INVALIDSTAGEOBJECT": "Invalid stage object: {key}",
-      "PERMISSIONDENIED": "Permission denied.",
       "CANNOTDESERIALIZE": "Cannot deserialize stage object: {type}",
-      "NOTIMPLEMENTED": "Not Implemented",
-      "UNKNOWNUSER": "Unknown user: {user}",
       "CANVASNOTINITIALIZED": "PIXI canvas not initialized, function likely called too early in the application's lifetime.",
       "INVALIDACTOR": "Actor not found: {name}",
       "INVALIDMACRO": "Invalid macro: {name}",
-      "MACROPERMDENIED": "Permission denied execting macro {name}"
+      "INVALIDSTAGEOBJECT": "Invalid stage object: {key}",
+      "INVALIDUSER": "Invalid user: {user}",
+      "MACROPERMDENIED": "Permission denied execting macro {name}",
+      "NOIMAGEDATA": "No image data found.",
+      "NOTIMPLEMENTED": "Not Implemented",
+      "PERMISSIONDENIED": "Permission denied.",
+      "UNKNOWNUSER": "Unknown user: {user}"
     }
   }
 }

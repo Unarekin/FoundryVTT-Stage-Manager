@@ -70,6 +70,7 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
       this.displayObject.texture.baseTexture.once("loaded", () => {
         this.width = this.displayObject.texture.width;
         this.height = this.displayObject.texture.height;
+        // this.createRenderTexture();
       });
     }
   }
@@ -116,6 +117,11 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
   public set height(height) {
     this.displayObject.height = height;
     super.height = height;
+  }
+
+  protected getLocalCoordinates(clientX: number, clientY: number): { x: number; y: number; } {
+    const { x, y } = this.displayObject.toLocal({ x: clientX + (this.width * this.anchor.x), y: clientY + (this.height * this.anchor.y) });
+    return { x, y };
   }
 
   public get left() { return this.x + this.actualBounds.left - (this.width * this.anchor.x); }
@@ -224,6 +230,7 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
 
         this.width = this.actualBounds.width * this.scaledDimensions.width;
         this.height = this.actualBounds.height * this.scaledDimensions.height;
+        // this.createRenderTexture();
       });
     } else {
       this.path = serialized.src;
@@ -267,6 +274,21 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
       loop: this.loop,
     }
   }
+
+
+  // /**
+  //  * Determine if a particular screen points corresponds to a non-transparent pixel of this object
+  //  * @param x 
+  //  * @param y 
+  //  */
+  // public hitTest(x: number, y: number): boolean {
+  //   // Rough hit chekc
+  //   if (!this.bounds.contains(x, y)) return false;
+  //   // Fine hit check
+  //   const local = this.displayObject.toLocal({ x: x + (this.width * this.anchor.x), y: y + (this.height * this.anchor.y) });
+  //   const color = this.getPixelColor(local.x, local.y);
+  //   return color.alpha !== 0;
+  // }
 
   // #endregion Public Methods (5)
 }

@@ -1,4 +1,4 @@
-import { CannotDeserializeError, InvalidStageObjectError } from "../errors";
+import { CannotDeserializeError, CanvasNotInitializedError, InvalidStageObjectError } from "../errors";
 import { closeAllContextMenus, localize, registerContextMenu } from "../functions";
 import { ScreenSpaceCanvasGroup } from "../ScreenSpaceCanvasGroup";
 import { StageManager } from "../StageManager";
@@ -9,10 +9,10 @@ import { CUSTOM_HOOKS } from "../hooks";
 import * as tempTriggers from "../triggeractions";
 import { log } from "../logging";
 import { StageManagerControlsLayer } from "../ControlButtonsHandler";
+import { throttle } from '../lib/throttle';
 
 
 const TriggerActions = Object.fromEntries(Object.values(tempTriggers).map(val => [val.type, val]));
-log("Actions:", tempTriggers, TriggerActions);
 
 const KNOWN_OBJECTS: Record<string, StageObject> = {};
 
@@ -175,7 +175,9 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
       if (!(canvas?.activeLayer instanceof StageManagerControlsLayer)) {
         const { x, y } = this.displayObject.toLocal(e);
+
         void this.triggerEvent("click", { pos: { x, y, clientX: e.clientX, clientY: e.clientY } });
+
       }
     }
   }
@@ -192,13 +194,72 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     }
   }
 
+  protected getLocalCoordinates(clientX: number, clientY: number): { x: number, y: number } {
+    const { x, y } = this.displayObject.toLocal({ x: clientX, y: clientY });
+    return { x, y };
+  }
 
+  private _lastMoveCoords: { x: number, y: number } = { x: -1, y: -1 };
+  private throttledPointerMove: typeof this.onPointerMove | null = null;
+
+  protected onPointerMove(e: PIXI.FederatedPointerEvent) {
+    if (this._lastMoveCoords.x === e.clientX && this._lastMoveCoords.y === e.clientY) return;
+    this._lastMoveCoords.x = e.clientX;
+    this._lastMoveCoords.y = e.clientY;
+
+    // this.getLocalCoordinates(e)
+    const { x, y } = this.displayObject.toLocal(e);
+    // let output = document.getElementById("colorOutput");
+    // if (!(output instanceof HTMLDivElement)) {
+    //   output = document.createElement("div");
+    //   output.style.position = "absolute";
+    //   output.style.top = "0";
+    //   output.style.left = "0";
+    //   output.style.width = "100px";
+    //   output.style.height = "100px";
+    //   output.style.zIndex = "5000";
+    //   output.style.color = "white";
+    //   output.style.textShadow = "1px 1px 2px black";
+    //   output.setAttribute("id", "colorOutput")
+    //   document.body.appendChild(output);
+    // }
+    // const color = this.getPixelColor(x, y);
+    // output.style.background = color.toHexa();
+    // output.innerText = `${x},${y}`
+
+
+    if (this.hitTest(e)) {
+      if (!this._pointerEntered) {
+        this._pointerEntered = true
+        // e.preventDefault();
+        void this.triggerEvent("hoverIn", { pos: { x, y, clientX: e.clientX, clientY: e.clientY } });
+      }
+    } else if (this._pointerEntered) {
+      this._pointerEntered = false;
+      // e.preventDefault();
+      void this.triggerEvent("hoverOut", { pos: { x, y, clientX: e.clientX, clientY: e.clientY } });
+    } else {
+      // const orig = this.displayObject.eventMode;
+      this.displayObject.eventMode = "none";
+      // log("Event:", e instanceof Event, e.originalEvent instanceof Event, e.nativeEvent instanceof Event);
+      if (e instanceof Event) canvas?.app?.renderer.view.dispatchEvent(new Event(e.type, e));
+      else if (e.originalEvent instanceof Event) canvas?.app?.renderer.view.dispatchEvent(new Event(e.originalEvent.type, e.originalEvent));
+      else if (e.nativeEvent instanceof Event) canvas?.app?.renderer.view.dispatchEvent(new Event(e.nativeEvent.type, e.nativeEvent));
+
+      // this.displayObject.eventMode = orig;
+    }
+  }
+
+
+  private _pointerEntered = false;
   public abstract createDragGhost(): t;
 
   // #region Constructors (1)
   protected addDisplayObjectListeners() {
     this.displayObject.interactive = true;
     this.displayObject.eventMode = "dynamic";
+    this.throttledPointerMove = throttle(this.onPointerMove.bind(this), 16);
+
     this.displayObject
       .on("destroyed", this.destroy.bind(this))
       .on("pointerdown", this.onPointerDown.bind(this))
@@ -207,6 +268,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       .on("click", this.onClick.bind(this))
       .on("rightclick", this.onRightClick.bind(this))
       .on("rightclick", this.onContextMenu.bind(this))
+      .on("pointermove", this.throttledPointerMove)
       ;
   }
 
@@ -219,8 +281,10 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
         .off("pointerleave", this.onPointerLeave.bind(this))
         .off("click", this.onClick.bind(this))
         .off("rightclick", this.onRightClick.bind(this))
-        .off("rightclick", this.onContextMenu.bind(this))
-        ;
+        .off("rightclick", this.onContextMenu.bind(this));
+      if (this.throttledPointerMove)
+        this.displayObject.off("pointermove", this.throttledPointerMove)
+          ;
     }
   }
 
@@ -279,7 +343,9 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     deselectToken: [],
     targetToken: [],
     untargetToken: [],
-    worldTimeChange: []
+    worldTimeChange: [],
+    userDisconnected: [],
+    actorChanged: []
   };
   public get triggers() { return this._triggers; }
   protected set triggers(val) {
@@ -308,11 +374,14 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   }
 
 
-  constructor(_displayObject: t, name?: string) {
+  constructor(private _displayObject: t, name?: string) {
+    if (!canvas?.app?.renderer) throw new CanvasNotInitializedError();
     this.#displayObject = this.proxyDisplayObject(_displayObject);
     this.#displayObject.interactive = true;
     this.#displayObject.eventMode = "dynamic";
+    // // this.createRenderTexture();
     this.addDisplayObjectListeners();
+
 
     this._name = name ?? this.id;
 
@@ -362,6 +431,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     this._originalScreenHeight = window.innerHeight;
     this.dirty = false;
 
+
     KNOWN_OBJECTS[this.id] = this;
   }
 
@@ -397,6 +467,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   public get destroyed() { return this.displayObject.destroyed; }
 
   #displayObject: t;
+
   // #revokeDisplayProxy
   public get displayObject() { return this.#displayObject; }
   protected set displayObject(val) {
@@ -422,14 +493,23 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     if (!val) {
       this.#displayObject = val;
     } else {
+
       this.#displayObject = this.proxyDisplayObject(val);
-      // this._displayObject = val;
       this.#displayObject.name = this.name ?? this.id;
       this.#displayObject.interactive = true;
       this.#displayObject.eventMode = "dynamic";
+      // // this.createRenderTexture();
       this.addDisplayObjectListeners();
     }
   }
+
+  // protected createRenderTexture() {
+  //   if (!canvas?.app?.renderer) throw new CanvasNotInitializedError();
+  //   if (this.renderTexture) this.renderTexture.destroy();
+  //   this.renderTexture = PIXI.RenderTexture.create({ width: this.baseWidth, height: this.baseHeight });
+  //   canvas.app.renderer.render(this._displayObject, { renderTexture: this.renderTexture });
+  //   logTexture(this.renderTexture);
+  // }
 
   // eslint-disable-next-line no-unused-private-class-members
   #revokeProxy: (() => void) | null = null;
@@ -914,27 +994,68 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   }
 
 
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected onPointerEnter(e: PIXI.FederatedPointerEvent) {
-    if (game.activeTool === this.selectTool && StageManager.canModifyStageObject(game.user?.id ?? "", this.id)) {
-      this.highlighted = true;
-    }
 
-    if (!(canvas?.activeLayer instanceof StageManagerControlsLayer)) {
-      const { x, y } = this.displayObject.toLocal({ x: e.x, y: e.y });
-      void this.triggerEvent("hoverIn", { pos: { x, y, clientX: e.clientX, clientY: e.clientY } });
-    }
+    // if (game.activeTool === this.selectTool && StageManager.canModifyStageObject(game.user?.id ?? "", this.id)) {
+    //   this.highlighted = true;
+    // }
+
+    // if (!(canvas?.activeLayer instanceof StageManagerControlsLayer)) {
+    //   const { x, y } = this.displayObject.toLocal({ x: e.x, y: e.y });
+    //   void this.triggerEvent("hoverIn", { pos: { x, y, clientX: e.clientX, clientY: e.clientY } });
+    // }
 
   }
 
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   protected onPointerLeave(e: PIXI.FederatedPointerEvent) {
     if (this.highlighted) this.highlighted = false;
     if (!(canvas?.activeLayer instanceof StageManagerControlsLayer)) {
       const { x, y } = this.displayObject.toLocal({ x: e.x, y: e.y });
-      void this.triggerEvent("hoverOut", { pos: { x, y, clientX: e.clientX, clientY: e.clientY } });
+      if (this._pointerEntered) void this.triggerEvent("hoverOut", { pos: { x, y, clientX: e.clientX, clientY: e.clientY } });
+      this._pointerEntered = false;
+
     }
+  }
+
+  protected renderTexture: PIXI.RenderTexture | null = null;
+
+  protected getPixelColor(x: number, y: number): PIXI.Color {
+    // if (!(canvas?.app?.renderer && this.renderTexture)) throw new CanvasNotInitializedError();
+    if (!canvas?.app?.renderer) throw new CanvasNotInitializedError();
+    const pixels = Uint8ClampedArray.from(canvas.app.renderer.extract.pixels(this._displayObject, new PIXI.Rectangle(x, y, 1, 1)));
+
+    const color = new PIXI.Color(pixels)
+    return color;
+  }
+
+  public get layerGroup() {
+    switch (this.layer) {
+      case "primary":
+        return StageManager.primaryCanvasGroup;
+      case "foreground":
+        return StageManager.foregroundCanvasGroup;
+      case "background":
+        return StageManager.backgroundCanvasGroup;
+      case "text":
+        return StageManager.textCanvasGroup;
+      case "ui":
+        return StageManager.uiCanvasGroup;
+    }
+  }
+
+  /**
+   * Determine if a particular screen points corresponds to a non-transparent pixel of this object
+   * @param x 
+   * @param y 
+   */
+  public hitTest(e: PIXI.FederatedPointerEvent): boolean {
+    const { x, y } = this.displayObject.toLocal(e);
+    const color = this.getPixelColor(x, y);
+    return color.alpha > 0;
   }
 
   public sizeInterfaceContainer() {

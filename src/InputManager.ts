@@ -3,7 +3,6 @@ import { CanvasNotInitializedError } from './errors/CanvasNotInitializedError';
 import { StageObject } from "./stageobjects";
 import { TOOLS } from "./ControlButtonsHandler";
 import { StageLayer } from "./types";
-import { log } from "./logging";
 
 // #region Classes (1)
 
@@ -79,7 +78,6 @@ export class InputManager {
 
         group.addChild(obj);
         PLACING_GHOSTS.push(obj);
-        log("Placing:", obj, layer);
         canvas.stage.once("pointerdown", e => {
           obj.x = e.clientX;
           obj.y = e.clientY;
