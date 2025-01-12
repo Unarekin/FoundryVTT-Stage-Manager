@@ -10,6 +10,7 @@ import { SynchronizationManager } from './SynchronizationManager';
 import { coerceActor, coerceStageObject } from "./coercion";
 import { TriggerEventSignatures } from "./types";
 import { ActorStageObject } from "./stageobjects";
+import { hitTestFn } from "./lib/hitTest"
 
 (window as any).StageManager = StageManager;
 
@@ -45,6 +46,11 @@ Hooks.once("canvasReady", () => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return wrapped(scope, ...args);
   });
+
+  if (canvas?.app?.renderer?.events?.rootBoundary) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    libWrapper.register(__MODULE_ID__, "canvas.app.renderer.events.rootBoundary.hitTestFn", hitTestFn);
+  }
 
   log("Initialized.");
 });

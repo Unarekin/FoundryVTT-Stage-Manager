@@ -19,6 +19,8 @@ const KNOWN_OBJECTS: Record<string, StageObject> = {};
 export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObject> {
   // #region Properties (15)
 
+  private passedEvents = new WeakSet<Event | PIXI.PixiTouch>();
+
   public toString() { return JSON.stringify(this.serialize()); }
 
   private _leftPinPos = -1;
@@ -203,50 +205,37 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   private throttledPointerMove: typeof this.onPointerMove | null = null;
 
   protected onPointerMove(e: PIXI.FederatedPointerEvent) {
+    if (this.passedEvents.has(e.nativeEvent)) return
+
     if (this._lastMoveCoords.x === e.clientX && this._lastMoveCoords.y === e.clientY) return;
     this._lastMoveCoords.x = e.clientX;
     this._lastMoveCoords.y = e.clientY;
 
     // this.getLocalCoordinates(e)
     const { x, y } = this.displayObject.toLocal(e);
-    // let output = document.getElementById("colorOutput");
-    // if (!(output instanceof HTMLDivElement)) {
-    //   output = document.createElement("div");
-    //   output.style.position = "absolute";
-    //   output.style.top = "0";
-    //   output.style.left = "0";
-    //   output.style.width = "100px";
-    //   output.style.height = "100px";
-    //   output.style.zIndex = "5000";
-    //   output.style.color = "white";
-    //   output.style.textShadow = "1px 1px 2px black";
-    //   output.setAttribute("id", "colorOutput")
-    //   document.body.appendChild(output);
-    // }
-    // const color = this.getPixelColor(x, y);
-    // output.style.background = color.toHexa();
-    // output.innerText = `${x},${y}`
 
-
-    if (this.hitTest(e)) {
+    if (this.hitTest(x, y)) {
       if (!this._pointerEntered) {
         this._pointerEntered = true
-        // e.preventDefault();
+        e.preventDefault();
         void this.triggerEvent("hoverIn", { pos: { x, y, clientX: e.clientX, clientY: e.clientY } });
       }
     } else if (this._pointerEntered) {
       this._pointerEntered = false;
-      // e.preventDefault();
+      e.preventDefault();
       void this.triggerEvent("hoverOut", { pos: { x, y, clientX: e.clientX, clientY: e.clientY } });
     } else {
+      // empty
       // const orig = this.displayObject.eventMode;
-      this.displayObject.eventMode = "none";
-      // log("Event:", e instanceof Event, e.originalEvent instanceof Event, e.nativeEvent instanceof Event);
-      if (e instanceof Event) canvas?.app?.renderer.view.dispatchEvent(new Event(e.type, e));
-      else if (e.originalEvent instanceof Event) canvas?.app?.renderer.view.dispatchEvent(new Event(e.originalEvent.type, e.originalEvent));
-      else if (e.nativeEvent instanceof Event) canvas?.app?.renderer.view.dispatchEvent(new Event(e.nativeEvent.type, e.nativeEvent));
-
-      // this.displayObject.eventMode = orig;
+      // this.displayObject.eventMode = "none";
+      // // log("Event:", e instanceof Event, e.originalEvent instanceof Event, e.nativeEvent instanceof Event);
+      // this.passedEvents.add(e.nativeEvent);
+      // if (e instanceof Event) canvas?.app?.renderer.view.dispatchEvent(new Event(e.type, e));
+      // else if (e.originalEvent instanceof Event) canvas?.app?.renderer.view.dispatchEvent(new Event(e.originalEvent.type, e.originalEvent));
+      // else if (e.nativeEvent instanceof Event) canvas?.app?.renderer.view.dispatchEvent(new Event(e.nativeEvent.type, e.nativeEvent));
+      // setTimeout(() => {
+      //   this.displayObject.eventMode = orig;
+      // }, 50);
     }
   }
 
@@ -258,7 +247,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   protected addDisplayObjectListeners() {
     this.displayObject.interactive = true;
     this.displayObject.eventMode = "dynamic";
-    this.throttledPointerMove = throttle(this.onPointerMove.bind(this), 16);
+    this.throttledPointerMove = throttle(this.onPointerMove.bind(this), 100);
 
     this.displayObject
       .on("destroyed", this.destroy.bind(this))
@@ -519,6 +508,8 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   private proxyDisplayObject(val: t): t {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const temp = this;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    (val as any).stageObject = this;
     const { proxy, revoke } = deepProxy<t>(val, {
       set(target, prop, value) {
         if (typeof prop === "string" && !prop.startsWith("_") && !temp.#ignoredProperties.includes(prop))
@@ -1023,7 +1014,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
   protected renderTexture: PIXI.RenderTexture | null = null;
 
-  protected getPixelColor(x: number, y: number): PIXI.Color {
+  public getPixelColor(x: number, y: number): PIXI.Color {
     // if (!(canvas?.app?.renderer && this.renderTexture)) throw new CanvasNotInitializedError();
     if (!canvas?.app?.renderer) throw new CanvasNotInitializedError();
     const pixels = Uint8ClampedArray.from(canvas.app.renderer.extract.pixels(this._displayObject, new PIXI.Rectangle(x, y, 1, 1)));
@@ -1052,8 +1043,8 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
    * @param x 
    * @param y 
    */
-  public hitTest(e: PIXI.FederatedPointerEvent): boolean {
-    const { x, y } = this.displayObject.toLocal(e);
+  public hitTest(x: number, y: number): boolean {
+    // const { x, y } = this.displayObject.toLocal(e);
     const color = this.getPixelColor(x, y);
     return color.alpha > 0;
   }
