@@ -211,32 +211,26 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     this._lastMoveCoords.x = e.clientX;
     this._lastMoveCoords.y = e.clientY;
 
-    // this.getLocalCoordinates(e)
-    const { x, y } = this.displayObject.toLocal(e);
-
-    if (this.hitTest(x, y)) {
-      if (!this._pointerEntered) {
-        this._pointerEntered = true
-        e.preventDefault();
-        void this.triggerEvent("hoverIn", { pos: { x, y, clientX: e.clientX, clientY: e.clientY } });
-      }
-    } else if (this._pointerEntered) {
-      this._pointerEntered = false;
-      e.preventDefault();
-      void this.triggerEvent("hoverOut", { pos: { x, y, clientX: e.clientX, clientY: e.clientY } });
-    } else {
-      // empty
-      // const orig = this.displayObject.eventMode;
-      // this.displayObject.eventMode = "none";
-      // // log("Event:", e instanceof Event, e.originalEvent instanceof Event, e.nativeEvent instanceof Event);
-      // this.passedEvents.add(e.nativeEvent);
-      // if (e instanceof Event) canvas?.app?.renderer.view.dispatchEvent(new Event(e.type, e));
-      // else if (e.originalEvent instanceof Event) canvas?.app?.renderer.view.dispatchEvent(new Event(e.originalEvent.type, e.originalEvent));
-      // else if (e.nativeEvent instanceof Event) canvas?.app?.renderer.view.dispatchEvent(new Event(e.nativeEvent.type, e.nativeEvent));
-      // setTimeout(() => {
-      //   this.displayObject.eventMode = orig;
-      // }, 50);
+    if (!this._pointerEntered) {
+      void this.triggerEvent("hoverIn", { pos: { x: e.x, y: e.y, clientX: e.clientX, clientY: e.clientY } });
+      this._pointerEntered = true;
     }
+
+
+    // // this.getLocalCoordinates(e)
+    // const { x, y } = this.displayObject.toLocal(e);
+
+    // if (this.hitTest(x, y)) {
+    //   if (!this._pointerEntered) {
+    //     this._pointerEntered = true
+    //     e.preventDefault();
+    //     void this.triggerEvent("hoverIn", { pos: { x, y, clientX: e.clientX, clientY: e.clientY } });
+    //   }
+    // } else if (this._pointerEntered) {
+    //   this._pointerEntered = false;
+    //   e.preventDefault();
+    //   void this.triggerEvent("hoverOut", { pos: { x, y, clientX: e.clientX, clientY: e.clientY } });
+    // }
   }
 
 
