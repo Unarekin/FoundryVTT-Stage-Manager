@@ -82,7 +82,7 @@ export function getTriggerEvents(): EventSpec[] {
   return triggerEvents.map(event => ({
     value: event.type,
     label: `STAGEMANAGER.TRIGGERS.EVENTS.${event.label}`,
-    category: `STAGEMANAGER.TRIGGERS.CATEGORIES.${event.category}`,
+    category: `STAGEMANAGER.TRIGGERS.CATEGORIES.${event.category.toUpperCase()}`,
     addlArgs: event.additionalArguments
   }));
 }

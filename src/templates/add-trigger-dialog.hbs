@@ -4,9 +4,9 @@
     <select name="event" id="event" required>
       <option value=""></option>
       {{#group triggerEventSelect by="category"}}
-        {{#if value}}<optgroup label="{{value}}">{{/if}}
+        {{#if value}}<optgroup label="{{localize value}}">{{/if}}
           {{#each items}}
-            <option value="{{value}}">{{label}}</option>
+            <option value="{{value}}">{{localize label}}</option>
           {{/each}}
         {{#if value}}</optgroup>{{/if}}
       {{/group}}
