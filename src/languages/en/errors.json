@@ -6,6 +6,7 @@
       "INVALIDACTOR": "Actor not found: {name}",
       "INVALIDMACRO": "Invalid macro: {name}",
       "INVALIDSTAGEOBJECT": "Invalid stage object: {key}",
+      "INVALIDTRIGGERTYPE": "Invalid trigger type: {type",
       "INVALIDUSER": "Invalid user: {user}",
       "MACROPERMDENIED": "Permission denied execting macro {name}",
       "NOIMAGEDATA": "No image data found.",

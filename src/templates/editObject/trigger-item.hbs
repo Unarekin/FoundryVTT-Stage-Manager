@@ -1,0 +1,27 @@
+<section
+  data-role="trigger-item"
+  data-id="{{trigger.id}}"
+  data-serialized="{{serialized}}"
+>
+  <input type="hidden" name="triggers" value="{{serialized}}" />
+  <div class="flexrow">
+
+    <div data-action="edit">{{typeLabel}}</div>
+    <div>{{trigger.label}}</div>
+    <div class="right-align">
+      <i
+        class="fas fa-cogs icon-button"
+        data-action="edit"
+        data-id="{{trigger.id}}"
+        data-serialized="{{serialized}}"
+        title="{{localize 'STAGEMANAGER.EDITDIALOG.EDIT' name=trigger.type}}"
+      ></i>
+      <i
+        class="fas fa-trash icon-button"
+        data-action="delete"
+        data-id="{{trigger.id}}"
+        title="{{localize 'STAGEMANAGER.EDITDIALOG.DELETE' name=trigger.type}}"
+      ></i>
+    </div>
+  </div>
+</section>

@@ -12,6 +12,10 @@ import { TriggerEventSignatures } from "./types";
 import { ActorStageObject } from "./stageobjects";
 import { hitTestFn } from "./lib/hitTest"
 
+import groupBy from "./lib/groupBy";
+
+groupBy.register(Handlebars);
+
 (window as any).StageManager = StageManager;
 
 
@@ -68,6 +72,12 @@ Hooks.once("init", () => {
 
 Hooks.once("ready", () => {
   SynchronizationManager.init();
+
+  void loadTemplates([
+    `modules/${__MODULE_ID__}/templates/editObject/trigger-item.hbs`,
+    `modules/${__MODULE_ID__}/templates/triggers/macro.hbs`,
+    `modules/${__MODULE_ID__}/templates/editObject/additional-arg.hbs`
+  ])
 });
 
 Hooks.on("deactivateStageManagerControlsLayer", () => {

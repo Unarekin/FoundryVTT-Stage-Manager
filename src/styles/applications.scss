@@ -19,4 +19,16 @@
   .hidden {
     display: none;
   }
+
+  table[data-role="trigger-list"] {
+    margin: 0;
+  }
+
+  [data-role="customArguments"] .form-group-slim:first-child {
+    margin-right: 2px;
+  }
+
+  [data-role="customArguments"] .form-group.slim:last-child {
+    margin-left: 2px;
+  }
 }

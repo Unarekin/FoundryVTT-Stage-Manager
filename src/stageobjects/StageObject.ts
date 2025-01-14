@@ -7,7 +7,6 @@ import { PinHash } from "./PinHash";
 import deepProxy from "../lib/deepProxy";
 import { CUSTOM_HOOKS } from "../hooks";
 import * as tempTriggers from "../triggeractions";
-import { log } from "../logging";
 import { StageManagerControlsLayer } from "../ControlButtonsHandler";
 import { throttle } from '../lib/throttle';
 
@@ -80,6 +79,15 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     if (bottom) this._bottomPinPos = this.bottom;
     else this._bottomPinPos = -1;
     this.dirty = true;
+  }
+
+  private _triggersEnabled = true;
+  public get triggersEnabled() { return this._triggersEnabled; }
+  public set triggersEnabled(val) {
+    if (this.triggersEnabled !== val) {
+      this._triggersEnabled = val;
+      this._dirty = true;
+    }
   }
 
   // public preserveAspectRatio = true;
@@ -211,32 +219,26 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     this._lastMoveCoords.x = e.clientX;
     this._lastMoveCoords.y = e.clientY;
 
-    // this.getLocalCoordinates(e)
-    const { x, y } = this.displayObject.toLocal(e);
-
-    if (this.hitTest(x, y)) {
-      if (!this._pointerEntered) {
-        this._pointerEntered = true
-        e.preventDefault();
-        void this.triggerEvent("hoverIn", { pos: { x, y, clientX: e.clientX, clientY: e.clientY } });
-      }
-    } else if (this._pointerEntered) {
-      this._pointerEntered = false;
-      e.preventDefault();
-      void this.triggerEvent("hoverOut", { pos: { x, y, clientX: e.clientX, clientY: e.clientY } });
-    } else {
-      // empty
-      // const orig = this.displayObject.eventMode;
-      // this.displayObject.eventMode = "none";
-      // // log("Event:", e instanceof Event, e.originalEvent instanceof Event, e.nativeEvent instanceof Event);
-      // this.passedEvents.add(e.nativeEvent);
-      // if (e instanceof Event) canvas?.app?.renderer.view.dispatchEvent(new Event(e.type, e));
-      // else if (e.originalEvent instanceof Event) canvas?.app?.renderer.view.dispatchEvent(new Event(e.originalEvent.type, e.originalEvent));
-      // else if (e.nativeEvent instanceof Event) canvas?.app?.renderer.view.dispatchEvent(new Event(e.nativeEvent.type, e.nativeEvent));
-      // setTimeout(() => {
-      //   this.displayObject.eventMode = orig;
-      // }, 50);
+    if (!this._pointerEntered) {
+      void this.triggerEvent("hoverIn", { pos: { x: e.x, y: e.y, clientX: e.clientX, clientY: e.clientY } });
+      this._pointerEntered = true;
     }
+
+
+    // // this.getLocalCoordinates(e)
+    // const { x, y } = this.displayObject.toLocal(e);
+
+    // if (this.hitTest(x, y)) {
+    //   if (!this._pointerEntered) {
+    //     this._pointerEntered = true
+    //     e.preventDefault();
+    //     void this.triggerEvent("hoverIn", { pos: { x, y, clientX: e.clientX, clientY: e.clientY } });
+    //   }
+    // } else if (this._pointerEntered) {
+    //   this._pointerEntered = false;
+    //   e.preventDefault();
+    //   void this.triggerEvent("hoverOut", { pos: { x, y, clientX: e.clientX, clientY: e.clientY } });
+    // }
   }
 
 
@@ -309,32 +311,8 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   // protected readonly triggers: Record<TriggerEvent, SerializedTrigger[]> = {};
   // private _triggers: Record<keyof TriggerEventSignatures, SerializedTrigger[]> = {};
 
-  private _triggers: Record<keyof TriggerEventSignatures, SerializedTrigger[]> = {
-    hoverIn: [],
-    hoverOut: [],
-    click: [],
-    doubleClick: [],
-    rightClick: [],
-    combatStart: [],
-    combatEnd: [],
-    combatRound: [],
-    combatTurnStart: [],
-    combatTurnEnd: [],
-    sceneChange: [],
-    pause: [],
-    unPause: [],
-    userConnected: [],
-    addActiveEffect: [],
-    removeActiveEffect: [],
-    addStatusEffect: [],
-    removeStatusEffect: [],
-    selectToken: [],
-    deselectToken: [],
-    targetToken: [],
-    untargetToken: [],
-    worldTimeChange: [],
-    userDisconnected: [],
-    actorChanged: []
+  private _triggers: Partial<Record<keyof TriggerEventSignatures, SerializedTrigger[]>> = {
+
   };
   public get triggers() { return this._triggers; }
   protected set triggers(val) {
@@ -345,7 +323,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   }
 
   public async triggerEvent<k extends keyof TriggerEventSignatures>(event: k, args: TriggerEventSignatures[k]) {
-    log("Event triggered:", event, args);
+    // log("Event triggered:", event, args);
     if (this.triggers[event]) {
       for (const trigger of this.triggers[event]) {
 
@@ -888,6 +866,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       scopeOwners: this.scopeOwners ?? [],
       filters: [],
       triggers: this.triggers ?? {},
+      triggersEnabled: this.triggersEnabled,
       zIndex: this.zIndex,
       alpha: this.alpha,
       skew: {

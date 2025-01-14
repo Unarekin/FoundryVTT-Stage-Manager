@@ -1,0 +1,39 @@
+<section data-type="macro" style="display:none">
+  <div class="form-group">
+    <label for="macro">{{localize "STAGEMANAGER.TRIGGERS.ACTIONS.MACRO"}}</label>
+    <select name="macro" id="macro" required>
+      <option value=""></option>
+      {{#group macros by="pack"}}
+        {{#if value}}<optgroup label="{{value}}">{{/if}}
+          {{#each items}}
+            <option value="{{uuid}}">{{name}}</option>
+          {{/each}}
+        {{#if value}}</optgroup>{{/if}}
+      {{/group}}
+    </select>
+  </div>
+  <br>
+
+  <label>{{localize "STAGEMANAGER.ADDTRIGGERDIALOG.ARGUMENTS"}}</label>
+  <br>
+
+  <section data-role="additionalArguments">
+    <div class="form-group-slim flexrow" >
+      <input type="text" disabled value="{{localize "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.STAGEOBJECT"}}">
+      <input type="text" disabled value="{{localize "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.AUTO"}}">
+    </div>
+    <section data-role="autoArguments"></section>
+    <section data-role="customArguments">
+      {{#each args}}
+        <div class="form-group-slim flexrow" >
+          <input type="text" value="{{name}}" name="triggers">
+          <input type="text" value="{{value}}">
+        </div>
+      {{/each}}
+    </section>
+  </section>
+  <button type="button" data-action="addArgument">
+      <i class="fas fa-plus"></i>
+      {{localize "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ADD"}}
+  </button>
+</section>

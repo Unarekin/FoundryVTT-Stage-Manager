@@ -1,5 +1,27 @@
 {
   "STAGEMANAGER": {
+    "ADDTRIGGERDIALOG": {
+      "TITLE": "Add New Trigger",
+      "ARGS": {
+        "NAME": "Name",
+        "VALUE": "Value",
+        "AUTO": "Automatic",
+        "STAGEOBJECT": "stageObject",
+        "USER": "user",
+        "ACTOR": "actor",
+        "ADD": "Add Argument",
+        "POS": "position",
+        "TOKEN": "token",
+        "CTRLKEYS": "controlKeys",
+        "ACTIVEEFFECT": "activeEffect",
+        "STATUSEFFECT": "statusEffect",
+        "COMBAT": "combat",
+        "COMBATANT": "combatant",
+        "SCENE": "scene",
+        "TIME": "time"
+      },
+      "ARGUMENTS": "Additional Arguments"
+    },
     "EDITDIALOG": {
       "ALPHA": "Opacity",
       "ANGLE": "Rotation",
@@ -7,6 +29,8 @@
       "HEIGHT": "Height",
       "LOCATION": "Screen Location",
       "LOCATIONPRESET": "Screen location presets",
+      "EDIT": "Edit {name}",
+      "DELETE": "Delete {name}",
       "NAME": "Name",
       "POSX": "X",
       "POSY": "Y",
@@ -14,12 +38,15 @@
       "SKEW": "Skew",
       "SRC": "Image source",
       "TITLE": "Edit {name}",
+      "TRIGGERS": "Triggers",
       "VISUALBOUNDS": "Relative to Visual Bounds",
       "VISUALBOUNDSHIDE": "Hide Visual Bounds",
       "VISUALBOUNDSHINT": "The 'visual bounds' is an area of the screen calculated to ensure that elements placed will not be covered by Foundry's standard UI.",
       "VISUALBOUNDSSHOW": "Show Visual Bounds",
       "WIDTH": "Width",
       "ZINDEX": "Sort Index",
+      "ADDTRIGGER": "Add Trigger",
+      "TRIGGERSENABLED": "Enable triggers",
       "LOCATIONPRESETS": {
         "TOPLEFT": "Top left",
         "TOP": "Top",
@@ -31,7 +58,10 @@
         "BOTTOM": "Bottom",
         "BOTTOMRIGHT": "Bottom right"
       },
-      "ACTOR": "Actor"
+      "ACTOR": "Actor",
+      "TRIGGERLABELS": {
+        "MACRO": "Macro - {name}"
+      }
     },
     "TABS": {
       "BASICS": "Basics",
