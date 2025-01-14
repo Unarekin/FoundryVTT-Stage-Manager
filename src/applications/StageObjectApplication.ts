@@ -1,7 +1,7 @@
 import type { AnyObject, DeepPartial } from "Foundry-VTT/src/types/utils.d.mts";
 import { StageObject } from "../stageobjects";
-import { StageObjectApplicationContext, StageObjectApplicationOptions, StageObjectApplicationConfiguration, Tab } from "./types";
-import { SerializedStageObject, SerializedTrigger, TriggerEventSignatures } from "../types";
+import { StageObjectApplicationContext, StageObjectApplicationOptions, StageObjectApplicationConfiguration, Tab, TriggerDialogResult } from "./types";
+import { SerializedStageObject } from "../types";
 import { StageManager } from "../StageManager";
 import ApplicationV2 from "Foundry-VTT/src/foundry/client-esm/applications/api/application.mjs";
 import HandlebarsApplicationMixin from "Foundry-VTT/src/foundry/client-esm/applications/api/handlebars-application.mjs";
@@ -85,13 +85,14 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
 
   public static async AddTrigger(this: StageObjectApplication) {
     const selection = await AddTriggerDialogV2.prompt();
-    log("addTrigger:", selection);
+    log("Selection:", selection);
     if (selection) {
-      const triggerClass = getTriggerActionType(selection.type);
+      const triggerClass = getTriggerActionType(selection.trigger.type);
       const content = await renderTemplate(`modules/${__MODULE_ID__}/templates/editObject/trigger-item.hbs`, {
-        trigger: selection,
+        trigger: selection.trigger,
+        event: selection.event,
         serialized: JSON.stringify(selection),
-        typeLabel: triggerClass?.getDialogLabel(selection) ?? ""
+        typeLabel: triggerClass?.getDialogLabel(selection.trigger) ?? ""
       });
 
       const list = this.element.querySelector(`[data-role="trigger-list"]`)
@@ -104,8 +105,6 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
         newItem.innerHTML = content;
         cell.appendChild(newItem);
         list.appendChild(row);
-
-        log("Added argument:", row)
       }
     }
   }
@@ -204,25 +203,22 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
 
     if (parsed.triggers) {
       if (typeof parsed.triggers === "string") {
-        const trigger = JSON.parse(parsed.triggers) as SerializedTrigger;
+        const temp = JSON.parse(parsed.triggers) as TriggerDialogResult;
         parsed.triggers = {
-          [trigger.type]: [trigger]
-        }
+          [temp.event]: [temp.trigger]
+        };
       } else if (Array.isArray(parsed.triggers)) {
-        const triggers = [...parsed.triggers];
+        const triggers = [...parsed.triggers] as string[];
         parsed.triggers = {};
         for (const trigger of triggers) {
-          const obj = (typeof trigger === "string" ? JSON.parse(trigger) : trigger) as SerializedTrigger;
-          const key = obj.type as keyof TriggerEventSignatures;
-
-          if (!Array.isArray(parsed.triggers[key])) parsed.triggers[key] = [obj];
-          else parsed.triggers[key].push(obj);
+          const temp = JSON.parse(trigger) as TriggerDialogResult;
+          if (Array.isArray(parsed.triggers[temp.event])) parsed.triggers[temp.event]?.push(temp.trigger);
+          else parsed.triggers[temp.event] = [temp.trigger];
         }
       }
     } else {
       parsed.triggers = {};
     }
-
     return parsed;
   }
 

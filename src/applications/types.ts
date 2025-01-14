@@ -1,5 +1,5 @@
 import type { AnyObject } from "Foundry-VTT/src/types/utils.d.mts";
-import { SerializedStageObject, StageLayer } from "../types";
+import { SerializedStageObject, SerializedTrigger, StageLayer, TriggerEventSignatures } from "../types";
 
 export type Tab = foundry.applications.api.ApplicationV2.Tab;
 
@@ -40,4 +40,9 @@ export interface StageObjectApplicationTab {
   label: string;
   templates: string[];
   cssClasses?: string[];
+}
+
+export interface TriggerDialogResult {
+  trigger: SerializedTrigger;
+  event: keyof TriggerEventSignatures
 }

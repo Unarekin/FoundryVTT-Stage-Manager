@@ -1,8 +1,10 @@
-import { SerializedTrigger } from '../types';
+import { TriggerEventSignatures } from '../types';
 import { getMacros, getTriggerEvents, getTriggerFromForm, setSelectedConfig, triggerTypes } from "./functions";
+import { TriggerDialogResult } from './types';
+
 
 export class AddTriggerDialogV2 {
-  public static async prompt(): Promise<SerializedTrigger | undefined> {
+  public static async prompt(): Promise<TriggerDialogResult | undefined> {
     const content = await renderTemplate(`modules/${__MODULE_ID__}/templates/add-trigger-dialog.hbs`, {
       triggerActionSelect: Object.fromEntries(
         Object.values(triggerTypes)
@@ -15,7 +17,7 @@ export class AddTriggerDialogV2 {
     });
 
 
-    return new Promise<SerializedTrigger | undefined>((resolve) => {
+    return new Promise<TriggerDialogResult | undefined>((resolve) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const dialog = new foundry.applications.api.DialogV2({
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -37,9 +39,20 @@ export class AddTriggerDialogV2 {
 
             callback: (e, button: HTMLButtonElement, html: HTMLDialogElement) => {
               const form = html.querySelector("form");
+
               if (form instanceof HTMLFormElement) {
+                const data = new FormDataExtended(form);
+
                 const serialized = getTriggerFromForm(form);
-                resolve(serialized);
+                if (!serialized) {
+                  resolve(undefined);
+                } else {
+                  resolve({
+                    event: data.object.event as keyof TriggerEventSignatures,
+                    trigger: serialized
+                  })
+                }
+                // resolve(serialized);
               } else {
                 resolve(undefined);
               }

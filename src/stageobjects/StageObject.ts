@@ -9,6 +9,8 @@ import { CUSTOM_HOOKS } from "../hooks";
 import * as tempTriggers from "../triggeractions";
 import { StageManagerControlsLayer } from "../ControlButtonsHandler";
 import { throttle } from '../lib/throttle';
+import { log } from "../logging";
+import { getTriggerActionType } from "../applications/functions";
 
 
 const TriggerActions = Object.fromEntries(Object.values(tempTriggers).map(val => [val.type, val]));
@@ -321,7 +323,9 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected getTriggerArguments<k extends keyof TriggerEventSignatures>(event: k, args: TriggerEventSignatures[k]): Partial<TriggerEventSignatures[k]> | Record<string, unknown> {
-    return {};
+    return {
+      user: game.users?.current?.uuid ?? ""
+    };
   }
 
   // protected readonly triggers: Record<TriggerEvent, SerializedTrigger[]> = {};
@@ -339,15 +343,19 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   }
 
   public async triggerEvent<k extends keyof TriggerEventSignatures>(event: k, args: TriggerEventSignatures[k]) {
-    // log("Event triggered:", event, args);
+    log("Event triggered:", event, args, this.triggers);
     if (this.triggers[event]) {
       for (const trigger of this.triggers[event]) {
 
         if (TriggerActions[trigger.type]) {
+          const triggerClass = getTriggerActionType(trigger.type);
+          if (!triggerClass) continue;
+
           // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           const exec = TriggerActions[trigger.type].execute(trigger as any, {
             stageObject: this.serialize(),
             ...args,
+            ...triggerClass.getArguments(trigger),
             ...this.getTriggerArguments(event, args)
           });
           if (exec instanceof Promise) await exec;

@@ -1,12 +1,17 @@
 import { coerceJSON, coerceMacro } from '../coercion';
 import { InvalidMacroError, MacroPermDeniedError } from '../errors';
-import { SerializedMacroTrigger } from '../types';
+import { SerializedMacroTrigger, SerializedTrigger } from '../types';
 import { TriggerAction } from './TriggerAction';
 import { log } from "../logging"
 
 export class MacroTriggerAction extends TriggerAction {
   public static readonly type = "macro";
   public static readonly i18nKey = "MACRO";
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public static getArguments(item: SerializedTrigger): Record<string, any> {
+    return {}
+  }
 
   // eslint-disable-next-line @typescript-eslint/class-literal-property-style
   public static get category(): string { return "misc"; }
@@ -22,6 +27,8 @@ export class MacroTriggerAction extends TriggerAction {
     const macro = coerceMacro(serialized.macro);
     if (!(macro instanceof Macro)) throw new InvalidMacroError(serialized.macro);
     if (!macro.canExecute) throw new MacroPermDeniedError(serialized.macro);
+
+    log("Parsing arguments:", args);
 
     const parsedArgs = {
       ...Object.fromEntries(
@@ -65,7 +72,6 @@ export class MacroTriggerAction extends TriggerAction {
 
     const formData = new FormDataExtended(form);
     const data = foundry.utils.expandObject(formData.object) as Record<string, string>;
-    log("fromForm data:", data);
 
     const serialized = {
       id: data.id ?? foundry.utils.randomID(),

@@ -10,4 +10,5 @@ export abstract class TriggerAction {
   public static execute(serialized: SerializedTrigger, args: Record<string, any>): void | Promise<void> { throw new NotImplementedError(); }
   public static fromForm(form: HTMLFormElement): SerializedTrigger { throw new NotImplementedError(); }
   public static getDialogLabel(item: SerializedTrigger): string { throw new NotImplementedError(); }
+  public static getArguments(item: SerializedTrigger): Record<string, any> { throw new NotImplementedError(); }
 }
