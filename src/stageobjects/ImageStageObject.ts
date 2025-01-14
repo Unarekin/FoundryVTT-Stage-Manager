@@ -10,9 +10,11 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
   private _path: string;
   public get path() { return this._path; }
   public set path(val) {
-    this._path = val;
-    this.displayObject.texture = PIXI.Texture.from(val);
-    this.dirty = true;
+    if (this.path !== val) {
+      this._path = val;
+      this.displayObject.texture = PIXI.Texture.from(val);
+      this.dirty = true;
+    }
   }
 
   public static readonly type: string = "image";
@@ -94,29 +96,36 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
   public get bottom() { return this.actualBounds.bottom - (this.y + (this.height * this.anchor.y)); }
 
   public set bottom(val) {
-    this.displayObject.y = this.actualBounds.bottom - val - (this.height * this.anchor.y);
-    this.updateScaledDimensions();
-    this.updatePinLocations();
+    if (this.bottom !== val) {
+      this.displayObject.y = this.actualBounds.bottom - val - (this.height * this.anchor.y);
+      this.updateScaledDimensions();
+      this.updatePinLocations();
+    }
   }
 
   public get displayObject(): PIXI.Sprite { return super.displayObject; }
 
   public set displayObject(val) {
-    if (this.displayObject) {
-      const { width, height, anchor } = this.displayObject;
-      val.width = width;
-      val.height = height;
-      val.anchor.x = anchor.x;
-      val.anchor.y = anchor.y;
+    if (this.displayObject != val) {
+      if (this.displayObject) {
+        const { width, height, anchor } = this.displayObject;
+        val.width = width;
+        val.height = height;
+        val.anchor.x = anchor.x;
+        val.anchor.y = anchor.y;
+      }
+      super.displayObject = val;
+      this.dirty = true;
     }
-    super.displayObject = val;
   }
 
   public get height() { return this.displayObject.height; }
 
   public set height(height) {
-    this.displayObject.height = height;
-    super.height = height;
+    if (this.height !== height) {
+      this.displayObject.height = height;
+      super.height = height;
+    }
   }
 
   protected getLocalCoordinates(clientX: number, clientY: number): { x: number; y: number; } {
@@ -127,9 +136,11 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
   public get left() { return this.x + this.actualBounds.left - (this.width * this.anchor.x); }
 
   public set left(val) {
-    this.x = val + this.actualBounds.left + (this.width * this.anchor.x);
-    this.updateScaledDimensions();
-    this.updatePinLocations();
+    if (this.left !== val) {
+      this.x = val + this.actualBounds.left + (this.width * this.anchor.x);
+      this.updateScaledDimensions();
+      this.updatePinLocations();
+    }
   }
 
   public get loop() {
@@ -141,9 +152,12 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
   }
 
   public set loop(loop) {
-    const resource = this.displayObject.texture.baseTexture.resource;
-    if (resource instanceof PIXI.VideoResource) {
-      resource.source.loop = loop;
+    if (this.loop !== loop) {
+      const resource = this.displayObject.texture.baseTexture.resource;
+      if (resource instanceof PIXI.VideoResource) {
+        resource.source.loop = loop;
+      }
+      this.dirty = true;
     }
   }
 
@@ -151,11 +165,14 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
   public get right() { return this.actualBounds.right - (this.x + (this.width * this.anchor.x)); }
 
   public set right(val) {
-    // Set relative to right side of screen
-    this.displayObject.x = this.actualBounds.right - val - (this.width * this.anchor.x);
+    if (this.right !== val) {
+      // Set relative to right side of screen
+      this.displayObject.x = this.actualBounds.right - val - (this.width * this.anchor.x);
+      this.dirty = true;
 
-    this.updateScaledDimensions();
-    this.updatePinLocations();
+      this.updateScaledDimensions();
+      this.updatePinLocations();
+    }
   }
 
   public get scale() { return this.displayObject.scale; }
@@ -165,9 +182,12 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
   public get top() { return this.y - this.actualBounds.top - (this.height * this.anchor.y); }
 
   public set top(val) {
-    this.y = val + this.actualBounds.top + (this.height * this.anchor.y);
-    this.updateScaledDimensions();
-    this.updatePinLocations();
+    if (this.top !== val) {
+      this.y = val + this.actualBounds.top + (this.height * this.anchor.y);
+      this.dirty = true;
+      this.updateScaledDimensions();
+      this.updatePinLocations();
+    }
   }
 
   public get volume() {
@@ -179,17 +199,24 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
   }
 
   public set volume(volume) {
-    const resource = this.displayObject.texture.baseTexture.resource;
-    if (resource instanceof PIXI.VideoResource) {
-      resource.source.volume = volume;
+    if (this.volume !== volume) {
+      const resource = this.displayObject.texture.baseTexture.resource;
+      if (resource instanceof PIXI.VideoResource) {
+        resource.source.volume = volume;
+      }
+      this.dirty = true;
     }
   }
+
 
   public get width() { return this.displayObject.width; }
 
   public set width(width) {
-    this.displayObject.width = width;
-    super.width = width;
+    if (this.width !== width) {
+      this.displayObject.width = width;
+      super.width = width;
+      this.dirty = true;
+    }
   }
 
   // #endregion Public Getters And Setters (27)

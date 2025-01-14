@@ -58,8 +58,10 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   private _restrictToVisualArea = false;
   public get restrictToVisualArea() { return this._restrictToVisualArea; }
   public set restrictToVisualArea(val) {
-    if (val !== this._restrictToVisualArea) this.dirty = true;
-    this._restrictToVisualArea = val;
+    if (val !== this._restrictToVisualArea) {
+      this.dirty = true;
+      this._restrictToVisualArea = val;
+    }
   }
 
   protected _id = foundry.utils.randomID();
@@ -86,7 +88,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   public set triggersEnabled(val) {
     if (this.triggersEnabled !== val) {
       this._triggersEnabled = val;
-      this._dirty = true;
+      this.dirty = true;
     }
   }
 
@@ -94,8 +96,10 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   private _preserveAspectRatio = true;
   public get preserveAspectRatio() { return this._preserveAspectRatio; }
   public set preserveAspectRatio(val) {
-    if (val !== this._preserveAspectRatio) this.dirty = true;
-    this._preserveAspectRatio = val;
+    if (val !== this._preserveAspectRatio) {
+      this.dirty = true;
+      this._preserveAspectRatio = val;
+    }
   }
 
   public readonly interfaceContainer = new PIXI.Container();
@@ -108,24 +112,32 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   public get dragging() { return this._dragging && this.draggable; }
   public set dragging(val) {
     if (this.draggable && val) {
-      if (val !== this._dragging) this.dirty = true;
-      this._dragging = val;
+      if (val !== this._dragging) {
+        this.dirty = true;
+        this._dragging = val;
+      }
     } else if (!val) {
-      if (val !== this._dragging) this.dirty = true;
-      this._dragging = val;
+      if (val !== this._dragging) {
+        this.dirty = true;
+        this._dragging = val;
+      }
     }
   }
 
   public get alpha() { return this.displayObject.alpha; }
   public set alpha(val) {
-    if (val !== this.alpha) this.dirty = true;
-    this.displayObject.alpha = val;
+    if (val !== this.alpha) {
+      this.dirty = true;
+      this.displayObject.alpha = val;
+    }
   }
 
   public get opacity() { return this.alpha; }
   public set opacity(val) {
-    if (val !== this.alpha) this.dirty = true;
-    this.alpha = val;
+    if (val !== this.alpha) {
+      this.dirty = true;
+      this.alpha = val;
+    }
   }
 
 
@@ -135,14 +147,18 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   private _synchronize = false;
   public get resizing() { return this._resizing; }
   public set resizing(val) {
-    if (val !== this.resizing) this.dirty = true;
-    this._resizing = val;
+    if (val !== this.resizing) {
+      this.dirty = true;
+      this._resizing = val;
+    }
   }
 
   public get synchronize() { return this._synchronize; }
   public set synchronize(val) {
-    if (val !== this.synchronize) this.dirty = true;
-    this._synchronize = val;
+    if (val !== this.synchronize) {
+      this.dirty = true;
+      this._synchronize = val;
+    }
   }
 
   public get zIndex() { return this.displayObject.zIndex; }
@@ -419,10 +435,12 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
   public get bottom() { return this.y; }
   public set bottom(bottom) {
-    if (bottom !== this.y) this.dirty = true;
-    this.y = bottom;
-    this.updateScaledDimensions();
-    this.updatePinLocations();
+    if (bottom !== this.y) {
+      this.dirty = true;
+      this.y = bottom;
+      this.updateScaledDimensions();
+      this.updatePinLocations();
+    }
   }
 
   public get bounds() { return this.displayObject.getBounds(); }
@@ -510,14 +528,20 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
   public get height() { return 0; }
   public set height(height) {
-    this.updateScaledDimensions();
-    this.updatePinLocations();
+    if (height !== this.height) {
+      this.dirty = true;
+      this.updateScaledDimensions();
+      this.updatePinLocations();
+    }
   }
 
   public get highlighted() { return this._highlighted; }
 
   public set highlighted(value) {
-    this._highlighted = value;
+    if (this._highlighted !== value) {
+      this._highlighted = value;
+      this.dirty = true;
+    }
     if (value) {
       this.interfaceContainer.visible = true;
       this.interfaceContainer.interactiveChildren = true;
@@ -538,10 +562,12 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
   public get left() { return this.x; }
   public set left(left) {
-    if (left !== this.x) this.dirty = true;
-    this.x = left;
-    this.updateScaledDimensions();
-    this.updatePinLocations();
+    if (left !== this.x) {
+      this.x = left;
+      this.updateScaledDimensions();
+      this.updatePinLocations();
+      this.dirty = true;
+    }
   }
 
 
@@ -563,8 +589,10 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   public get resizable() { return !this.locked && this._resizable; }
 
   public set resizable(resizable) {
-    if (resizable !== this._resizable) this.dirty = true;
-    this._resizable = resizable;
+    if (resizable !== this._resizable) {
+      this._resizable = resizable;
+      this.dirty = true;
+    }
 
     if (!resizable) {
       if (this.resizeHandle) this.resizeHandle.visible = false;
@@ -574,10 +602,12 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   public get right() { return this.x + this.width; }
   public set right(right) {
     // this.x = right;
-    if (this.x !== this.actualBounds.right - right) this.dirty = true;
-    this.x = this.actualBounds.right - right;
-    this.updateScaledDimensions();
-    this.updatePinLocations();
+    if (this.x !== this.actualBounds.right - right) {
+      this.dirty = true;
+      this.x = this.actualBounds.right - right;
+      this.updateScaledDimensions();
+      this.updatePinLocations();
+    }
   }
 
   /** Object's rotation, in radians  */
@@ -613,29 +643,21 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
   public get top() { return this.y; }
   public set top(top) {
-    if (top !== this.y) this.dirty = true;
-    this.y = top;
-    this.updateScaledDimensions();
-    this.updatePinLocations();
-  }
-
-  public get transform() { return this.displayObject.transform }
-
-  public set transform(transform) {
-    if (!foundry.utils.objectsEqual(transform, this.displayObject.transform)) this.dirty = true;
-    this.displayObject.setTransform(
-      transform.position.x, transform.position.y,
-      transform.scale.x, transform.scale.y,
-      transform.rotation,
-      transform.skew.x, transform.skew.y,
-      transform.pivot.x, transform.pivot.y
-    )
+    if (top !== this.y) {
+      this.y = top;
+      this.dirty = true;
+      this.updateScaledDimensions();
+      this.updatePinLocations();
+    }
   }
 
   public get width() { return 0 }
   public set width(width) {
-    this.updateScaledDimensions();
-    this.updatePinLocations();
+    if (this.width !== width) {
+      this.dirty = true;
+      this.updateScaledDimensions();
+      this.updatePinLocations();
+    }
   }
 
   protected updateScaledDimensions() {
@@ -839,15 +861,19 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   private _scope: Scope = "global";
   public get scope() { return this._scope; }
   public set scope(val) {
-    this._scope = val;
-    this.dirty = true;
+    if (this.scope !== val) {
+      this._scope = val;
+      this.dirty = true;
+    }
   }
 
   private _scopeOwners: string[] = [];
   public get scopeOwners() { return this._scopeOwners; }
   public set scopeOwners(val) {
-    this._scopeOwners = val;
-    this.dirty = true;
+    if (!foundry.utils.objectsEqual({ test: val }, { test: this._scopeOwners })) {
+      this._scopeOwners = val;
+      this.dirty = true;
+    }
   }
 
   public serialize(): SerializedStageObject {
