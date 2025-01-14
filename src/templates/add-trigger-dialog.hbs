@@ -1,0 +1,27 @@
+<section data-role="add-trigger">
+  <div class="form-group">
+    <label for="event">{{localize "STAGEMANAGER.TRIGGERS.EVENT"}}</label>
+    <select name="event" id="event" required>
+      <option value=""></option>
+      {{#group triggerEventSelect by="category"}}
+        {{#if value}}<optgroup label="{{value}}">{{/if}}
+          {{#each items}}
+            <option value="{{value}}">{{label}}</option>
+          {{/each}}
+        {{#if value}}</optgroup>{{/if}}
+      {{/group}}
+    </select>
+  </div>
+  <br>
+  <div class="form-group">
+    <label for="action">{{localize "STAGEMANAGER.TRIGGERS.ACTION"}}</label>
+    <select id="action" name="action" required>
+      <option value=""></option>
+      {{selectOptions triggerActionSelect localize=true}}
+    </select>
+  </div>
+  <br>
+  <section data-role="trigger-configs">
+    {{> "modules/stage-manager/templates/triggers/macro.hbs"}}
+  </section>
+</section>

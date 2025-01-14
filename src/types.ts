@@ -17,7 +17,8 @@ export interface SerializedStageObject {
   name: string;
   scope: Scope;
   scopeOwners: string[];
-  triggers: Record<keyof TriggerEventSignatures, SerializedTrigger[]>;
+  triggersEnabled: boolean;
+  triggers: Partial<Record<keyof TriggerEventSignatures, SerializedTrigger[]>>;
   bounds: {
     x: number;
     y: number;
@@ -84,7 +85,7 @@ export interface TriggerEventSignatures {
   combatTurnEnd: { combat: Combat, actor: Actor };
   sceneChange: { scene: Scene };
   pause: undefined;
-  unPause: undefined;
+  unpause: undefined;
   userConnected: { user: User };
   userDisconnected: { user: User };
   addActiveEffect: { actor: Actor, effect: ActiveEffect };
@@ -103,10 +104,12 @@ export interface TriggerEventSignatures {
 // export type TriggerEvent = typeof TriggerEvents[number];
 
 export interface SerializedTrigger {
+  id: string;
+  label: string;
   type: string;
 }
 
 export interface SerializedMacroTrigger extends SerializedTrigger {
   macro: string;
-  arguments: Record<string, any>
+  arguments: { name: string, value: any }[]
 }

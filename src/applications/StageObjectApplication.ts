@@ -1,11 +1,14 @@
 import type { AnyObject, DeepPartial } from "Foundry-VTT/src/types/utils.d.mts";
 import { StageObject } from "../stageobjects";
 import { StageObjectApplicationContext, StageObjectApplicationOptions, StageObjectApplicationConfiguration, Tab } from "./types";
-import { SerializedStageObject } from "../types";
+import { SerializedStageObject, SerializedTrigger, TriggerEventSignatures } from "../types";
 import { StageManager } from "../StageManager";
 import ApplicationV2 from "Foundry-VTT/src/foundry/client-esm/applications/api/application.mjs";
 import HandlebarsApplicationMixin from "Foundry-VTT/src/foundry/client-esm/applications/api/handlebars-application.mjs";
 import { localize } from "../functions";
+import { AddTriggerDialogV2 } from './AddTriggerDialogV2';
+import { getTriggerActionType } from "./functions";
+import { log } from "../logging";
 
 export abstract class StageObjectApplication<t extends StageObject = StageObject, v extends SerializedStageObject = SerializedStageObject> extends foundry.applications.api.HandlebarsApplicationMixin(foundry.applications.api.ApplicationV2<
   StageObjectApplicationContext,
@@ -19,6 +22,9 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
     },
     basics: {
       template: `modules/${__MODULE_ID__}/templates/editObject/basics.hbs`
+    },
+    triggers: {
+      template: `modules/${__MODULE_ID__}/templates/editObject/triggers.hbs`
     },
     footer: {
       template: "templates/generic/form-footer.hbs"
@@ -40,6 +46,7 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
       handler: StageObjectApplication.onSubmit,
 
     },
+
     actions: {
       // eslint-disable-next-line @typescript-eslint/unbound-method
       showBounds: StageObjectApplication.ShowVisualBounds,
@@ -64,12 +71,43 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
       // eslint-disable-next-line @typescript-eslint/unbound-method
       presetBottom: StageObjectApplication.SetPresetBottom,
       // eslint-disable-next-line @typescript-eslint/unbound-method
-      presetBottomRight: StageObjectApplication.SetPresetBottomRight
+      presetBottomRight: StageObjectApplication.SetPresetBottomRight,
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      addTrigger: StageObjectApplication.AddTrigger
     }
   }
 
   protected triggerFormChange() {
     this._onChangeForm();
+  }
+
+
+
+  public static async AddTrigger(this: StageObjectApplication) {
+    const selection = await AddTriggerDialogV2.prompt();
+    log("addTrigger:", selection);
+    if (selection) {
+      const triggerClass = getTriggerActionType(selection.type);
+      const content = await renderTemplate(`modules/${__MODULE_ID__}/templates/editObject/trigger-item.hbs`, {
+        trigger: selection,
+        serialized: JSON.stringify(selection),
+        typeLabel: triggerClass?.getDialogLabel(selection) ?? ""
+      });
+
+      const list = this.element.querySelector(`[data-role="trigger-list"]`)
+      if (list instanceof HTMLElement) {
+        const row = document.createElement("tr");
+        const cell = document.createElement("td");
+        row.appendChild(cell);
+
+        const newItem = document.createElement("section");
+        newItem.innerHTML = content;
+        cell.appendChild(newItem);
+        list.appendChild(row);
+
+        log("Added argument:", row)
+      }
+    }
   }
 
   protected toLeft(): this {
@@ -164,6 +202,27 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
     parsed.bounds.width /= bounds.width;
     parsed.bounds.height /= bounds.height;
 
+    if (parsed.triggers) {
+      if (typeof parsed.triggers === "string") {
+        const trigger = JSON.parse(parsed.triggers) as SerializedTrigger;
+        parsed.triggers = {
+          [trigger.type]: [trigger]
+        }
+      } else if (Array.isArray(parsed.triggers)) {
+        const triggers = [...parsed.triggers];
+        parsed.triggers = {};
+        for (const trigger of triggers) {
+          const obj = (typeof trigger === "string" ? JSON.parse(trigger) : trigger) as SerializedTrigger;
+          const key = obj.type as keyof TriggerEventSignatures;
+
+          if (!Array.isArray(parsed.triggers[key])) parsed.triggers[key] = [obj];
+          else parsed.triggers[key].push(obj);
+        }
+      }
+    } else {
+      parsed.triggers = {};
+    }
+
     return parsed;
   }
 
@@ -253,10 +312,23 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
   }
 
   protected async _prepareContext(options: { force?: boolean | undefined; position?: { top?: number | undefined; left?: number | undefined; width?: number | "auto" | undefined; height?: number | "auto" | undefined; scale?: number | undefined; zIndex?: number | undefined; } | undefined; window?: { title?: string | undefined; icon?: string | false | undefined; controls?: boolean | undefined; } | undefined; parts?: string[] | undefined; isFirstRender?: boolean | undefined; }): Promise<StageObjectApplicationContext> {
+    const serialized = this.prepareStageObject();
+    const triggers = Object.values(serialized.triggers).flat();
+
     return {
       ...(await super._prepareContext(options)),
-      stageObject: this.prepareStageObject(),
-      tabs: this._getTabs()
+      stageObject: serialized,
+      tabs: this._getTabs(),
+      triggers: triggers.map(trigger => {
+        const triggerClass = getTriggerActionType(trigger.type);
+        if (triggerClass) {
+          return {
+            trigger,
+            serialized: JSON.stringify(trigger),
+            typeLabel: triggerClass.getDialogLabel(trigger)
+          }
+        }
+      })
     };
   }
 

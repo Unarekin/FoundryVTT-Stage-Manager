@@ -7,7 +7,6 @@ import { PinHash } from "./PinHash";
 import deepProxy from "../lib/deepProxy";
 import { CUSTOM_HOOKS } from "../hooks";
 import * as tempTriggers from "../triggeractions";
-import { log } from "../logging";
 import { StageManagerControlsLayer } from "../ControlButtonsHandler";
 import { throttle } from '../lib/throttle';
 
@@ -80,6 +79,15 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     if (bottom) this._bottomPinPos = this.bottom;
     else this._bottomPinPos = -1;
     this.dirty = true;
+  }
+
+  private _triggersEnabled = true;
+  public get triggersEnabled() { return this._triggersEnabled; }
+  public set triggersEnabled(val) {
+    if (this.triggersEnabled !== val) {
+      this._triggersEnabled = val;
+      this._dirty = true;
+    }
   }
 
   // public preserveAspectRatio = true;
@@ -303,32 +311,8 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   // protected readonly triggers: Record<TriggerEvent, SerializedTrigger[]> = {};
   // private _triggers: Record<keyof TriggerEventSignatures, SerializedTrigger[]> = {};
 
-  private _triggers: Record<keyof TriggerEventSignatures, SerializedTrigger[]> = {
-    hoverIn: [],
-    hoverOut: [],
-    click: [],
-    doubleClick: [],
-    rightClick: [],
-    combatStart: [],
-    combatEnd: [],
-    combatRound: [],
-    combatTurnStart: [],
-    combatTurnEnd: [],
-    sceneChange: [],
-    pause: [],
-    unPause: [],
-    userConnected: [],
-    addActiveEffect: [],
-    removeActiveEffect: [],
-    addStatusEffect: [],
-    removeStatusEffect: [],
-    selectToken: [],
-    deselectToken: [],
-    targetToken: [],
-    untargetToken: [],
-    worldTimeChange: [],
-    userDisconnected: [],
-    actorChanged: []
+  private _triggers: Partial<Record<keyof TriggerEventSignatures, SerializedTrigger[]>> = {
+
   };
   public get triggers() { return this._triggers; }
   protected set triggers(val) {
@@ -339,7 +323,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   }
 
   public async triggerEvent<k extends keyof TriggerEventSignatures>(event: k, args: TriggerEventSignatures[k]) {
-    log("Event triggered:", event, args);
+    // log("Event triggered:", event, args);
     if (this.triggers[event]) {
       for (const trigger of this.triggers[event]) {
 
@@ -882,6 +866,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       scopeOwners: this.scopeOwners ?? [],
       filters: [],
       triggers: this.triggers ?? {},
+      triggersEnabled: this.triggersEnabled,
       zIndex: this.zIndex,
       alpha: this.alpha,
       skew: {

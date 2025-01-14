@@ -15,6 +15,9 @@ export class ImageStageObjectApplication extends StageObjectApplication<ImageSta
     image: {
       template: `modules/${__MODULE_ID__}/templates/editObject/image.hbs`
     },
+    triggers: {
+      template: `modules/${__MODULE_ID__}/templates/editObject/triggers.hbs`
+    },
     footer: {
       template: "templates/generic/form-footer.hbs"
     }

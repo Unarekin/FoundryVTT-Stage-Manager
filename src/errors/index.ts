@@ -3,6 +3,7 @@ export * from './CanvasNotInitializedError';
 export * from './InvalidActorError';
 export * from './InvalidMacroError';
 export * from './InvalidStageObjectError';
+export * from './InvalidTriggerError';
 export * from './InvalidUserError';
 export * from './LocalizedError';
 export * from './MacroPermDeniedError';
