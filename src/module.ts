@@ -13,6 +13,7 @@ import { ActorStageObject } from "./stageobjects";
 import { hitTestFn } from "./lib/hitTest"
 
 import groupBy from "./lib/groupBy";
+import "./triggerHooks";
 
 groupBy.register(Handlebars);
 

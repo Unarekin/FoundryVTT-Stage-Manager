@@ -7,7 +7,7 @@ import ApplicationV2 from "Foundry-VTT/src/foundry/client-esm/applications/api/a
 import HandlebarsApplicationMixin from "Foundry-VTT/src/foundry/client-esm/applications/api/handlebars-application.mjs";
 import { localize } from "../functions";
 import { AddTriggerDialogV2 } from './AddTriggerDialogV2';
-import { getTriggerActionType } from "./functions";
+import { addEventListeners, getTriggerActionType } from "./functions";
 import { log } from "../logging";
 
 export abstract class StageObjectApplication<t extends StageObject = StageObject, v extends SerializedStageObject = SerializedStageObject> extends foundry.applications.api.HandlebarsApplicationMixin(foundry.applications.api.ApplicationV2<
@@ -305,6 +305,7 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
     // Create ghost
     this.stageObject.synchronize = false;
     if (this.stageObject.layer) StageManager.setStageObjectLayer(this.stageObject, this.stageObject.layer);
+    addEventListeners(this.element);
   }
 
   protected async _prepareContext(options: { force?: boolean | undefined; position?: { top?: number | undefined; left?: number | undefined; width?: number | "auto" | undefined; height?: number | "auto" | undefined; scale?: number | undefined; zIndex?: number | undefined; } | undefined; window?: { title?: string | undefined; icon?: string | false | undefined; controls?: boolean | undefined; } | undefined; parts?: string[] | undefined; isFirstRender?: boolean | undefined; }): Promise<StageObjectApplicationContext> {

@@ -321,3 +321,50 @@ export async function setMacroArgs(element: HTMLElement) {
     }
   }
 }
+
+export function addEventListeners(element: HTMLElement) {
+  const deleteButtons = element.querySelectorAll(`[data-action="delete"][data-id]`);
+  deleteButtons.forEach(button => {
+    button.addEventListener("click", () => {
+      if (button instanceof HTMLElement && button.dataset.id)
+        void removeTriggerItem(element, button.dataset.id);
+    });
+  })
+}
+
+export async function removeTriggerItem(element: HTMLElement, id: string) {
+  const item = element.querySelector(`[data-role="trigger-item"][data-id="${id}"]`);
+  if (item instanceof HTMLElement) {
+    if (!item.dataset.serialized) return;
+    const deserialized = JSON.parse(item.dataset.serialized) as SerializedTrigger;
+    if (!deserialized) return;
+    const title = game.i18n?.localize("STAGEMANAGER.CONFIRMREMOVETRIGGER.TITLE") ?? "";
+    const content = game.i18n?.format("STAGEMANAGER.CONFIRMREMOVETRIGGER.MESSAGE", { name: getTriggerLabel(deserialized) }) ?? "";
+    const confirm = await (foundry.applications.api.DialogV2 ?
+      foundry.applications.api.DialogV2.confirm({
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        window: ({ title } as any),
+        content,
+        rejectClose: false
+      }) :
+      Dialog.confirm({
+        title,
+        content,
+        defaultYes: false,
+        rejectClose: false
+      })
+    )
+
+    if (!confirm) return;
+
+    const row = item.closest("tr");
+    if (row instanceof HTMLTableRowElement)
+      row.remove();
+  }
+}
+
+export function getTriggerLabel(trigger: SerializedTrigger): string {
+  const triggerClass = getTriggerActionType(trigger.type);
+  if (!triggerClass) return "";
+  return triggerClass.getDialogLabel(trigger);
+}

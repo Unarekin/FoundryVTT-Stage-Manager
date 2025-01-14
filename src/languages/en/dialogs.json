@@ -1,5 +1,9 @@
 {
   "STAGEMANAGER": {
+    "CONFIRMREMOVETRIGGER": {
+      "TITLE": "Remove Trigger",
+      "MESSAGE": "Are you sure you want to remove {name}?\nThis cannot be undone."
+    },
     "ADDTRIGGERDIALOG": {
       "TITLE": "Add New Trigger",
       "ARGS": {
