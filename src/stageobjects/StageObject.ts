@@ -190,23 +190,26 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
   // #endregion Properties (15)
 
-  #lastClick = 0;
+
   protected dblClickDelay = 500;
 
+  protected _clickHandle: NodeJS.Timeout | null = null;
+
+
   protected onClick(e: PIXI.FederatedPointerEvent) {
-    if (Date.now() - this.#lastClick <= this.dblClickDelay) {
-      // Set to 0 to prevent a triple click from triggering 2 double clicks
-      this.#lastClick = 0;
-      this.onDblClick(e);
-    } else {
-      this.#lastClick = Date.now();
+    // Do not trigger when control layer is active
+    if (canvas?.activeLayer instanceof StageManagerControlsLayer) return;
 
-      if (!(canvas?.activeLayer instanceof StageManagerControlsLayer)) {
+    if (!this._clickHandle) {
+      this._clickHandle = setTimeout(() => {
         const { x, y } = this.displayObject.toLocal(e);
-
+        this._clickHandle = null;
         void this.triggerEvent("click", { pos: { x, y, clientX: e.clientX, clientY: e.clientY }, modKeys: { ctrl: e.ctrlKey, alt: e.altKey, shift: e.shiftKey } });
-
-      }
+      }, 500);
+    } else {
+      clearTimeout(this._clickHandle);
+      this._clickHandle = null;
+      this.onDblClick(e);
     }
   }
   protected onDblClick(e: PIXI.FederatedPointerEvent) {

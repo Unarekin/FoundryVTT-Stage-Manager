@@ -17,6 +17,8 @@ export function getTriggerActionType(action: SerializedTrigger | string): typeof
 }
 
 export function getTriggerActionSelect(): Record<string, string> {
+  if (!game.i18n) return {};
+
   return Object.fromEntries(
     triggerActions
       .sort((a, b) => game.i18n.localize(`STAGEMANAGER.TRIGGERS.ACTIONS.${a.i18nKey}`).localeCompare(game.i18n.localize(`STAGEMANAGER.TRIGGERS.ACTIONS.${b.i18nKey}`)))
@@ -288,8 +290,8 @@ export function getTriggerEvents(): EventSpec[] {
     }
   ].map(item => ({
     ...item,
-    label: game.i18n?.localize(item.label),
-    category: game.i18n?.localize(item.category)
+    label: game.i18n?.localize(item.label) ?? "",
+    category: game.i18n?.localize(item.category) ?? ""
   }))
     .sort((a, b) => a.label.localeCompare(b.label))
 }
