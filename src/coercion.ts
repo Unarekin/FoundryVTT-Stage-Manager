@@ -113,3 +113,11 @@ export function coerceMacro(arg: unknown): Macro | undefined {
     if (macro instanceof Macro) return macro;
   }
 }
+
+export function coerceJSON(val: string): any {
+  try {
+    return JSON.parse(val);
+  } catch {
+    return;
+  }
+}

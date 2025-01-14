@@ -1,4 +1,4 @@
-import { coerceMacro } from '../coercion';
+import { coerceJSON, coerceMacro } from '../coercion';
 import { InvalidMacroError, MacroPermDeniedError } from '../errors';
 import { SerializedMacroTrigger } from '../types';
 import { TriggerAction } from './TriggerAction';
@@ -22,10 +22,36 @@ export class MacroTriggerAction extends TriggerAction {
     const macro = coerceMacro(serialized.macro);
     if (!(macro instanceof Macro)) throw new InvalidMacroError(serialized.macro);
     if (!macro.canExecute) throw new MacroPermDeniedError(serialized.macro);
-    return macro.execute({
-      ...args,
-      args: serialized.arguments
-    }) as void | Promise<void>;
+
+    const parsedArgs = {
+      ...Object.fromEntries(
+        Object.entries(args)
+          .map(([key, value]) => {
+            if (typeof value === "string") {
+              const uuid = foundry.utils.parseUuid(value);
+              if (uuid.id) return [key, fromUuidSync(value)];
+
+              // Parsing it as JSON will also handle numbers or booleans as strings
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              const json = coerceJSON(value);
+              if (typeof json !== "undefined") return [key, json];
+            }
+
+            return [key, value];
+          })
+      ),
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      args: serialized.arguments.map(arg => arg.value)
+    }
+
+
+
+    return macro.execute(parsedArgs) as void | Promise<void>;
+
+    // return macro.execute({
+    //   ...args,
+    //   args: serialized.arguments.map(arg => arg.value)
+    // }) as void | Promise<void>;
   }
 
 
