@@ -1,17 +1,12 @@
 import { TriggerEventSignatures } from '../types';
-import { getMacros, getTriggerEvents, getTriggerFromForm, setSelectedConfig, triggerTypes } from "./functions";
+import { getMacros, getTriggerActionSelect, getTriggerEvents, getTriggerFromForm, setSelectedConfig } from "./functions";
 import { TriggerDialogResult } from './types';
 
 
 export class AddTriggerDialogV2 {
   public static async prompt(): Promise<TriggerDialogResult | undefined> {
     const content = await renderTemplate(`modules/${__MODULE_ID__}/templates/add-trigger-dialog.hbs`, {
-      triggerActionSelect: Object.fromEntries(
-        Object.values(triggerTypes)
-          .filter(elem => !!elem.type)
-          .sort((a, b) => a.type.localeCompare(b.type))
-          .map(elem => [elem.type, `STAGEMANAGER.TRIGGERS.ACTIONS.${elem.i18nKey}`])
-      ),
+      triggerActionSelect: getTriggerActionSelect(),
       triggerEventSelect: getTriggerEvents(),
       macros: getMacros()
     });

@@ -1,21 +1,31 @@
 import { TriggerAction } from "../triggeractions";
 import { SerializedTrigger } from "../types";
-import * as triggerActions from "../triggeractions";
+import * as tempTriggerActions from "../triggeractions";
 import { InvalidTriggerError } from "../errors";
 import { log } from "../logging";
+import * as tempTriggerEvents from "../triggerevents";
 
-const actionTypes = Object.fromEntries(
-  Object.values(triggerActions)
-    .filter(key => !!key.type)
-    .map(elem => [elem.type, elem])
-)
+const triggerActions = Object.values(tempTriggerActions).filter(item => !!item.type);
+const triggerEvents = Object.values(tempTriggerEvents).filter(item => !!item.type);
 
-export const triggerTypes = Object.values(triggerActions);
+
+
+// const triggerEvents = Object.values(triggerEvents).filter(event => !!event.type);
+
+// export const triggerTypes = Object.values(triggerActions);
 
 export function getTriggerActionType(action: SerializedTrigger | string): typeof TriggerAction | undefined {
-  if (typeof action === "string") return actionTypes[action]
-  else return actionTypes[action.type];
+  return triggerActions.find(item => item.type === (typeof action === "string" ? action : action.type));
 }
+
+export function getTriggerActionSelect(): Record<string, string> {
+  return Object.fromEntries(
+    triggerActions
+      .sort((a, b) => game.i18n.localize(`STAGEMANAGER.TRIGGERS.ACTIONS.${a.i18nKey}`).localeCompare(game.i18n.localize(`STAGEMANAGER.TRIGGERS.ACTIONS.${b.i18nKey}`)))
+      .map(action => [action.type, `STAGEMANAGER.TRIGGERS.ACTIONS.${action.i18nKey}`])
+  )
+}
+
 
 export function setSelectedConfig(element: HTMLElement) {
   const typeSelect = element.querySelector("select#action");
@@ -68,222 +78,232 @@ export interface EventSpec {
 }
 
 export function getTriggerEvents(): EventSpec[] {
-  return [
-    {
-      "value": "hoverIn",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.HOVERIN",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.MOUSE",
-      "addlArgs": [
-        { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" },
-        { name: "pos", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.POS" },
-        { name: "ctrlKeys", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.CTRLKEYS" }
-      ]
-    },
-    {
-      "value": "hoverOut",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.HOVEROUT",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.MOUSE",
-      "addlArgs": [
-        { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" },
-        { name: "pos", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.POS" },
-        { name: "ctrlKeys", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.CTRLKEYS" }
-      ]
-    },
-    {
-      "value": "click",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.CLICK",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.MOUSE",
-      "addlArgs": [
-        { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" },
-        { name: "pos", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.POS" },
-        { name: "ctrlKeys", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.CTRLKEYS" }
-      ]
-    },
-    {
-      "value": "doubleClick",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.DOUBLECLICK",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.MOUSE",
-      "addlArgs": [
-        { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" },
-        { name: "pos", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.POS" },
-        { name: "ctrlKeys", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.CTRLKEYS" }
-      ]
-    },
-    {
-      "value": "rightClick",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.RIGHTCLICK",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.MOUSE",
-      "addlArgs": [
-        { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" },
-        { name: "pos", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.POS" },
-        { name: "ctrlKeys", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.CTRLKEYS" }
-      ]
-    },
-    {
-      "value": "combatStart",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.COMBATSTART",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.COMBAT",
-      "addlArgs": [
-        { name: "combat", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.COMBAT" }
-      ]
-    },
-    {
-      "value": "combatEnd",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.COMBATEND",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.COMBAT",
-      "addlArgs": [
-        { name: "combat", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.COMBAT" }
-      ]
-    },
-    {
-      "value": "combatTurnStart",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.COMBATTURNSTART",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.COMBAT",
-      "addlArgs": [
-        { name: "combat", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.COMBAT" },
-        { name: "combatant", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.COMBATANT" },
-        { name: "token", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.TOKEN" },
-        { name: "actor", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR" }
-      ]
-    },
-    {
-      "value": "combatTurnEnd",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.COMBATTURNEND",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.COMBAT",
-      "addlArgs": [
-        { name: "combat", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.COMBAT" },
-        { name: "combatant", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.COMBATANT" },
-        { name: "token", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.TOKEN" },
-        { name: "actor", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR" }
-      ]
-    },
-    {
-      "value": "sceneChange",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.SCENECHANGE",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
-      "addlArgs": [
-        { name: "scene", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.SCENE" }
-      ]
-    },
-    {
-      "value": "pause",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.PAUSE",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
-      "addlArgs": []
-    },
-    {
-      "value": "unpause",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.UNPAUSE",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
-      "addlArgs": []
-    },
-    {
-      "value": "userConnected",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.USERCONNECTED",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
-      "addlArgs": [
-        { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" }
-      ]
-    },
-    {
-      "value": "userDisconnected",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.USERDISCONNECTED",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
-      "addlArgs": [
-        { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" }
-      ]
-    },
-    {
-      "value": "addActiveEffect",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.ADDACTIVEEFFECT",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.ACTOR",
-      "addlArgs": [
-        { name: "actor", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR" },
-        { name: "activeEffect", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTIVEEFFECT" }
-      ]
-    },
-    {
-      "value": "removeActiveEffect",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.REMOVEACTIVEEFFECT",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.ACTOR",
-      "addlArgs": [
-        { name: "actor", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR" },
-        { name: "activeEffect", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTIVEEFFECT" }
-      ]
-    },
-    {
-      "value": "addStatusEffect",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.ADDSTATUSEFFECT",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.ACTOR",
-      "addlArgs": [
-        { name: "actor", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR" },
-        { name: "activeEffect", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTIVEEFFECT" },
-        { name: "statusEffect", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.STATUSEFFECT" }
-      ]
-    },
-    {
-      "value": "selectToken",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.SELECTTOKEN",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.TOKEN",
-      "addlArgs": [
-        { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" },
-        { name: "token", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.TOKEN" },
-        { name: "actor", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR" }
-      ]
-    },
-    {
-      "value": "deselectToken",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.DESELECTTOKEN",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.TOKEN",
-      "addlArgs": [
-        { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" },
-        { name: "token", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.TOKEN" },
-        { name: "actor", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR" }
-      ]
-    },
-    {
-      "value": "targetToken",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.TARGETTOKEN",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.TOKEN",
-      "addlArgs": [
-        { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" },
-        { name: "token", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.TOKEN" },
-        { name: "actor", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR" }
-      ]
-    },
-    {
-      "value": "untargetToken",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.UNTARGETTOKEN",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.TOKEN",
-      "addlArgs": [
-        { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" },
-        { name: "token", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.TOKEN" },
-        { name: "actor", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR" }
-      ]
-    },
-    {
-      "value": "worldTimeChange",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.WORLDTIMECHANGE",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
-      "addlArgs": [
-        { name: "time", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.TIME" }
-      ]
-    },
-    {
-      "value": "actorChange",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.ACTORCHANGE",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.ACTOR",
-      "addlArgs": [
-        { name: "actor", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR" }
-      ]
-    }
-  ].map(item => ({
-    ...item,
-    label: game.i18n.localize(item.label),
-    category: game.i18n.localize(item.category)
-  }))
-    .sort((a, b) => a.label.localeCompare(b.label))
+
+  return triggerEvents.map(event => ({
+    value: event.type,
+    label: `STAGEMANAGER.TRIGGERS.EVENTS.${event.label}`,
+    category: `STAGEMANAGER.TRIGGERS.CATEGORIES.${event.category}`,
+    addlArgs: event.additionalArguments
+  }));
 }
+
+// export function getTriggerEvents(): EventSpec[] {
+//   return [
+//     {
+//       "value": "hoverIn",
+//       "label": "STAGEMANAGER.TRIGGERS.EVENTS.HOVERIN",
+//       "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.MOUSE",
+//       "addlArgs": [
+//         { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" },
+//         { name: "pos", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.POS" },
+//         { name: "ctrlKeys", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.CTRLKEYS" }
+//       ]
+//     },
+//     {
+//       "value": "hoverOut",
+//       "label": "STAGEMANAGER.TRIGGERS.EVENTS.HOVEROUT",
+//       "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.MOUSE",
+//       "addlArgs": [
+//         { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" },
+//         { name: "pos", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.POS" },
+//         { name: "ctrlKeys", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.CTRLKEYS" }
+//       ]
+//     },
+//     {
+//       "value": "click",
+//       "label": "STAGEMANAGER.TRIGGERS.EVENTS.CLICK",
+//       "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.MOUSE",
+//       "addlArgs": [
+//         { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" },
+//         { name: "pos", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.POS" },
+//         { name: "ctrlKeys", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.CTRLKEYS" }
+//       ]
+//     },
+//     {
+//       "value": "doubleClick",
+//       "label": "STAGEMANAGER.TRIGGERS.EVENTS.DOUBLECLICK",
+//       "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.MOUSE",
+//       "addlArgs": [
+//         { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" },
+//         { name: "pos", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.POS" },
+//         { name: "ctrlKeys", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.CTRLKEYS" }
+//       ]
+//     },
+//     {
+//       "value": "rightClick",
+//       "label": "STAGEMANAGER.TRIGGERS.EVENTS.RIGHTCLICK",
+//       "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.MOUSE",
+//       "addlArgs": [
+//         { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" },
+//         { name: "pos", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.POS" },
+//         { name: "ctrlKeys", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.CTRLKEYS" }
+//       ]
+//     },
+//     {
+//       "value": "combatStart",
+//       "label": "STAGEMANAGER.TRIGGERS.EVENTS.COMBATSTART",
+//       "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.COMBAT",
+//       "addlArgs": [
+//         { name: "combat", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.COMBAT" }
+//       ]
+//     },
+//     {
+//       "value": "combatEnd",
+//       "label": "STAGEMANAGER.TRIGGERS.EVENTS.COMBATEND",
+//       "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.COMBAT",
+//       "addlArgs": [
+//         { name: "combat", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.COMBAT" }
+//       ]
+//     },
+//     {
+//       "value": "combatTurnStart",
+//       "label": "STAGEMANAGER.TRIGGERS.EVENTS.COMBATTURNSTART",
+//       "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.COMBAT",
+//       "addlArgs": [
+//         { name: "combat", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.COMBAT" },
+//         { name: "combatant", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.COMBATANT" },
+//         { name: "token", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.TOKEN" },
+//         { name: "actor", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR" }
+//       ]
+//     },
+//     {
+//       "value": "combatTurnEnd",
+//       "label": "STAGEMANAGER.TRIGGERS.EVENTS.COMBATTURNEND",
+//       "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.COMBAT",
+//       "addlArgs": [
+//         { name: "combat", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.COMBAT" },
+//         { name: "combatant", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.COMBATANT" },
+//         { name: "token", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.TOKEN" },
+//         { name: "actor", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR" }
+//       ]
+//     },
+//     {
+//       "value": "sceneChange",
+//       "label": "STAGEMANAGER.TRIGGERS.EVENTS.SCENECHANGE",
+//       "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
+//       "addlArgs": [
+//         { name: "scene", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.SCENE" }
+//       ]
+//     },
+//     {
+//       "value": "pause",
+//       "label": "STAGEMANAGER.TRIGGERS.EVENTS.PAUSE",
+//       "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
+//       "addlArgs": []
+//     },
+//     {
+//       "value": "unpause",
+//       "label": "STAGEMANAGER.TRIGGERS.EVENTS.UNPAUSE",
+//       "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
+//       "addlArgs": []
+//     },
+//     {
+//       "value": "userConnected",
+//       "label": "STAGEMANAGER.TRIGGERS.EVENTS.USERCONNECTED",
+//       "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
+//       "addlArgs": [
+//         { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" }
+//       ]
+//     },
+//     {
+//       "value": "userDisconnected",
+//       "label": "STAGEMANAGER.TRIGGERS.EVENTS.USERDISCONNECTED",
+//       "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
+//       "addlArgs": [
+//         { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" }
+//       ]
+//     },
+//     {
+//       "value": "addActiveEffect",
+//       "label": "STAGEMANAGER.TRIGGERS.EVENTS.ADDACTIVEEFFECT",
+//       "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.ACTOR",
+//       "addlArgs": [
+//         { name: "actor", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR" },
+//         { name: "activeEffect", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTIVEEFFECT" }
+//       ]
+//     },
+//     {
+//       "value": "removeActiveEffect",
+//       "label": "STAGEMANAGER.TRIGGERS.EVENTS.REMOVEACTIVEEFFECT",
+//       "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.ACTOR",
+//       "addlArgs": [
+//         { name: "actor", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR" },
+//         { name: "activeEffect", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTIVEEFFECT" }
+//       ]
+//     },
+//     {
+//       "value": "addStatusEffect",
+//       "label": "STAGEMANAGER.TRIGGERS.EVENTS.ADDSTATUSEFFECT",
+//       "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.ACTOR",
+//       "addlArgs": [
+//         { name: "actor", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR" },
+//         { name: "activeEffect", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTIVEEFFECT" },
+//         { name: "statusEffect", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.STATUSEFFECT" }
+//       ]
+//     },
+//     {
+//       "value": "selectToken",
+//       "label": "STAGEMANAGER.TRIGGERS.EVENTS.SELECTTOKEN",
+//       "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.TOKEN",
+//       "addlArgs": [
+//         { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" },
+//         { name: "token", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.TOKEN" },
+//         { name: "actor", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR" }
+//       ]
+//     },
+//     {
+//       "value": "deselectToken",
+//       "label": "STAGEMANAGER.TRIGGERS.EVENTS.DESELECTTOKEN",
+//       "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.TOKEN",
+//       "addlArgs": [
+//         { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" },
+//         { name: "token", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.TOKEN" },
+//         { name: "actor", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR" }
+//       ]
+//     },
+//     {
+//       "value": "targetToken",
+//       "label": "STAGEMANAGER.TRIGGERS.EVENTS.TARGETTOKEN",
+//       "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.TOKEN",
+//       "addlArgs": [
+//         { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" },
+//         { name: "token", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.TOKEN" },
+//         { name: "actor", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR" }
+//       ]
+//     },
+//     {
+//       "value": "untargetToken",
+//       "label": "STAGEMANAGER.TRIGGERS.EVENTS.UNTARGETTOKEN",
+//       "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.TOKEN",
+//       "addlArgs": [
+//         { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" },
+//         { name: "token", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.TOKEN" },
+//         { name: "actor", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR" }
+//       ]
+//     },
+//     {
+//       "value": "worldTimeChange",
+//       "label": "STAGEMANAGER.TRIGGERS.EVENTS.WORLDTIMECHANGE",
+//       "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
+//       "addlArgs": [
+//         { name: "time", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.TIME" }
+//       ]
+//     },
+//     {
+//       "value": "actorChange",
+//       "label": "STAGEMANAGER.TRIGGERS.EVENTS.ACTORCHANGE",
+//       "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.ACTOR",
+//       "addlArgs": [
+//         { name: "actor", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR" }
+//       ]
+//     }
+//   ].map(item => ({
+//     ...item,
+//     label: game.i18n.localize(item.label),
+//     category: game.i18n.localize(item.category)
+//   }))
+//     .sort((a, b) => a.label.localeCompare(b.label))
+// }
 
 export async function setMacroArgs(element: HTMLElement) {
   const eventElem = element.querySelector("#event");
