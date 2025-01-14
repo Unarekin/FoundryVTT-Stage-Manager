@@ -28,8 +28,6 @@ export class MacroTriggerAction extends TriggerAction {
     if (!(macro instanceof Macro)) throw new InvalidMacroError(serialized.macro);
     if (!macro.canExecute) throw new MacroPermDeniedError(serialized.macro);
 
-    log("Parsing arguments:", args);
-
     const parsedArgs = {
       ...Object.fromEntries(
         Object.entries(args)

@@ -125,8 +125,11 @@ Hooks.on("updateScene", (scene: Scene, delta: Partial<Scene>) => {
   if (delta.active) void triggerEvent("sceneChange", { scene });
 });
 
-Hooks.on("userConnected", user => {
-  triggerEvent("userConnected", { user });
+Hooks.on("userConnected", (user, connected) => {
+  if (connected)
+    triggerEvent("userConnected", { user });
+  else
+    triggerEvent("userDisconnected", { user });
 });
 
 // Hooks.on("userDisconnected", user => {
