@@ -204,7 +204,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       if (!(canvas?.activeLayer instanceof StageManagerControlsLayer)) {
         const { x, y } = this.displayObject.toLocal(e);
 
-        void this.triggerEvent("click", { pos: { x, y, clientX: e.clientX, clientY: e.clientY } });
+        void this.triggerEvent("click", { pos: { x, y, clientX: e.clientX, clientY: e.clientY }, modKeys: { ctrl: e.ctrlKey, alt: e.altKey, shift: e.shiftKey } });
 
       }
     }
@@ -212,13 +212,21 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   protected onDblClick(e: PIXI.FederatedPointerEvent) {
     if (!(canvas?.activeLayer instanceof StageManagerControlsLayer)) {
       const { x, y } = this.displayObject.toLocal({ x: e.x, y: e.y });
-      void this.triggerEvent("doubleClick", { pos: { x, y, clientX: e.clientX, clientY: e.clientY } })
+      void this.triggerEvent("doubleClick",
+        {
+          pos: { x, y, clientX: e.clientX, clientY: e.clientY },
+          modKeys: {
+            ctrl: e.ctrlKey,
+            shift: e.shiftKey,
+            alt: e.altKey
+          }
+        })
     }
   }
   protected onRightClick(e: PIXI.FederatedPointerEvent) {
     if (!(canvas?.activeLayer instanceof StageManagerControlsLayer)) {
       const { x, y } = this.displayObject.toLocal({ x: e.x, y: e.y });
-      void this.triggerEvent("rightClick", { pos: { x, y, clientX: e.clientX, clientY: e.clientY } });
+      void this.triggerEvent("rightClick", { pos: { x, y, clientX: e.clientX, clientY: e.clientY }, modKeys: { alt: e.altKey, ctrl: e.ctrlKey, shift: e.shiftKey } });
     }
   }
 

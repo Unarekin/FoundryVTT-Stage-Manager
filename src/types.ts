@@ -75,9 +75,9 @@ export interface ActorSettings {
 export interface TriggerEventSignatures {
   hoverIn: { pos: { x: number, y: number, clientX: number; clientY: number } };
   hoverOut: { pos: { x: number, y: number, clientX: number; clientY: number } };
-  click: { pos: { x: number, y: number, clientX: number; clientY: number } };
-  doubleClick: { pos: { x: number, y: number, clientX: number; clientY: number } };
-  rightClick: { pos: { x: number, y: number, clientX: number; clientY: number } };
+  click: { pos: { x: number, y: number, clientX: number; clientY: number }, modKeys: { ctrl: boolean, shift: boolean, alt: boolean } };
+  doubleClick: { pos: { x: number, y: number, clientX: number; clientY: number }, modKeys: { ctrl: boolean, shift: boolean, alt: boolean } };
+  rightClick: { pos: { x: number, y: number, clientX: number; clientY: number }, modKeys: { ctrl: boolean, shift: boolean, alt: boolean } };
   combatStart: { combat: Combat };
   combatEnd: { combat: Combat };
   combatRound: { combat: Combat };

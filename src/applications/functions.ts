@@ -85,7 +85,7 @@ export function getTriggerEvents(): EventSpec[] {
       "addlArgs": [
         { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" },
         { name: "pos", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.POS" },
-        { name: "ctrlKeys", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.CTRLKEYS" }
+        { name: "modKeys", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.MODKEYS" }
       ]
     },
     {
@@ -95,7 +95,7 @@ export function getTriggerEvents(): EventSpec[] {
       "addlArgs": [
         { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" },
         { name: "pos", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.POS" },
-        { name: "ctrlKeys", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.CTRLKEYS" }
+        { name: "modKeys", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.MODKEYS" }
       ]
     },
     {
@@ -105,7 +105,7 @@ export function getTriggerEvents(): EventSpec[] {
       "addlArgs": [
         { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" },
         { name: "pos", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.POS" },
-        { name: "ctrlKeys", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.CTRLKEYS" }
+        { name: "modKeys", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.MODKEYS" }
       ]
     },
     {
@@ -115,7 +115,7 @@ export function getTriggerEvents(): EventSpec[] {
       "addlArgs": [
         { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" },
         { name: "pos", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.POS" },
-        { name: "ctrlKeys", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.CTRLKEYS" }
+        { name: "modKeys", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.MODKEYS" }
       ]
     },
     {
@@ -125,7 +125,7 @@ export function getTriggerEvents(): EventSpec[] {
       "addlArgs": [
         { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" },
         { name: "pos", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.POS" },
-        { name: "ctrlKeys", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.CTRLKEYS" }
+        { name: "modKeys", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.MODKEYS" }
       ]
     },
     {
