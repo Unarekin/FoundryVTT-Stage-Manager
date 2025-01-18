@@ -914,9 +914,16 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
   protected onPointerDown(event: PIXI.FederatedMouseEvent) {
     if (game.activeTool === this.selectTool && StageManager.canModifyStageObject(game.user?.id ?? "", this.id)) {
+      if (!this.selected && !event.shiftKey)
+        StageManager.DeselectAll();
+
+      if (this.selected && event.shiftKey) {
+        this.selected = false;
+      } else {
+        this.selected = true;
+      }
       log("StageObject onPointerDown");
       event.stopPropagation();
-      this.selected = true;
     }
   }
 
@@ -978,13 +985,13 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   public get absoluteBottom() { return this.bottom + this.actualBounds.bottom; }
 
   protected onHandleDragEnd(e: PIXI.FederatedMouseEvent) {
-    e.preventDefault();
+    e.stopPropagation();
     this.resizing = false;
     this.synchronize = true;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected onHandleDragStart(e: PIXI.FederatedMouseEvent) {
+    e.stopPropagation();
     // e.preventDefault();
     this.resizing = true;
     this.synchronize = false;

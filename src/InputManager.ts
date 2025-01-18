@@ -3,7 +3,6 @@ import { CanvasNotInitializedError } from './errors/CanvasNotInitializedError';
 import { StageObject } from "./stageobjects";
 import { TOOLS } from "./ControlButtonsHandler";
 import { StageLayer } from "./types";
-import { log } from "./logging";
 
 // #region Classes (1)
 
@@ -161,32 +160,33 @@ export class InputManager {
   }
 
   public static onPointerDown(this: void, e: PIXI.FederatedPointerEvent) {
-    log("InputManager onPointerDown");
-    // Check for deselection
-    const objectsUnderCursor = StageManager.StageObjects.filter(obj => obj.selectTool === game?.activeTool && obj.bounds.contains(e.clientX, e.clientY));
     const resizeHandles = StageManager.StageObjects.filter(obj => obj.selectTool === game?.activeTool && !!obj.resizeHandle?.getBounds().contains(e.clientX, e.clientY));
-
-    if (!resizeHandles.length && !objectsUnderCursor.length) {
-      // No objects, no resize handles
+    if (!resizeHandles.length)
       StageManager.DeselectAll();
-    } else if (!resizeHandles.length && objectsUnderCursor.some(obj => obj.selected)) {
-      // Clicked a selected one, draggin' time
-      for (const obj of objectsUnderCursor) {
-        if (obj.selected) {
-          obj.dragging = true;
-          obj.synchronize = false;
-        }
-      }
-    } else if (!resizeHandles.length) {
-      log("Probably clicked no things");
-      const highestObject = objectsUnderCursor.reduce((prev, curr) => curr.zIndex > prev.zIndex ? curr : prev);
+    //   // Check for deselection
+    //   const objectsUnderCursor = StageManager.StageObjects.filter(obj => obj.selectTool === game?.activeTool && obj.bounds.contains(e.clientX, e.clientY));
+    //   const resizeHandles = StageManager.StageObjects.filter(obj => obj.selectTool === game?.activeTool && !!obj.resizeHandle?.getBounds().contains(e.clientX, e.clientY));
 
-      if (!highestObject.selected && !e.shiftKey)
-        StageManager.DeselectAll();
+    //   if (!resizeHandles.length && !objectsUnderCursor.length) {
+    //     // No objects, no resize handles
+    //     StageManager.DeselectAll();
+    //   } else if (!resizeHandles.length && objectsUnderCursor.some(obj => obj.selected)) {
+    //     // Clicked a selected one, draggin' time
+    //     for (const obj of objectsUnderCursor) {
+    //       if (obj.selected) {
+    //         obj.dragging = true;
+    //         obj.synchronize = false;
+    //       }
+    //     }
+    //   } else if (!resizeHandles.length) {
+    //     const highestObject = objectsUnderCursor.reduce((prev, curr) => curr.zIndex > prev.zIndex ? curr : prev);
 
-      // if (StageManager.canModifyStageObject(game.user?.id ?? "", highestObject.id))
-      //   highestObject.selected = true;
-    }
+    //     if (!highestObject.selected && !e.shiftKey)
+    //       StageManager.DeselectAll();
+
+    //     // if (StageManager.canModifyStageObject(game.user?.id ?? "", highestObject.id))
+    //     //   highestObject.selected = true;
+    //   }
   }
 
   // #endregion Public Static Methods (5)
