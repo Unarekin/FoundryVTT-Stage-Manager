@@ -1,5 +1,5 @@
 import { ScreenSpaceCanvasGroup } from './ScreenSpaceCanvasGroup';
-import { ActorStageObject, ImageStageObject, StageObject } from './stageobjects';
+import { ActorStageObject, ImageStageObject, StageObject, TextStageObject } from './stageobjects';
 import { PartialWithRequired, SerializedStageObject, StageLayer } from './types';
 import { coerceStageObject, coerceUser } from './coercion';
 import { StageObjects } from './StageObjectCollection';
@@ -12,7 +12,8 @@ import { ActorStageObjectApplication, ImageStageObjectApplication, StageObjectAp
 
 const ApplicationHash: Record<string, typeof StageObjectApplication> = {
   "image": ImageStageObjectApplication as typeof StageObjectApplication,
-  "actor": ActorStageObjectApplication as typeof StageObjectApplication
+  "actor": ActorStageObjectApplication as unknown as typeof StageObjectApplication,
+  "text": StageObjectApplication
 }
 
 // #region Classes (1)
@@ -145,6 +146,20 @@ export class StageManager {
       obj.x = typeof x === "number" ? x : window.innerWidth / 2;
       obj.y = typeof y === "number" ? y : window.innerHeight / 2;
 
+      StageManager.addStageObject(obj, layer);
+      return obj;
+    } catch (err) {
+      ui.notifications?.error((err as Error).message, { localize: true, console: false });
+      console.error(err);
+    }
+  }
+
+  public static addText(text: string, style?: PIXI.HTMLTextStyle, x?: number, y?: number, name?: string, layer: StageLayer = "primary"): TextStageObject | undefined {
+    try {
+      if (!StageManager.canAddStageObjects(game.user?.id ?? "")) throw new PermissionDeniedError();
+      const obj = new TextStageObject(text, style);
+      obj.x = typeof x === "number" ? x : window.innerWidth / 2;
+      obj.y = typeof y === "number" ? y : window.innerHeight / 2;
       StageManager.addStageObject(obj, layer);
       return obj;
     } catch (err) {

@@ -219,6 +219,10 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
     return parsed;
   }
 
+  protected getTabs(): Record<string, Tab> {
+    return {}
+  }
+
   protected submittedObject: v | undefined = undefined;
   public static onSubmit(this: StageObjectApplication, event: Event, form: HTMLFormElement, formData: FormDataExtended) {
     this.wasSubmitted = true;
