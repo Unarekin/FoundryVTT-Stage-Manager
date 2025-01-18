@@ -161,32 +161,8 @@ export class InputManager {
 
   public static onPointerDown(this: void, e: PIXI.FederatedPointerEvent) {
     const resizeHandles = StageManager.StageObjects.filter(obj => obj.selectTool === game?.activeTool && !!obj.resizeHandle?.getBounds().contains(e.clientX, e.clientY));
-    if (!resizeHandles.length)
+    if (!resizeHandles.length && game.settings?.get("core", "leftClickRelease"))
       StageManager.DeselectAll();
-    //   // Check for deselection
-    //   const objectsUnderCursor = StageManager.StageObjects.filter(obj => obj.selectTool === game?.activeTool && obj.bounds.contains(e.clientX, e.clientY));
-    //   const resizeHandles = StageManager.StageObjects.filter(obj => obj.selectTool === game?.activeTool && !!obj.resizeHandle?.getBounds().contains(e.clientX, e.clientY));
-
-    //   if (!resizeHandles.length && !objectsUnderCursor.length) {
-    //     // No objects, no resize handles
-    //     StageManager.DeselectAll();
-    //   } else if (!resizeHandles.length && objectsUnderCursor.some(obj => obj.selected)) {
-    //     // Clicked a selected one, draggin' time
-    //     for (const obj of objectsUnderCursor) {
-    //       if (obj.selected) {
-    //         obj.dragging = true;
-    //         obj.synchronize = false;
-    //       }
-    //     }
-    //   } else if (!resizeHandles.length) {
-    //     const highestObject = objectsUnderCursor.reduce((prev, curr) => curr.zIndex > prev.zIndex ? curr : prev);
-
-    //     if (!highestObject.selected && !e.shiftKey)
-    //       StageManager.DeselectAll();
-
-    //     // if (StageManager.canModifyStageObject(game.user?.id ?? "", highestObject.id))
-    //     //   highestObject.selected = true;
-    //   }
   }
 
   // #endregion Public Static Methods (5)
