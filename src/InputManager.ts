@@ -3,6 +3,7 @@ import { CanvasNotInitializedError } from './errors/CanvasNotInitializedError';
 import { StageObject } from "./stageobjects";
 import { TOOLS } from "./ControlButtonsHandler";
 import { StageLayer } from "./types";
+import { log } from "./logging";
 
 // #region Classes (1)
 
@@ -160,6 +161,7 @@ export class InputManager {
   }
 
   public static onPointerDown(this: void, e: PIXI.FederatedPointerEvent) {
+    log("InputManager onPointerDown");
     // Check for deselection
     const objectsUnderCursor = StageManager.StageObjects.filter(obj => obj.selectTool === game?.activeTool && obj.bounds.contains(e.clientX, e.clientY));
     const resizeHandles = StageManager.StageObjects.filter(obj => obj.selectTool === game?.activeTool && !!obj.resizeHandle?.getBounds().contains(e.clientX, e.clientY));
@@ -176,13 +178,14 @@ export class InputManager {
         }
       }
     } else if (!resizeHandles.length) {
+      log("Probably clicked no things");
       const highestObject = objectsUnderCursor.reduce((prev, curr) => curr.zIndex > prev.zIndex ? curr : prev);
 
       if (!highestObject.selected && !e.shiftKey)
         StageManager.DeselectAll();
 
-      if (StageManager.canModifyStageObject(game.user?.id ?? "", highestObject.id))
-        highestObject.selected = true;
+      // if (StageManager.canModifyStageObject(game.user?.id ?? "", highestObject.id))
+      //   highestObject.selected = true;
     }
   }
 

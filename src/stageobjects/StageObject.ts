@@ -911,10 +911,13 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
   // #region Protected Methods (7)
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   protected onPointerDown(event: PIXI.FederatedMouseEvent) {
-    // if (StageManager.canModifyStageObject(game?.user?.id ?? "", this.id))
-    //   this.selected = true;
+    if (game.activeTool === this.selectTool && StageManager.canModifyStageObject(game.user?.id ?? "", this.id)) {
+      log("StageObject onPointerDown");
+      event.stopPropagation();
+      this.selected = true;
+    }
   }
 
   protected onContextMenu(event: PIXI.FederatedMouseEvent) {
