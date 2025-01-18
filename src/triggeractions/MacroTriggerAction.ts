@@ -62,8 +62,9 @@ export class MacroTriggerAction extends TriggerAction {
 
   public static getDialogLabel(item: SerializedMacroTrigger): string {
     const macro = fromUuidSync(item.macro) as Macro;
-    if (!(macro instanceof Macro)) throw new InvalidMacroError(item.macro);
-    return game.i18n.format(`STAGEMANAGER.EDITDIALOG.TRIGGERLABELS.MACRO`, { name: macro.name })
+    if (!(macro)) throw new InvalidMacroError(item.macro);
+
+    return game.i18n?.format(`STAGEMANAGER.EDITDIALOG.TRIGGERLABELS.MACRO`, { macro: macro.name }) ?? "";
   }
 
   public static fromForm(form: HTMLFormElement): SerializedMacroTrigger {
@@ -74,11 +75,35 @@ export class MacroTriggerAction extends TriggerAction {
     const serialized = {
       id: data.id ?? foundry.utils.randomID(),
       label: data.label ?? "",
-      type: "macro",
+      action: "macro",
       arguments: data.arg ? Object.values<{ name: string, value: string }>(data.arg as unknown as Record<string, { name: string, value: string }>) : [],
-      macro: data.macro ?? ""
+      macro: data.macro ?? "",
+      event: data.event ?? ""
     }
     log("fromForm:", serialized);
     return serialized;
   }
+
+  // public static prepareContext(item: SerializedTrigger): Record<string, any> { throw new NotImplementedError(); }
+  public static prepareContext(trigger?: SerializedMacroTrigger): Record<string, any> {
+    return {
+      macros: getMacros(trigger?.macro)
+    }
+  }
+}
+
+
+
+function getMacros(selected?: string): { uuid: string, name: string, pack: string, selected?: boolean }[] {
+  const macros: { uuid: string, name: string, pack: string, selected?: boolean }[] = [];
+  if (game?.macros)
+    macros.push(...game.macros.map((macro: Macro) => ({ uuid: macro.uuid, name: macro.name, pack: "", selected: macro.uuid === selected })));
+
+  if (game?.packs) {
+    game.packs.forEach(pack => {
+      macros.push(...pack.index.map(item => ({ uuid: item.uuid, name: item.name ?? item.uuid, pack: pack.metadata.label, selected: item.uuid === selected })));
+    })
+  }
+
+  return macros;
 }

@@ -17,6 +17,8 @@ import "./triggerHooks";
 
 groupBy.register(Handlebars);
 
+Handlebars.registerHelper("json", function (context) { return JSON.stringify(context); });
+
 (window as any).StageManager = StageManager;
 
 

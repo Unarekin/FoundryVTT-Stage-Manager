@@ -106,7 +106,8 @@ export interface TriggerEventSignatures {
 export interface SerializedTrigger {
   id: string;
   label: string;
-  type: string;
+  action: string;
+  event: keyof TriggerEventSignatures;
 }
 
 export interface SerializedMacroTrigger extends SerializedTrigger {

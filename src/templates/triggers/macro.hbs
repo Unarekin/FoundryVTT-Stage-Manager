@@ -6,7 +6,7 @@
       {{#group macros by="pack"}}
         {{#if value}}<optgroup label="{{value}}">{{/if}}
           {{#each items}}
-            <option value="{{uuid}}">{{name}}</option>
+            <option value="{{uuid}}"{{#if selected}} selected{{/if}}>{{name}}</option>
           {{/each}}
         {{#if value}}</optgroup>{{/if}}
       {{/group}}
@@ -24,10 +24,10 @@
     </div>
     <section data-role="autoArguments"></section>
     <section data-role="customArguments">
-      {{#each args}}
+      {{#each trigger.arguments}}
         <div class="form-group-slim flexrow" >
-          <input type="text" value="{{name}}" name="triggers">
-          <input type="text" value="{{value}}">
+          <input type="text" value="{{name}}" name="arg.{{index}}.name">
+          <input type="text" value="{{value}}" name="arg.{{inde}}.value">
         </div>
       {{/each}}
     </section>

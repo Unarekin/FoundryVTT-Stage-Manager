@@ -11,4 +11,5 @@ export abstract class TriggerAction {
   public static fromForm(form: HTMLFormElement): SerializedTrigger { throw new NotImplementedError(); }
   public static getDialogLabel(item: SerializedTrigger): string { throw new NotImplementedError(); }
   public static getArguments(item: SerializedTrigger): Record<string, any> { throw new NotImplementedError(); }
+  public static prepareContext(trigger?: SerializedTrigger): Record<string, any> { throw new NotImplementedError(); }
 }

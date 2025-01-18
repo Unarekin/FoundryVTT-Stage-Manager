@@ -1,11 +1,13 @@
 import { TriggerAction } from "../triggeractions";
 import { SerializedTrigger } from "../types";
 import * as tempTriggerActions from "../triggeractions";
-import { InvalidTriggerError } from "../errors";
+import { InvalidTriggerError, LocalizedError } from "../errors";
 import { log } from "../logging";
+import { EditTriggerDialogV2 } from "./EditTriggerDialogV2";
 
 const triggerActions = Object.values(tempTriggerActions).filter(item => !!item.type);
 
+export function getTriggerActions() { return triggerActions; }
 
 
 // const triggerEvents = Object.values(triggerEvents).filter(event => !!event.type);
@@ -13,7 +15,7 @@ const triggerActions = Object.values(tempTriggerActions).filter(item => !!item.t
 // export const triggerTypes = Object.values(triggerActions);
 
 export function getTriggerActionType(action: SerializedTrigger | string): typeof TriggerAction | undefined {
-  return triggerActions.find(item => item.type === (typeof action === "string" ? action : action.type));
+  return triggerActions.find(item => item.type === (typeof action === "string" ? action : action.action));
 }
 
 export function getTriggerActionSelect(): Record<string, string> {
@@ -46,19 +48,6 @@ export function setSelectedConfig(element: HTMLElement) {
   }
 }
 
-export function getMacros(): { uuid: string, name: string, pack: string }[] {
-  const macros: { uuid: string, name: string, pack: string }[] = [];
-  if (game?.macros)
-    macros.push(...game.macros.map((macro: Macro) => ({ uuid: macro.uuid, name: macro.name, pack: "" })));
-
-  if (game?.packs) {
-    game.packs.forEach(pack => {
-      macros.push(...pack.index.map(item => ({ uuid: item.uuid, name: item.name ?? item.uuid, pack: pack.metadata.label })));
-    })
-  }
-
-  return macros;
-}
 
 export function getTriggerFromForm(form: HTMLFormElement) {
   const triggerSelect = form.querySelector("select#action");
@@ -78,7 +67,7 @@ export interface EventSpec {
 }
 
 
-export function getTriggerEvents(): EventSpec[] {
+export function getTriggerEvents(trigger?: SerializedTrigger): EventSpec[] {
   return [
     {
       "value": "hoverIn",
@@ -291,7 +280,8 @@ export function getTriggerEvents(): EventSpec[] {
   ].map(item => ({
     ...item,
     label: game.i18n?.localize(item.label) ?? "",
-    category: game.i18n?.localize(item.category) ?? ""
+    category: game.i18n?.localize(item.category) ?? "",
+    selected: trigger?.event === item.value
   }))
     .sort((a, b) => a.label.localeCompare(b.label))
 }
@@ -322,15 +312,52 @@ export async function setMacroArgs(element: HTMLElement) {
   }
 }
 
-export function addEventListeners(element: HTMLElement) {
-  const deleteButtons = element.querySelectorAll(`[data-action="delete"][data-id]`);
-  deleteButtons.forEach(button => {
-    button.addEventListener("click", () => {
-      if (button instanceof HTMLElement && button.dataset.id)
-        void removeTriggerItem(element, button.dataset.id);
-    });
-  })
+export async function addTriggerItem(element: HTMLElement) {
+  const newTrigger = await (foundry.applications.api.DialogV2 ? EditTriggerDialogV2.prompt() : Promise.resolve(undefined));
+  log("New trigger:", newTrigger);
+  if (!newTrigger) return;
+
+  const triggerList = element.querySelector(`[data-role="trigger-list"]`);
+  if (!(triggerList instanceof HTMLElement)) throw new LocalizedError("NOTRIGGERLIST");
+
+  const content = await renderTriggerItemRow(newTrigger);
+
+  const tr = document.createElement("tr");
+  const td = document.createElement("td");
+  td.innerHTML = content;
+  tr.appendChild(td);
+
+  triggerList.appendChild(tr);
 }
+
+
+export async function editTriggerItem(element: HTMLElement, id: string) {
+  const triggerElem = element.querySelector(`[data-role="trigger-item"][data-id="${id}"]`);
+  if (!triggerElem) throw new LocalizedError("NOTRIGGERELEMENT", { id });
+  const formElem = triggerElem.querySelector(`input[type="hidden"][name="triggers"]`);
+  if (!(formElem instanceof HTMLInputElement)) throw new LocalizedError("NOTRIGGERELEMENT", { id });
+  const serialized = formElem.value;
+  if (!serialized) throw new LocalizedError("NOTRIGGERELEMENT", { id });
+  const deserialized = JSON.parse(serialized) as SerializedTrigger;
+  const edited = await (foundry.applications.api.DialogV2 ? EditTriggerDialogV2.prompt(deserialized) : Promise.resolve(undefined));
+  log("Edited:", edited);
+  if (!edited) return;
+
+  const content = await renderTriggerItemRow(edited);
+  log("Content:", content);
+  triggerElem.outerHTML = content;
+}
+
+async function renderTriggerItemRow(trigger: SerializedTrigger): Promise<string> {
+  const actionClass = getTriggerActionType(trigger);
+  if (!actionClass) throw new InvalidTriggerError(trigger.action);
+  return renderTemplate(`modules/${__MODULE_ID__}/templates/editObject/trigger-item.hbs`, {
+    trigger,
+    eventLabel: game.i18n?.localize(`STAGEMANAGER.TRIGGERS.EVENTS.${trigger.event.toUpperCase()}`),
+    actionLabel: actionClass.getDialogLabel(trigger)
+  });
+}
+
 
 export async function removeTriggerItem(element: HTMLElement, id: string) {
   const item = element.querySelector(`[data-role="trigger-item"][data-id="${id}"]`);
@@ -364,7 +391,7 @@ export async function removeTriggerItem(element: HTMLElement, id: string) {
 }
 
 export function getTriggerLabel(trigger: SerializedTrigger): string {
-  const triggerClass = getTriggerActionType(trigger.type);
+  const triggerClass = getTriggerActionType(trigger.action);
   if (!triggerClass) return "";
   return triggerClass.getDialogLabel(trigger);
 }

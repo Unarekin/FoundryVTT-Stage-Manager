@@ -6,13 +6,15 @@
       "INVALIDACTOR": "Actor not found: {name}",
       "INVALIDMACRO": "Invalid macro: {name}",
       "INVALIDSTAGEOBJECT": "Invalid stage object: {key}",
-      "INVALIDTRIGGERTYPE": "Invalid trigger type: {type",
+      "INVALIDTRIGGERTYPE": "Invalid trigger type: {type}",
       "INVALIDUSER": "Invalid user: {user}",
       "MACROPERMDENIED": "Permission denied execting macro {name}",
       "NOIMAGEDATA": "No image data found.",
       "NOTIMPLEMENTED": "Not Implemented",
       "PERMISSIONDENIED": "Permission denied.",
-      "UNKNOWNUSER": "Unknown user: {user}"
+      "UNKNOWNUSER": "Unknown user: {user}",
+      "NOTRIGGERLIST": "Unable to find trigger list to insert trigger.",
+      "NOTRIGGERELEMENT": "Unable to find trigger element for trigger {id}"
     }
   }
 }

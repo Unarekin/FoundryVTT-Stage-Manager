@@ -1,27 +1,29 @@
 <section
   data-role="trigger-item"
   data-id="{{trigger.id}}"
-  data-serialized="{{serialized}}"
-  data-event="{{event}}"
+  data-event="{{trigger.event}}"
 >
-  <input type="hidden" name="triggers" value="{{serialized}}" />
+  <input type="hidden" name="triggers" value="{{json trigger}}" />
   <div class="flexrow">
 
-    <div data-action="edit">{{typeLabel}}</div>
-    <div>{{trigger.label}}</div>
+    <div data-action="editTrigger">{{localize eventLabel}}</div>
+    <div>{{actionLabel}}</div>
     <div class="right-align">
-      <i
-        class="fas fa-cogs icon-button"
-        data-action="edit"
+      <a
+        data-action="editTrigger"
         data-id="{{trigger.id}}"
-        data-serialized="{{serialized}}"
-        title="{{localize 'STAGEMANAGER.EDITDIALOG.EDIT' name=trigger.type}}"
-      ></i>
+        title="{{localize 'STAGEMANAGER.EDITDIALOG.EDIT' name=trigger.action}}"
+      >
+        <i class="fas fa-cogs"></i>
+      </a>
       <i
         class="fas fa-trash icon-button"
         data-action="delete"
         data-id="{{trigger.id}}"
-        title="{{localize 'STAGEMANAGER.EDITDIALOG.DELETE' name=trigger.type}}"
+        title="{{localize
+          'STAGEMANAGER.EDITDIALOG.DELETE'
+          name=trigger.action
+        }}"
       ></i>
     </div>
   </div>

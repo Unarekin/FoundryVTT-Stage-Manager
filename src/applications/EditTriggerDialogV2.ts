@@ -1,18 +1,28 @@
-import { TriggerEventSignatures } from '../types';
-import { getMacros, getTriggerActionSelect, getTriggerEvents, getTriggerFromForm, setSelectedConfig } from "./functions";
-import { TriggerDialogResult } from './types';
+import { log } from '../logging';
+import { SerializedTrigger } from '../types';
+import { getTriggerActions, getTriggerActionSelect, getTriggerEvents, getTriggerFromForm, setSelectedConfig } from "./functions";
 
+export class EditTriggerDialogV2 {
+  public static async prompt(trigger?: SerializedTrigger): Promise<SerializedTrigger | undefined> {
 
-export class AddTriggerDialogV2 {
-  public static async prompt(): Promise<TriggerDialogResult | undefined> {
-    const content = await renderTemplate(`modules/${__MODULE_ID__}/templates/add-trigger-dialog.hbs`, {
+    const context = {
       triggerActionSelect: getTriggerActionSelect(),
-      triggerEventSelect: getTriggerEvents(),
-      macros: getMacros()
-    });
+      triggerEventSelect: getTriggerEvents(trigger),
+      trigger
+    }
+
+    const triggerActions = getTriggerActions();
+    for (const action of triggerActions) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      foundry.utils.mergeObject(context, action.prepareContext(trigger as any));
+    }
 
 
-    return new Promise<TriggerDialogResult | undefined>((resolve) => {
+
+    const content = await renderTemplate(`modules/${__MODULE_ID__}/templates/edit-trigger-dialog.hbs`, context);
+
+
+    return new Promise<SerializedTrigger | undefined>((resolve) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const dialog = new foundry.applications.api.DialogV2({
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -37,15 +47,14 @@ export class AddTriggerDialogV2 {
 
               if (form instanceof HTMLFormElement) {
                 const data = new FormDataExtended(form);
-
+                log("Data:", data);
                 const serialized = getTriggerFromForm(form);
+                log("Serialized trigger:", serialized);
                 if (!serialized) {
                   resolve(undefined);
                 } else {
-                  resolve({
-                    event: data.object.event as keyof TriggerEventSignatures,
-                    trigger: serialized
-                  })
+                  if (!serialized.id) serialized.id = foundry.utils.randomID();
+                  resolve(serialized);
                 }
                 // resolve(serialized);
               } else {

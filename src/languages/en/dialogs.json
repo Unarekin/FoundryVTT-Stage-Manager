@@ -16,7 +16,7 @@
         "ADD": "Add Argument",
         "POS": "position",
         "TOKEN": "token",
-        "CTRLKEYS": "controlKeys",
+        "MODKEYS": "modifierKeys",
         "ACTIVEEFFECT": "activeEffect",
         "STATUSEFFECT": "statusEffect",
         "COMBAT": "combat",
@@ -64,7 +64,7 @@
       },
       "ACTOR": "Actor",
       "TRIGGERLABELS": {
-        "MACRO": "Macro - {name}"
+        "MACRO": "Execute Macro: {macro}"
       }
     },
     "TABS": {

@@ -358,12 +358,12 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     if (this.triggers[event]) {
       for (const trigger of this.triggers[event]) {
 
-        if (TriggerActions[trigger.type]) {
-          const triggerClass = getTriggerActionType(trigger.type);
+        if (TriggerActions[trigger.event]) {
+          const triggerClass = getTriggerActionType(trigger.action);
           if (!triggerClass) continue;
 
           // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-          const exec = TriggerActions[trigger.type].execute(trigger as any, {
+          const exec = TriggerActions[trigger.event].execute(trigger as any, {
             stageObject: this.serialize(),
             ...args,
             ...triggerClass.getArguments(trigger),

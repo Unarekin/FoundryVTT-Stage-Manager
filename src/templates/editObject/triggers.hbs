@@ -11,6 +11,7 @@
         <th>{{localize "STAGEMANAGER.EDITDIALOG.TRIGGERS"}}</th>
       </tr>
       {{#each ../triggers}}
+      {{log this}}
         <tr>
           <td>{{> "modules/stage-manager/templates/editObject/trigger-item.hbs" this}}</td>
         </tr>
