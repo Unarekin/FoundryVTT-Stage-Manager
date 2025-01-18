@@ -109,6 +109,7 @@ interface BaseSerializedTrigger {
   id: string;
   label: string;
   action: string;
+  version: string;
   event: keyof TriggerEventSignatures;
 }
 

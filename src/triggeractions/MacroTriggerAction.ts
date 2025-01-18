@@ -73,12 +73,13 @@ export class MacroTriggerAction extends TriggerAction {
     const data = foundry.utils.expandObject(formData.object) as Record<string, string>;
 
     const serialized = {
+      ...data,
       id: data.id ?? foundry.utils.randomID(),
       label: data.label ?? "",
       action: "macro",
       arguments: data.arg ? Object.values<{ name: string, value: string }>(data.arg as unknown as Record<string, { name: string, value: string }>) : [],
       macro: data.macro ?? "",
-      event: data.event ?? ""
+      event: data.event ?? "",
     }
     log("fromForm:", serialized);
     return serialized;
