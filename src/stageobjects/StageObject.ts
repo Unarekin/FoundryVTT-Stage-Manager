@@ -990,19 +990,27 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     this.synchronize = false;
   }
 
+  #pointerEntered = false;
 
   protected onPointerEnter(e: PIXI.FederatedPointerEvent) {
+    if (this.#pointerEntered) return;
+    this.#pointerEntered = true;
     if (game.activeTool === this.selectTool && StageManager.canModifyStageObject(game.user?.id ?? "", this.id)) {
       this.highlighted = true;
+      e.stopPropagation();
     } else if (!(canvas?.activeLayer instanceof StageManagerControlsLayer)) {
       const { x, y } = this.displayObject.toLocal({ x: e.x, y: e.y });
       void this.triggerEvent("hoverIn", { pos: { x, y, clientX: e.clientX, clientY: e.clientY }, user: game.user as User });
+      e.stopPropagation();
     }
   }
 
 
 
   protected onPointerLeave(e: PIXI.FederatedPointerEvent) {
+    if (!this.#pointerEntered) return;
+    this.#pointerEntered = false;
+
     if (this.highlighted) this.highlighted = false;
     if (!(canvas?.activeLayer instanceof StageManagerControlsLayer)) {
       const { x, y } = this.displayObject.toLocal({ x: e.x, y: e.y });

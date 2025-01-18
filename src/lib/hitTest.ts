@@ -12,7 +12,6 @@ export function hitTestFn(wrapped: Function, target: PIXI.DisplayObject, pos: PI
 
       const local = stageObject.displayObject.toLocal(pos);
       const color = stageObject.getPixelColor(local.x, local.y);
-
       // output.style.background = color.alpha ? color.toHexa() : "#000000aa";
       return color.alpha !== 0;
       // return hitResult;
