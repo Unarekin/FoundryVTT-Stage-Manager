@@ -65,7 +65,7 @@ Hooks.on("createActiveEffect", (effect: ActiveEffect) => {
     for (const obj of objs) {
       void obj.triggerEvent("addActiveEffect", { actor: effect.parent, effect });
       for (const status of effect.statuses)
-        void obj.triggerEvent("addStatusEffect", { actor: effect.parent, effect, status });
+        void obj.triggerEvent("addStatusEffect", { actor: effect.parent, status });
     }
   }
 });
@@ -77,7 +77,7 @@ Hooks.on("deleteActiveEffect", (effect: ActiveEffect) => {
     for (const obj of objs) {
       void obj.triggerEvent("removeActiveEffect", { actor: effect.parent, effect });
       for (const status of effect.statuses)
-        void obj.triggerEvent("removeStatusEffect", { actor: effect.parent, effect, status });
+        void obj.triggerEvent("removeStatusEffect", { actor: effect.parent, status });
     }
   }
 });
@@ -89,11 +89,11 @@ Hooks.on("updateActiveEffect", (effect: ActiveEffect, delta: Partial<ActiveEffec
       if (delta.disabled) {
         void obj.triggerEvent("removeActiveEffect", { actor: effect.parent, effect });
         for (const status of effect.statuses)
-          void obj.triggerEvent("removeStatusEffect", { actor: effect.parent, effect, status });
+          void obj.triggerEvent("removeStatusEffect", { actor: effect.parent, status });
       } else {
         void obj.triggerEvent("addActiveEffect", { actor: effect.parent, effect });
         for (const status of effect.statuses)
-          void obj.triggerEvent("addStatusEffect", { actor: effect.parent, effect, status });
+          void obj.triggerEvent("addStatusEffect", { actor: effect.parent, status });
       }
     }
   }

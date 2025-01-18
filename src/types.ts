@@ -73,11 +73,11 @@ export interface ActorSettings {
 
 
 export interface TriggerEventSignatures {
-  hoverIn: { pos: { x: number, y: number, clientX: number; clientY: number } };
-  hoverOut: { pos: { x: number, y: number, clientX: number; clientY: number } };
-  click: { pos: { x: number, y: number, clientX: number; clientY: number }, modKeys: { ctrl: boolean, shift: boolean, alt: boolean } };
-  doubleClick: { pos: { x: number, y: number, clientX: number; clientY: number }, modKeys: { ctrl: boolean, shift: boolean, alt: boolean } };
-  rightClick: { pos: { x: number, y: number, clientX: number; clientY: number }, modKeys: { ctrl: boolean, shift: boolean, alt: boolean } };
+  hoverIn: { pos: { x: number, y: number, clientX: number; clientY: number }, user: User; };
+  hoverOut: { pos: { x: number, y: number, clientX: number; clientY: number }, user: User };
+  click: { pos: { x: number, y: number, clientX: number; clientY: number }, modKeys: { ctrl: boolean, shift: boolean, alt: boolean }, user: User; };
+  doubleClick: { pos: { x: number, y: number, clientX: number; clientY: number }, modKeys: { ctrl: boolean, shift: boolean, alt: boolean }, user: User; };
+  rightClick: { pos: { x: number, y: number, clientX: number; clientY: number }, modKeys: { ctrl: boolean, shift: boolean, alt: boolean }, user: User; };
   combatStart: { combat: Combat };
   combatEnd: { combat: Combat };
   combatRound: { combat: Combat };
@@ -90,8 +90,8 @@ export interface TriggerEventSignatures {
   userDisconnected: { user: User };
   addActiveEffect: { actor: Actor, effect: ActiveEffect };
   removeActiveEffect: { actor: Actor, effect: ActiveEffect };
-  addStatusEffect: { actor: Actor, effect: ActiveEffect, status: string };
-  removeStatusEffect: { actor: Actor, effect: ActiveEffect, status: string };
+  addStatusEffect: { actor: Actor, status: string };
+  removeStatusEffect: { actor: Actor, status: string };
   selectToken: { token: Token, actor: Actor };
   deselectToken: { token: Token, actor: Actor };
   targetToken: { user: User, token: Token, actor: Actor };

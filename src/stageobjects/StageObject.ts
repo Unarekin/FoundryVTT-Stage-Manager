@@ -205,7 +205,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       this._clickHandle = setTimeout(() => {
         const { x, y } = this.displayObject.toLocal(e);
         this._clickHandle = null;
-        void this.triggerEvent("click", { pos: { x, y, clientX: e.clientX, clientY: e.clientY }, modKeys: { ctrl: e.ctrlKey, alt: e.altKey, shift: e.shiftKey } });
+        void this.triggerEvent("click", { pos: { x, y, clientX: e.clientX, clientY: e.clientY }, modKeys: { ctrl: e.ctrlKey, alt: e.altKey, shift: e.shiftKey }, user: game.user as User });
       }, 500);
     } else {
       clearTimeout(this._clickHandle);
@@ -223,14 +223,15 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
             ctrl: e.ctrlKey,
             shift: e.shiftKey,
             alt: e.altKey
-          }
+          },
+          user: game.user as User
         })
     }
   }
   protected onRightClick(e: PIXI.FederatedPointerEvent) {
     if (!(canvas?.activeLayer instanceof StageManagerControlsLayer)) {
       const { x, y } = this.displayObject.toLocal({ x: e.x, y: e.y });
-      void this.triggerEvent("rightClick", { pos: { x, y, clientX: e.clientX, clientY: e.clientY }, modKeys: { alt: e.altKey, ctrl: e.ctrlKey, shift: e.shiftKey } });
+      void this.triggerEvent("rightClick", { pos: { x, y, clientX: e.clientX, clientY: e.clientY }, modKeys: { alt: e.altKey, ctrl: e.ctrlKey, shift: e.shiftKey }, user: game.user as User });
     }
   }
 
@@ -250,25 +251,9 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     this._lastMoveCoords.y = e.clientY;
 
     if (!this._pointerEntered) {
-      void this.triggerEvent("hoverIn", { pos: { x: e.x, y: e.y, clientX: e.clientX, clientY: e.clientY } });
+      void this.triggerEvent("hoverIn", { pos: { x: e.x, y: e.y, clientX: e.clientX, clientY: e.clientY }, user: game.user as User });
       this._pointerEntered = true;
     }
-
-
-    // // this.getLocalCoordinates(e)
-    // const { x, y } = this.displayObject.toLocal(e);
-
-    // if (this.hitTest(x, y)) {
-    //   if (!this._pointerEntered) {
-    //     this._pointerEntered = true
-    //     e.preventDefault();
-    //     void this.triggerEvent("hoverIn", { pos: { x, y, clientX: e.clientX, clientY: e.clientY } });
-    //   }
-    // } else if (this._pointerEntered) {
-    //   this._pointerEntered = false;
-    //   e.preventDefault();
-    //   void this.triggerEvent("hoverOut", { pos: { x, y, clientX: e.clientX, clientY: e.clientY } });
-    // }
   }
 
 
@@ -339,9 +324,6 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       stageObject: this.serialize()
     };
   }
-
-  // protected readonly triggers: Record<TriggerEvent, SerializedTrigger[]> = {};
-  // private _triggers: Record<keyof TriggerEventSignatures, SerializedTrigger[]> = {};
 
   private _triggers: Partial<Record<keyof TriggerEventSignatures, SerializedTrigger[]>> = {
 
@@ -1028,7 +1010,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     if (this.highlighted) this.highlighted = false;
     if (!(canvas?.activeLayer instanceof StageManagerControlsLayer)) {
       const { x, y } = this.displayObject.toLocal({ x: e.x, y: e.y });
-      if (this._pointerEntered) void this.triggerEvent("hoverOut", { pos: { x, y, clientX: e.clientX, clientY: e.clientY } });
+      if (this._pointerEntered) void this.triggerEvent("hoverOut", { pos: { x, y, clientX: e.clientX, clientY: e.clientY }, user: game.user as User });
       this._pointerEntered = false;
 
     }
