@@ -11,6 +11,7 @@ import { StageManagerControlsLayer } from "../ControlButtonsHandler";
 import { throttle } from '../lib/throttle';
 import { log } from "../logging";
 import { getTriggerActionType } from "../applications/functions";
+// import { getTriggerActionType } from "../applications/functions";
 
 
 const TriggerActions = Object.fromEntries(Object.values(tempTriggers).map(val => [val.type, val]));
@@ -335,7 +336,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected getTriggerArguments<k extends keyof TriggerEventSignatures>(event: k, args: TriggerEventSignatures[k]): Partial<TriggerEventSignatures[k]> | Record<string, unknown> {
     return {
-      user: game.users?.current?.uuid ?? ""
+      stageObject: this.serialize()
     };
   }
 
@@ -353,18 +354,15 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   public async triggerEvent<k extends keyof TriggerEventSignatures>(event: k, args: TriggerEventSignatures[k]) {
     log("Event triggered:", event, args);
     if (this.triggers[event]) {
       for (const trigger of this.triggers[event]) {
-
-        if (TriggerActions[trigger.event]) {
-          const triggerClass = getTriggerActionType(trigger.action);
+        if (TriggerActions[trigger.action]) {
+          const triggerClass = getTriggerActionType(trigger);
           if (!triggerClass) continue;
-
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-          const exec = TriggerActions[trigger.event].execute(trigger as any, {
-            stageObject: this.serialize(),
+          const exec = triggerClass.execute(trigger, {
             ...args,
             ...triggerClass.getArguments(trigger),
             ...this.getTriggerArguments(event, args)

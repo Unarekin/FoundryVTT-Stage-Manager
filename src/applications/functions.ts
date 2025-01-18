@@ -389,7 +389,6 @@ export async function removeTriggerItem(element: HTMLElement, id: string) {
   );
 
   if (!confirm) return;
-  log("Removing:", deserialized);
   const row = item.closest("tr");
   if (row instanceof HTMLTableRowElement) row.remove();
 }

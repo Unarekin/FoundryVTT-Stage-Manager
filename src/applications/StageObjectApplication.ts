@@ -192,7 +192,6 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
 
   protected parseFormData(data: Record<string, unknown>): v {
     const parsed = foundry.utils.expandObject(data) as v;
-    log("Pre-parsing:", { ...parsed });
     const bounds = parsed.restrictToVisualArea ? StageManager.VisualBounds : StageManager.ScreenBounds;
     parsed.bounds.x /= bounds.width;
     parsed.bounds.y /= bounds.height;
@@ -217,7 +216,6 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
     } else {
       parsed.triggers = {};
     }
-    log("Parsed form:", parsed)
     return parsed;
   }
 
