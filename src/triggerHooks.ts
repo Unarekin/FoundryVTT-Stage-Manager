@@ -3,7 +3,7 @@
 import { log } from "./logging";
 import { coerceActor } from "./coercion";
 import { StageManager } from "./StageManager";
-import { ActorStageObject } from "./stageobjects";
+import { ActorStageObject, StageObject } from "./stageobjects";
 import { TriggerEventSignatures } from "./types";
 
 function triggerEvent<k extends keyof TriggerEventSignatures>(event: k, arg: TriggerEventSignatures[k]) {
@@ -132,9 +132,18 @@ Hooks.on("updateWorldTime", time => {
 });
 
 Hooks.on("updateActor", (actor: Actor) => {
-  const objs = ActorStageObject.GetActorObjects(actor);
-  for (const obj of objs)
-    void obj.triggerEvent("actorChanged", { actor });
+  const objs: StageObject[] = ActorStageObject.GetActorObjects(actor);
+  StageManager.StageObjects.forEach(obj => {
+    const triggers = Object.values(obj.triggers).flat();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    if (triggers.some(trigger => (trigger as any).actor === actor.uuid))
+      objs.push(obj);
+  });
+
+  const filtered = objs.filter((obj, i, arr) => arr.indexOf(obj) === i);
+
+  for (const obj of filtered)
+    void obj.triggerEvent("actorChange", { actor });
 });
 
 Hooks.on("pauseGame", paused => {

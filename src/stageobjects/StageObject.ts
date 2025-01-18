@@ -343,11 +343,12 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
         if (TriggerActions[trigger.action]) {
           const triggerClass = getTriggerActionType(trigger);
           if (!triggerClass) continue;
-          const exec = triggerClass.execute(trigger, {
-            ...args,
+          const scope = {
             ...triggerClass.getArguments(trigger),
-            ...this.getTriggerArguments(event, args)
-          });
+            ...this.getTriggerArguments(event, args),
+            ...args
+          };
+          const exec = triggerClass.execute(trigger, scope);
           if (exec instanceof Promise) await exec;
         }
       }

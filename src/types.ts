@@ -97,7 +97,7 @@ export interface TriggerEventSignatures {
   targetToken: { user: User, token: Token, actor: Actor };
   untargetToken: { user: User, token: Token, actor: Actor };
   worldTimeChange: { time: number };
-  actorChanged: { actor: Actor };
+  actorChange: { actor: Actor };
 }
 
 
@@ -114,11 +114,11 @@ interface BaseSerializedTrigger {
 }
 
 
-export const ActorTriggerEvents = ["actorChanged", "addActiveEffect", "removeActiveEffect", "addStatusEffect", "removeStatusEffect"] as const;
+export const ActorTriggerEvents = ["actorChange", "addActiveEffect", "removeActiveEffect", "addStatusEffect", "removeStatusEffect"] as const;
 export type ActorTriggerEvent = typeof ActorTriggerEvents[number];
 
 interface ActorSerializedTrigger extends BaseSerializedTrigger {
-  event: "actorChanged" | "addActiveEffect" | "removeActiveEffect" | "addStatusEffect" | "removeStatusEffect";
+  event: "actorChange" | "addActiveEffect" | "removeActiveEffect" | "addStatusEffect" | "removeStatusEffect";
   actor: string;
 }
 

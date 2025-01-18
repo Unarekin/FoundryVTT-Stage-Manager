@@ -2,7 +2,6 @@ import { coerceJSON, coerceMacro } from '../coercion';
 import { InvalidMacroError, MacroPermDeniedError } from '../errors';
 import { SerializedMacroTrigger, SerializedTrigger } from '../types';
 import { TriggerAction } from './TriggerAction';
-import { log } from "../logging"
 
 export class MacroTriggerAction extends TriggerAction {
   public static readonly type = "macro";
@@ -23,40 +22,39 @@ export class MacroTriggerAction extends TriggerAction {
     return true;
   }
 
-  public static execute(serialized: SerializedMacroTrigger, args: Record<string, any>): void | Promise<void> {
+  public static async execute(serialized: SerializedMacroTrigger, args: Record<string, any>): Promise<void> {
     const macro = coerceMacro(serialized.macro);
     if (!(macro instanceof Macro)) throw new InvalidMacroError(serialized.macro);
     if (!macro.canExecute) throw new MacroPermDeniedError(serialized.macro);
 
-    const parsedArgs = {
-      ...Object.fromEntries(
-        Object.entries(args)
-          .map(([key, value]) => {
-            if (typeof value === "string") {
-              const uuid = foundry.utils.parseUuid(value);
-              if (uuid.id) return [key, fromUuidSync(value)];
+    // const parsedArgs: Record<string, unknown> = {};
 
-              // Parsing it as JSON will also handle numbers or booleans as strings
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-              const json = coerceJSON(value);
-              if (typeof json !== "undefined") return [key, json];
-            }
+    const parsedArgs = Object.fromEntries(Object.entries({
+      ...args,
+      ...Object.fromEntries(serialized.arguments.map(item => [item.name, item.value]))
+    }))
 
-            return [key, value];
-          })
-      ),
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-      args: serialized.arguments.map(arg => arg.value)
+
+    for (const key in parsedArgs) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const value = parsedArgs[key];
+      if (typeof value === "string") {
+        const uuid = foundry.utils.parseUuid(value);
+        if (uuid.id) {
+          parsedArgs[key] = await fromUuid(value);
+          continue;
+        } else {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          const json = coerceJSON(value);
+          if (typeof json !== "undefined") {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            parsedArgs[key] = json;
+            continue;
+          }
+        }
+      }
     }
-
-
-
     return macro.execute(parsedArgs) as void | Promise<void>;
-
-    // return macro.execute({
-    //   ...args,
-    //   args: serialized.arguments.map(arg => arg.value)
-    // }) as void | Promise<void>;
   }
 
 
@@ -81,7 +79,6 @@ export class MacroTriggerAction extends TriggerAction {
       macro: data.macro ?? "",
       event: data.event ?? "",
     }
-    log("fromForm:", serialized);
     return serialized;
   }
 
