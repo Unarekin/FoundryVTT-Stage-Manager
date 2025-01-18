@@ -361,33 +361,37 @@ async function renderTriggerItemRow(trigger: SerializedTrigger): Promise<string>
 
 export async function removeTriggerItem(element: HTMLElement, id: string) {
   const item = element.querySelector(`[data-role="trigger-item"][data-id="${id}"]`);
-  if (item instanceof HTMLElement) {
-    if (!item.dataset.serialized) return;
-    const deserialized = JSON.parse(item.dataset.serialized) as SerializedTrigger;
-    if (!deserialized) return;
-    const title = game.i18n?.localize("STAGEMANAGER.CONFIRMREMOVETRIGGER.TITLE") ?? "";
-    const content = game.i18n?.format("STAGEMANAGER.CONFIRMREMOVETRIGGER.MESSAGE", { name: getTriggerLabel(deserialized) }) ?? "";
-    const confirm = await (foundry.applications.api.DialogV2 ?
-      foundry.applications.api.DialogV2.confirm({
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        window: ({ title } as any),
-        content,
-        rejectClose: false
-      }) :
-      Dialog.confirm({
-        title,
-        content,
-        defaultYes: false,
-        rejectClose: false
-      })
-    )
+  if (!(item instanceof HTMLElement)) throw new InvalidTriggerError(id);
 
-    if (!confirm) return;
+  const input = item.querySelector(`input[type="hidden"]`);
+  if (!(input instanceof HTMLInputElement)) throw new InvalidTriggerError(id);
 
-    const row = item.closest("tr");
-    if (row instanceof HTMLTableRowElement)
-      row.remove();
-  }
+  const serialized = input.value;
+  const deserialized = JSON.parse(serialized) as SerializedTrigger;
+  if (!deserialized) throw new InvalidTriggerError(serialized);
+
+  const title = game.i18n?.localize("STAGEMANAGER.CONFIRMREMOVETRIGGER.TITLE") ?? "";
+  const content = game.i18n?.format("STAGEMANAGER.CONFIRMREMOVETRIGGER.MESSAGE", { name: getTriggerLabel(deserialized) }) ?? "";
+
+  const confirm = await (foundry.applications.api.DialogV2 ?
+    foundry.applications.api.DialogV2.confirm({
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      window: ({ title } as any),
+      content,
+      rejectClose: false
+    }) :
+    Dialog.confirm({
+      title,
+      content,
+      defaultYes: false,
+      rejectClose: false
+    })
+  );
+
+  if (!confirm) return;
+  log("Removing:", deserialized);
+  const row = item.closest("tr");
+  if (row instanceof HTMLTableRowElement) row.remove();
 }
 
 export function getTriggerLabel(trigger: SerializedTrigger): string {

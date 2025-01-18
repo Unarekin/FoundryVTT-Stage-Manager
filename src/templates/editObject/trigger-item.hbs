@@ -16,15 +16,16 @@
       >
         <i class="fas fa-cogs"></i>
       </a>
-      <i
-        class="fas fa-trash icon-button"
-        data-action="delete"
+      <a
+        data-action="removeTrigger"
         data-id="{{trigger.id}}"
         title="{{localize
           'STAGEMANAGER.EDITDIALOG.DELETE'
           name=trigger.action
         }}"
-      ></i>
+      >
+        <i class="fas fa-trash"></i>
+      </a>
     </div>
   </div>
 </section>

@@ -6,7 +6,7 @@ import { StageManager } from "../StageManager";
 import ApplicationV2 from "Foundry-VTT/src/foundry/client-esm/applications/api/application.mjs";
 import HandlebarsApplicationMixin from "Foundry-VTT/src/foundry/client-esm/applications/api/handlebars-application.mjs";
 import { localize } from "../functions";
-import { addTriggerItem, editTriggerItem, getTriggerActionType } from "./functions";
+import { addTriggerItem, editTriggerItem, getTriggerActionType, removeTriggerItem } from "./functions";
 import { InvalidTriggerError } from "../errors";
 import { log } from "../logging";
 
@@ -75,7 +75,9 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
       // eslint-disable-next-line @typescript-eslint/unbound-method
       addTrigger: StageObjectApplication.AddTrigger,
       // eslint-disable-next-line @typescript-eslint/unbound-method
-      editTrigger: StageObjectApplication.EditTrigger
+      editTrigger: StageObjectApplication.EditTrigger,
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      removeTrigger: StageObjectApplication.RemoveTrigger
     }
   }
 
@@ -83,7 +85,14 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
     this._onChangeForm();
   }
 
-
+  public static RemoveTrigger(this: StageObjectApplication, e: PointerEvent, element: HTMLElement) {
+    log("Removing:", element.dataset.id)
+    const id = element.dataset.id ?? "";
+    if (id)
+      void removeTriggerItem(this.element, id);
+    else
+      throw new InvalidTriggerError(id);
+  }
 
   public static AddTrigger(this: StageObjectApplication) {
     void addTriggerItem(this.element);
