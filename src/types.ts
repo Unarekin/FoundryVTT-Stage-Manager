@@ -101,16 +101,31 @@ export interface TriggerEventSignatures {
 }
 
 
+
+
 // export type TriggerEvent = typeof TriggerEvents[number];
 
-export interface SerializedTrigger {
+interface BaseSerializedTrigger {
   id: string;
   label: string;
   action: string;
   event: keyof TriggerEventSignatures;
 }
 
-export interface SerializedMacroTrigger extends SerializedTrigger {
+
+export const ActorTriggerEvents = ["actorChanged", "addActiveEffect", "removeActiveEffect", "addStatusEffect", "removeStatusEffect"] as const;
+export type ActorTriggerEvent = typeof ActorTriggerEvents[number];
+
+interface ActorSerializedTrigger extends BaseSerializedTrigger {
+  event: "actorChanged" | "addActiveEffect" | "removeActiveEffect" | "addStatusEffect" | "removeStatusEffect";
+  actor: string;
+}
+
+
+
+export type SerializedTrigger = BaseSerializedTrigger | ActorSerializedTrigger;
+
+export type SerializedMacroTrigger = SerializedTrigger & ({
   macro: string;
   arguments: { name: string, value: any }[]
-}
+});

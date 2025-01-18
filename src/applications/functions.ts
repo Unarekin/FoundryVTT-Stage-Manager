@@ -1,7 +1,7 @@
 import { TriggerAction } from "../triggeractions";
-import { SerializedTrigger } from "../types";
+import { SerializedTrigger } from '../types';
 import * as tempTriggerActions from "../triggeractions";
-import { InvalidTriggerError, LocalizedError } from "../errors";
+import { InvalidTriggerError, LocalizedError, UnknownDocumentTypeError } from "../errors";
 import { log } from "../logging";
 import { EditTriggerDialogV2 } from "./EditTriggerDialogV2";
 
@@ -28,17 +28,44 @@ export function getTriggerActionSelect(): Record<string, string> {
   )
 }
 
-
 export function setSelectedConfig(element: HTMLElement) {
+
+  const eventSelect = element.querySelector("select#event");
+  if (eventSelect instanceof HTMLSelectElement) {
+    // Hide all configs
+    const all = element.querySelectorAll(`[data-role="event-configs"] [data-type],[data-role="event-configs"] [data-category]`);
+    for (const elem of all) {
+      if (elem instanceof HTMLElement)
+        elem.style.display = "none";
+    }
+
+    const selected = eventSelect.value;
+
+    // Event-specific configs
+    const config = element.querySelector(`[data-role="event-configs"] [data-event="${selected}"]`);
+    if (config instanceof HTMLElement) config.style.display = "block";
+
+    // Event category configs
+    const selectedOption = eventSelect.options[eventSelect.selectedIndex];
+    const category = selectedOption.dataset.category;
+    log("Selected category:", category);
+    const categoryConfigs = element.querySelectorAll(`[data-role="event-configs"] [data-category="${category}"]`);
+    for (const elem of categoryConfigs) {
+      if (elem instanceof HTMLElement) elem.style.display = "block";
+    }
+  }
+
+
+
   const typeSelect = element.querySelector("select#action");
 
   if (typeSelect instanceof HTMLSelectElement) {
     const selected = typeSelect.value;
-    const config = element.querySelector(`[data-role="trigger-configs"] [data-type="${selected}"]`);
+    const config = element.querySelector(`[data-role="action-configs"] [data-type="${selected}"]`);
     if (config instanceof HTMLElement) {
       config.style.display = "block";
     }
-    const others = element.querySelectorAll(`[data-role="trigger-configs"] [data-type]:not([data-type="${selected}"])`);
+    const others = element.querySelectorAll(`[data-role="action-configs"] [data-type]:not([data-type="${selected}"])`);
     for (const elem of others) {
       if (elem instanceof HTMLElement) elem.style.display = "none";
     }
@@ -63,6 +90,7 @@ export interface EventSpec {
   value: string;
   label: string;
   category: string;
+  categoryLabel: string;
   addlArgs: { name: string, label: string }[]
 }
 
@@ -72,7 +100,8 @@ export function getTriggerEvents(trigger?: SerializedTrigger): EventSpec[] {
     {
       "value": "hoverIn",
       "label": "STAGEMANAGER.TRIGGERS.EVENTS.HOVERIN",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.MOUSE",
+      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MOUSE",
+      "category": "mouse",
       "addlArgs": [
         { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" },
         { name: "pos", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.POS" },
@@ -82,7 +111,8 @@ export function getTriggerEvents(trigger?: SerializedTrigger): EventSpec[] {
     {
       "value": "hoverOut",
       "label": "STAGEMANAGER.TRIGGERS.EVENTS.HOVEROUT",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.MOUSE",
+      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MOUSE",
+      "category": "mouse",
       "addlArgs": [
         { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" },
         { name: "pos", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.POS" },
@@ -92,7 +122,8 @@ export function getTriggerEvents(trigger?: SerializedTrigger): EventSpec[] {
     {
       "value": "click",
       "label": "STAGEMANAGER.TRIGGERS.EVENTS.CLICK",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.MOUSE",
+      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MOUSE",
+      "category": "mouse",
       "addlArgs": [
         { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" },
         { name: "pos", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.POS" },
@@ -102,7 +133,8 @@ export function getTriggerEvents(trigger?: SerializedTrigger): EventSpec[] {
     {
       "value": "doubleClick",
       "label": "STAGEMANAGER.TRIGGERS.EVENTS.DOUBLECLICK",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.MOUSE",
+      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MOUSE",
+      "category": "mouse",
       "addlArgs": [
         { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" },
         { name: "pos", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.POS" },
@@ -112,7 +144,8 @@ export function getTriggerEvents(trigger?: SerializedTrigger): EventSpec[] {
     {
       "value": "rightClick",
       "label": "STAGEMANAGER.TRIGGERS.EVENTS.RIGHTCLICK",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.MOUSE",
+      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MOUSE",
+      "category": "mouse",
       "addlArgs": [
         { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" },
         { name: "pos", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.POS" },
@@ -122,7 +155,8 @@ export function getTriggerEvents(trigger?: SerializedTrigger): EventSpec[] {
     {
       "value": "combatStart",
       "label": "STAGEMANAGER.TRIGGERS.EVENTS.COMBATSTART",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.COMBAT",
+      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.COMBAT",
+      "category": "combat",
       "addlArgs": [
         { name: "combat", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.COMBAT" }
       ]
@@ -130,7 +164,8 @@ export function getTriggerEvents(trigger?: SerializedTrigger): EventSpec[] {
     {
       "value": "combatEnd",
       "label": "STAGEMANAGER.TRIGGERS.EVENTS.COMBATEND",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.COMBAT",
+      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.COMBAT",
+      "category": "combat",
       "addlArgs": [
         { name: "combat", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.COMBAT" }
       ]
@@ -138,7 +173,8 @@ export function getTriggerEvents(trigger?: SerializedTrigger): EventSpec[] {
     {
       "value": "combatTurnStart",
       "label": "STAGEMANAGER.TRIGGERS.EVENTS.COMBATTURNSTART",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.COMBAT",
+      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.COMBAT",
+      "category": "combat",
       "addlArgs": [
         { name: "combat", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.COMBAT" },
         { name: "combatant", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.COMBATANT" },
@@ -149,7 +185,8 @@ export function getTriggerEvents(trigger?: SerializedTrigger): EventSpec[] {
     {
       "value": "combatTurnEnd",
       "label": "STAGEMANAGER.TRIGGERS.EVENTS.COMBATTURNEND",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.COMBAT",
+      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.COMBAT",
+      "category": "combat",
       "addlArgs": [
         { name: "combat", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.COMBAT" },
         { name: "combatant", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.COMBATANT" },
@@ -160,7 +197,8 @@ export function getTriggerEvents(trigger?: SerializedTrigger): EventSpec[] {
     {
       "value": "sceneChange",
       "label": "STAGEMANAGER.TRIGGERS.EVENTS.SCENECHANGE",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
+      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
+      "category": "misc",
       "addlArgs": [
         { name: "scene", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.SCENE" }
       ]
@@ -168,19 +206,22 @@ export function getTriggerEvents(trigger?: SerializedTrigger): EventSpec[] {
     {
       "value": "pause",
       "label": "STAGEMANAGER.TRIGGERS.EVENTS.PAUSE",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
+      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
+      "category": "misc",
       "addlArgs": []
     },
     {
       "value": "unpause",
       "label": "STAGEMANAGER.TRIGGERS.EVENTS.UNPAUSE",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
+      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
+      "category": "misc",
       "addlArgs": []
     },
     {
       "value": "userConnected",
       "label": "STAGEMANAGER.TRIGGERS.EVENTS.USERCONNECTED",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
+      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
+      "category": "misc",
       "addlArgs": [
         { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" }
       ]
@@ -188,7 +229,8 @@ export function getTriggerEvents(trigger?: SerializedTrigger): EventSpec[] {
     {
       "value": "userDisconnected",
       "label": "STAGEMANAGER.TRIGGERS.EVENTS.USERDISCONNECTED",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
+      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
+      "category": "misc",
       "addlArgs": [
         { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" }
       ]
@@ -196,7 +238,8 @@ export function getTriggerEvents(trigger?: SerializedTrigger): EventSpec[] {
     {
       "value": "addActiveEffect",
       "label": "STAGEMANAGER.TRIGGERS.EVENTS.ADDACTIVEEFFECT",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.ACTOR",
+      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.ACTOR",
+      "category": "actor",
       "addlArgs": [
         { name: "actor", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR" },
         { name: "activeEffect", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTIVEEFFECT" }
@@ -205,7 +248,8 @@ export function getTriggerEvents(trigger?: SerializedTrigger): EventSpec[] {
     {
       "value": "removeActiveEffect",
       "label": "STAGEMANAGER.TRIGGERS.EVENTS.REMOVEACTIVEEFFECT",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.ACTOR",
+      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.ACTOR",
+      "category": "actor",
       "addlArgs": [
         { name: "actor", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR" },
         { name: "activeEffect", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTIVEEFFECT" }
@@ -214,7 +258,8 @@ export function getTriggerEvents(trigger?: SerializedTrigger): EventSpec[] {
     {
       "value": "addStatusEffect",
       "label": "STAGEMANAGER.TRIGGERS.EVENTS.ADDSTATUSEFFECT",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.ACTOR",
+      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.ACTOR",
+      "category": "actor",
       "addlArgs": [
         { name: "actor", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR" },
         { name: "activeEffect", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTIVEEFFECT" },
@@ -224,7 +269,8 @@ export function getTriggerEvents(trigger?: SerializedTrigger): EventSpec[] {
     {
       "value": "selectToken",
       "label": "STAGEMANAGER.TRIGGERS.EVENTS.SELECTTOKEN",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.TOKEN",
+      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.TOKEN",
+      "category": "token",
       "addlArgs": [
         { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" },
         { name: "token", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.TOKEN" },
@@ -234,7 +280,8 @@ export function getTriggerEvents(trigger?: SerializedTrigger): EventSpec[] {
     {
       "value": "deselectToken",
       "label": "STAGEMANAGER.TRIGGERS.EVENTS.DESELECTTOKEN",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.TOKEN",
+      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.TOKEN",
+      "category": "token",
       "addlArgs": [
         { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" },
         { name: "token", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.TOKEN" },
@@ -244,7 +291,8 @@ export function getTriggerEvents(trigger?: SerializedTrigger): EventSpec[] {
     {
       "value": "targetToken",
       "label": "STAGEMANAGER.TRIGGERS.EVENTS.TARGETTOKEN",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.TOKEN",
+      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.TOKEN",
+      "category": "token",
       "addlArgs": [
         { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" },
         { name: "token", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.TOKEN" },
@@ -254,7 +302,8 @@ export function getTriggerEvents(trigger?: SerializedTrigger): EventSpec[] {
     {
       "value": "untargetToken",
       "label": "STAGEMANAGER.TRIGGERS.EVENTS.UNTARGETTOKEN",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.TOKEN",
+      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.TOKEN",
+      "category": "token",
       "addlArgs": [
         { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" },
         { name: "token", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.TOKEN" },
@@ -264,7 +313,8 @@ export function getTriggerEvents(trigger?: SerializedTrigger): EventSpec[] {
     {
       "value": "worldTimeChange",
       "label": "STAGEMANAGER.TRIGGERS.EVENTS.WORLDTIMECHANGE",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
+      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
+      "category": "misc",
       "addlArgs": [
         { name: "time", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.TIME" }
       ]
@@ -272,7 +322,8 @@ export function getTriggerEvents(trigger?: SerializedTrigger): EventSpec[] {
     {
       "value": "actorChange",
       "label": "STAGEMANAGER.TRIGGERS.EVENTS.ACTORCHANGE",
-      "category": "STAGEMANAGER.TRIGGERS.CATEGORIES.ACTOR",
+      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.ACTOR",
+      "category": "actor",
       "addlArgs": [
         { name: "actor", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR" }
       ]
@@ -280,7 +331,7 @@ export function getTriggerEvents(trigger?: SerializedTrigger): EventSpec[] {
   ].map(item => ({
     ...item,
     label: game.i18n?.localize(item.label) ?? "",
-    category: game.i18n?.localize(item.category) ?? "",
+    categoryLabel: game.i18n?.localize(item.categoryLabel) ?? "",
     selected: trigger?.event === item.value
   }))
     .sort((a, b) => a.label.localeCompare(b.label))
@@ -397,4 +448,45 @@ export function getTriggerLabel(trigger: SerializedTrigger): string {
   const triggerClass = getTriggerActionType(trigger.action);
   if (!triggerClass) return "";
   return triggerClass.getDialogLabel(trigger);
+}
+
+interface SectionSpec {
+  pack: string;
+  uuid: string;
+  name: string;
+  selected: boolean;
+}
+
+export function getTriggerContext(trigger?: SerializedTrigger) {
+  return {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+    actors: getDocuments("Actor", (trigger as any)?.actor ?? ""),
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+    macros: getDocuments("Macro", (trigger as any)?.macro ?? "")
+  }
+}
+
+
+function getDocuments(documentName: string, selected?: string): SectionSpec[] {
+  const documents: SectionSpec[] = [];
+  const collection = game.collections.get(documentName);
+  if (!collection) throw new UnknownDocumentTypeError(documentName);
+
+  // Add non-compendium documents
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+  documents.push(...collection.map(item => ({ uuid: item.uuid, name: item.name, pack: "", selected: item.uuid === selected })));
+
+  // Add compendium documents
+  if (game?.packs) {
+    game.packs.forEach(pack => {
+      if (pack.documentName === documentName) {
+
+        documents.push(...pack.index.map(item => ({ uuid: item.uuid, name: item.name ?? item.uuid, pack: pack.metadata.label, selected: item.uuid === selected })));
+      }
+    })
+  }
+
+  log("Documents:", documents);
+
+  return documents;
 }

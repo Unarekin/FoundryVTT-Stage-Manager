@@ -9,4 +9,5 @@ export * from './LocalizedError';
 export * from './MacroPermDeniedError';
 export * from './NotImplementedError';
 export * from './PermissionDeniedError';
+export * from './UnknownDocumentTypeError';
 export * from './UnknownUserError';

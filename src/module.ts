@@ -79,7 +79,8 @@ Hooks.once("ready", () => {
   void loadTemplates([
     `modules/${__MODULE_ID__}/templates/editObject/trigger-item.hbs`,
     `modules/${__MODULE_ID__}/templates/triggers/macro.hbs`,
-    `modules/${__MODULE_ID__}/templates/editObject/additional-arg.hbs`
+    `modules/${__MODULE_ID__}/templates/editObject/additional-arg.hbs`,
+    `modules/${__MODULE_ID__}/templates/events/actor.hbs`
   ])
 });
 

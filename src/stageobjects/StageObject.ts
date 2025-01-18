@@ -336,7 +336,6 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
   public async triggerEvent<k extends keyof TriggerEventSignatures>(event: k, args: TriggerEventSignatures[k]) {
     log("Event triggered:", event, args);
     if (this.triggers[event]) {

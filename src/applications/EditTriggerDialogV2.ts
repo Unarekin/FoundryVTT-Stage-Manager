@@ -1,6 +1,6 @@
 import { log } from '../logging';
 import { SerializedTrigger } from '../types';
-import { getTriggerActions, getTriggerActionSelect, getTriggerEvents, getTriggerFromForm, setSelectedConfig } from "./functions";
+import { getTriggerActions, getTriggerActionSelect, getTriggerContext, getTriggerEvents, getTriggerFromForm, setSelectedConfig } from "./functions";
 
 export class EditTriggerDialogV2 {
   public static async prompt(trigger?: SerializedTrigger): Promise<SerializedTrigger | undefined> {
@@ -8,7 +8,8 @@ export class EditTriggerDialogV2 {
     const context = {
       triggerActionSelect: getTriggerActionSelect(),
       triggerEventSelect: getTriggerEvents(trigger),
-      trigger
+      trigger,
+      ...getTriggerContext(trigger)
     }
 
     const triggerActions = getTriggerActions();
