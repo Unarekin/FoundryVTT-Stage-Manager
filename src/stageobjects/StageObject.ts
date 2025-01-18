@@ -244,15 +244,17 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   private throttledPointerMove: typeof this.onPointerMove | null = null;
 
   protected onPointerMove(e: PIXI.FederatedPointerEvent) {
-    if (this.passedEvents.has(e.nativeEvent)) return
+    if (!(canvas?.activeLayer instanceof StageManagerControlsLayer)) {
+      if (this.passedEvents.has(e.nativeEvent)) return
 
-    if (this._lastMoveCoords.x === e.clientX && this._lastMoveCoords.y === e.clientY) return;
-    this._lastMoveCoords.x = e.clientX;
-    this._lastMoveCoords.y = e.clientY;
+      if (this._lastMoveCoords.x === e.clientX && this._lastMoveCoords.y === e.clientY) return;
+      this._lastMoveCoords.x = e.clientX;
+      this._lastMoveCoords.y = e.clientY;
 
-    if (!this._pointerEntered) {
-      void this.triggerEvent("hoverIn", { pos: { x: e.x, y: e.y, clientX: e.clientX, clientY: e.clientY }, user: game.user as User });
-      this._pointerEntered = true;
+      if (!this._pointerEntered) {
+        void this.triggerEvent("hoverIn", { pos: { x: e.x, y: e.y, clientX: e.clientX, clientY: e.clientY }, user: game.user as User });
+        this._pointerEntered = true;
+      }
     }
   }
 
