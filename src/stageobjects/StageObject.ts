@@ -8,7 +8,6 @@ import deepProxy from "../lib/deepProxy";
 import { CUSTOM_HOOKS } from "../hooks";
 import * as tempTriggers from "../triggeractions";
 import { StageManagerControlsLayer } from "../ControlButtonsHandler";
-import { throttle } from '../lib/throttle';
 import { log } from "../logging";
 import { getTriggerActionType } from "../applications/functions";
 // import { getTriggerActionType } from "../applications/functions";
@@ -20,8 +19,6 @@ const KNOWN_OBJECTS: Record<string, StageObject> = {};
 
 export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObject> {
   // #region Properties (15)
-
-  private passedEvents = new WeakSet<Event | PIXI.PixiTouch>();
 
   public toString() { return JSON.stringify(this.serialize()); }
 
@@ -240,23 +237,23 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     return { x, y };
   }
 
-  private _lastMoveCoords: { x: number, y: number } = { x: -1, y: -1 };
-  private throttledPointerMove: typeof this.onPointerMove | null = null;
+  // private _lastMoveCoords: { x: number, y: number } = { x: -1, y: -1 };
+  // private throttledPointerMove: typeof this.onPointerMove | null = null;
 
-  protected onPointerMove(e: PIXI.FederatedPointerEvent) {
-    if (!(canvas?.activeLayer instanceof StageManagerControlsLayer)) {
-      if (this.passedEvents.has(e.nativeEvent)) return
+  // protected onPointerMove(e: PIXI.FederatedPointerEvent) {
+  //   if (this._lastMoveCoords.x === e.clientX && this._lastMoveCoords.y === e.clientY) return;
+  //   this._lastMoveCoords.x = e.clientX;
+  //   this._lastMoveCoords.y = e.clientY;
 
-      if (this._lastMoveCoords.x === e.clientX && this._lastMoveCoords.y === e.clientY) return;
-      this._lastMoveCoords.x = e.clientX;
-      this._lastMoveCoords.y = e.clientY;
+  //   if (!this._pointerEntered) {
 
-      if (!this._pointerEntered) {
-        void this.triggerEvent("hoverIn", { pos: { x: e.x, y: e.y, clientX: e.clientX, clientY: e.clientY }, user: game.user as User });
-        this._pointerEntered = true;
-      }
-    }
-  }
+  //     if (!(canvas?.activeLayer instanceof StageManagerControlsLayer))
+  //       void this.triggerEvent("hoverIn", { pos: { x: e.x, y: e.y, clientX: e.clientX, clientY: e.clientY }, user: game.user as User });
+  //     else
+  //       this.highlighted = true;
+  //     this._pointerEntered = true;
+  //   }
+  // }
 
 
   private _pointerEntered = false;
@@ -266,7 +263,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   protected addDisplayObjectListeners() {
     this.displayObject.interactive = true;
     this.displayObject.eventMode = "dynamic";
-    this.throttledPointerMove = throttle(this.onPointerMove.bind(this), 100);
+    // this.throttledPointerMove = throttle(this.onPointerMove.bind(this), 100);
 
     this.displayObject
       .on("destroyed", this.destroy.bind(this))
@@ -276,7 +273,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       .on("click", this.onClick.bind(this))
       .on("rightclick", this.onRightClick.bind(this))
       .on("rightclick", this.onContextMenu.bind(this))
-      .on("pointermove", this.throttledPointerMove)
+      // .on("pointermove", this.throttledPointerMove)
       ;
   }
 
@@ -290,9 +287,9 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
         .off("click", this.onClick.bind(this))
         .off("rightclick", this.onRightClick.bind(this))
         .off("rightclick", this.onContextMenu.bind(this));
-      if (this.throttledPointerMove)
-        this.displayObject.off("pointermove", this.throttledPointerMove)
-          ;
+      // if (this.throttledPointerMove)
+      //   this.displayObject.off("pointermove", this.throttledPointerMove)
+      ;
     }
   }
 
@@ -991,19 +988,13 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   }
 
 
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected onPointerEnter(e: PIXI.FederatedPointerEvent) {
-
-    // if (game.activeTool === this.selectTool && StageManager.canModifyStageObject(game.user?.id ?? "", this.id)) {
-    //   this.highlighted = true;
-    // }
-
-    // if (!(canvas?.activeLayer instanceof StageManagerControlsLayer)) {
-    //   const { x, y } = this.displayObject.toLocal({ x: e.x, y: e.y });
-    //   void this.triggerEvent("hoverIn", { pos: { x, y, clientX: e.clientX, clientY: e.clientY } });
-    // }
-
+    if (game.activeTool === this.selectTool && StageManager.canModifyStageObject(game.user?.id ?? "", this.id)) {
+      this.highlighted = true;
+    } else if (!(canvas?.activeLayer instanceof StageManagerControlsLayer)) {
+      const { x, y } = this.displayObject.toLocal({ x: e.x, y: e.y });
+      void this.triggerEvent("hoverIn", { pos: { x, y, clientX: e.clientX, clientY: e.clientY }, user: game.user as User });
+    }
   }
 
 
@@ -1012,9 +1003,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     if (this.highlighted) this.highlighted = false;
     if (!(canvas?.activeLayer instanceof StageManagerControlsLayer)) {
       const { x, y } = this.displayObject.toLocal({ x: e.x, y: e.y });
-      if (this._pointerEntered) void this.triggerEvent("hoverOut", { pos: { x, y, clientX: e.clientX, clientY: e.clientY }, user: game.user as User });
-      this._pointerEntered = false;
-
+      void this.triggerEvent("hoverOut", { pos: { x, y, clientX: e.clientX, clientY: e.clientY }, user: game.user as User });
     }
   }
 
