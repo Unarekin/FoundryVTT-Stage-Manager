@@ -1,5 +1,9 @@
 {
   "STAGEMANAGER": {
+    "ADDTEXT": {
+      "TITLE": "Add Text",
+      "CONTENT": "Enter text to add:"
+    },
     "ADDTRIGGERDIALOG": {
       "ARGS": {
         "ACTIVEEFFECT": "activeEffect",

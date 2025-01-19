@@ -1,3 +1,6 @@
 {
-  "STAGEMANAGER": {}
+  "STAGEMANAGER": {
+    "IMAGE": "Image",
+    "TEXT": "Text"
+  }
 }

@@ -494,7 +494,37 @@ function getDocuments(documentName: string, selected?: string): SectionSpec[] {
     })
   }
 
-  log("Documents:", documents);
-
   return documents;
+}
+
+export async function inputPrompt(content: string, title?: string): Promise<string | undefined> {
+  if (foundry.applications.api.DialogV2) {
+    const input = await foundry.applications.api.DialogV2.wait({
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      window: ({ title: game.i18n?.localize(title ?? "") } as any),
+      content: `<p>${game.i18n?.localize(content)}</p><input type="text" name="text" id="text">`,
+      rejectClose: false,
+      buttons: [
+        {
+          label: `<i class="fas fa-check"></i> ${game.i18n?.localize("Confirm")}`,
+          action: "confirm",
+          default: true,
+          callback: (e, button, dialog) => {
+            const input = dialog.querySelector("input#text");
+            if (!(input instanceof HTMLInputElement)) return Promise.resolve(undefined);
+            else return Promise.resolve(input.value);
+          }
+        },
+        {
+          label: `<i class="fas fa-times"></i> ${game.i18n?.localize("Cancel")}`,
+          action: "cancel"
+        }
+      ]
+    });
+    if (input === "cancel" || !input) return undefined;
+    return input;
+  } else {
+    //empty
+  }
+  return Promise.resolve(undefined);
 }

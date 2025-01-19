@@ -1,7 +1,8 @@
+import { inputPrompt } from "./applications/functions";
 import { InputManager } from "./InputManager";
 import { log } from "./logging";
 import { StageManager } from "./StageManager";
-import { ImageStageObject } from "./stageobjects";
+import { ImageStageObject, TextStageObject } from "./stageobjects";
 import { TOOL_LAYERS } from "./types";
 // import { StageManager } from "./StageManager";
 
@@ -78,6 +79,17 @@ export class ControlButtonsHandler {
         },
         visible: StageManager.canAddStageObjects(game?.user?.id ?? ""),
         button: true
+      },
+      {
+        name: "add-text",
+        title: "STAGEMANAGER.SCENECONTROLS.TEXT",
+        icon: "fas fa-paragraph",
+        onClick: () => {
+          StageManager.DeselectAll();
+          void addText();
+        },
+        visible: StageManager.canAddStageObjects(game?.user?.id ?? ""),
+        button: true
       }
     ]
 
@@ -95,7 +107,34 @@ export class ControlButtonsHandler {
 
 }
 
+async function addText() {
+  try {
+    const layer = TOOL_LAYERS[game?.activeTool ?? ""];
+    if (!layer) return;
 
+    const text = await inputPrompt("STAGEMANAGER.ADDTEXT.CONTENT", "STAGEMANAGER.ADDTEXT.TITLE");
+    if (!text) return;
+
+    const tempObj = new PIXI.HTMLText(text);
+    tempObj.anchor.x = .5;
+    tempObj.anchor.y = .5;
+
+    const obj = await InputManager.PlaceDisplayObject(tempObj, layer);
+
+    const textObj = new TextStageObject(text);
+    textObj.x = obj.x;
+    textObj.y = obj.y;
+
+    tempObj.destroy();
+
+    const created = await StageManager.CreateStageObject<TextStageObject>({ ...textObj.serialize() });
+    if (created) StageManager.addStageObject(created, layer);
+
+  } catch (err) {
+    ui.notifications?.error((err as Error).message, { console: false, localize: true });
+    console.error(err);
+  }
+}
 
 function addImage() {
   new FilePicker({
