@@ -8,12 +8,12 @@ import * as stageObjectTypes from "./stageobjects";
 import { getGlobalObjects, getSceneObjects, getSetting, getUserObjects, setGlobalObjects, setSceneObjects, setSetting, setUserObjects } from './Settings';
 import { CUSTOM_HOOKS } from './hooks';
 import { log } from './logging';
-import { ActorStageObjectApplication, ImageStageObjectApplication, StageObjectApplication } from './applications';
+import { ActorStageObjectApplication, ImageStageObjectApplication, StageObjectApplication, TextStageObjectApplication } from './applications';
 
 const ApplicationHash: Record<string, typeof StageObjectApplication> = {
   "image": ImageStageObjectApplication as typeof StageObjectApplication,
   "actor": ActorStageObjectApplication as unknown as typeof StageObjectApplication,
-  "text": StageObjectApplication
+  "text": TextStageObjectApplication as unknown as typeof StageObjectApplication
 }
 
 // #region Classes (1)
@@ -154,7 +154,7 @@ export class StageManager {
     }
   }
 
-  public static addText(text: string, style?: PIXI.HTMLTextStyle, x?: number, y?: number, name?: string, layer: StageLayer = "primary"): TextStageObject | undefined {
+  public static addText(text: string, style?: PIXI.HTMLTextStyle, x?: number, y?: number, name?: string, layer: StageLayer = "text"): TextStageObject | undefined {
     try {
       if (!StageManager.canAddStageObjects(game.user?.id ?? "")) throw new PermissionDeniedError();
       const obj = new TextStageObject(text, style);

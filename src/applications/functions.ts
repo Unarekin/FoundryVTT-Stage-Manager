@@ -1,5 +1,5 @@
 import { TriggerAction } from "../triggeractions";
-import { SerializedTrigger } from '../types';
+import { FontSettings, SerializedStageObject, SerializedTrigger } from '../types';
 import * as tempTriggerActions from "../triggeractions";
 import { InvalidTriggerError, LocalizedError, UnknownDocumentTypeError } from "../errors";
 import { log } from "../logging";
@@ -462,7 +462,15 @@ export function getTriggerContext(trigger?: SerializedTrigger) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     actors: getDocuments("Actor", (trigger as any)?.actor ?? ""),
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-    macros: getDocuments("Macro", (trigger as any)?.macro ?? "")
+    macros: getDocuments("Macro", (trigger as any)?.macro ?? ""),
+  }
+}
+
+export function getFontContext(stageObject: SerializedStageObject) {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unused-vars
+  const fontSettings = (stageObject as any).font as FontSettings;
+  return {
+    fontSelect: Object.fromEntries(FontConfig.getAvailableFonts().map(font => [font, font]))
   }
 }
 

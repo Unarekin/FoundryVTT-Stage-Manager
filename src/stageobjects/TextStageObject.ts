@@ -1,6 +1,7 @@
 import { HTMLText } from "pixi.js";
 import { StageObject } from "./StageObject";
 import { SerializedTextStageObject } from "../types";
+import { diff } from '../lib/deepDiff';
 
 export class TextStageObject extends StageObject<PIXI.HTMLText> {
   public static readonly type: string = "text";
@@ -100,11 +101,28 @@ export class TextStageObject extends StageObject<PIXI.HTMLText> {
   }
 
   public serialize(): SerializedTextStageObject {
+
+    // Generate diffed style
+    const style = JSON.parse(JSON.stringify(this.style)) as Record<string, unknown>;
+    for (const key in style) {
+      if (key.startsWith("_")) {
+        style[key.substring(1)] = style[key];
+        delete style[key];
+      }
+    }
+
+    const diffed = diff(JSON.parse(JSON.stringify(PIXI.HTMLTextStyle.defaultStyle)) as Record<string, unknown>, style);
+    for (const key in diffed) {
+      if (typeof diffed[key] === "undefined")
+        delete diffed[key]
+    }
+
+
     return {
       ...super.serialize(),
       type: TextStageObject.type,
       text: this.text,
-      style: foundry.utils.mergeObject({}, this.style)
+      style: diffed
     }
   }
 

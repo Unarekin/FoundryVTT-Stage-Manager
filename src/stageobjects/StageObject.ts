@@ -770,6 +770,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   // #region Public Methods (6)
 
   public deserialize(serialized: SerializedStageObject) {
+    log("Deserializing:", serialized);
     this.id = serialized.id;
     this.name = serialized.name;
     // void StageManager.setOwners(this.id, serialized.owners);

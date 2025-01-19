@@ -135,3 +135,10 @@ export type SerializedMacroTrigger = SerializedTrigger & ({
   macro: string;
   arguments: { name: string, value: any }[]
 });
+
+export interface FontSettings {
+  family: string;
+  size: number | string;
+  color: PIXI.ColorSource;
+  dropShadow: boolean;
+}

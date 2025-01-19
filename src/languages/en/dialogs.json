@@ -1,78 +1,92 @@
 {
   "STAGEMANAGER": {
-    "CONFIRMREMOVETRIGGER": {
-      "TITLE": "Remove Trigger",
-      "MESSAGE": "Are you sure you want to remove {name}?\nThis cannot be undone."
-    },
     "ADDTRIGGERDIALOG": {
-      "TITLE": "Add New Trigger",
       "ARGS": {
-        "NAME": "Name",
-        "VALUE": "Value",
-        "AUTO": "Automatic",
-        "STAGEOBJECT": "stageObject",
-        "USER": "user",
+        "ACTIVEEFFECT": "activeEffect",
         "ACTOR": "actor",
         "ADD": "Add Argument",
-        "POS": "position",
-        "TOKEN": "token",
-        "MODKEYS": "modifierKeys",
-        "ACTIVEEFFECT": "activeEffect",
-        "STATUSEFFECT": "statusEffect",
+        "AUTO": "Automatic",
         "COMBAT": "combat",
         "COMBATANT": "combatant",
+        "MODKEYS": "modifierKeys",
+        "NAME": "Name",
+        "POS": "position",
         "SCENE": "scene",
-        "TIME": "time"
+        "STAGEOBJECT": "stageObject",
+        "STATUSEFFECT": "statusEffect",
+        "TIME": "time",
+        "TOKEN": "token",
+        "USER": "user",
+        "VALUE": "Value"
       },
-      "ARGUMENTS": "Additional Arguments"
+      "ARGUMENTS": "Additional Arguments",
+      "TITLE": "Add New Trigger"
+    },
+    "CONFIRMREMOVETRIGGER": {
+      "MESSAGE": "Are you sure you want to remove {name}?\nThis cannot be undone.",
+      "TITLE": "Remove Trigger"
     },
     "EDITDIALOG": {
+      "ACTOR": "Actor",
+      "ADDTRIGGER": "Add Trigger",
       "ALPHA": "Opacity",
       "ANGLE": "Rotation",
       "ANGLEHINT": "(In degrees)",
+      "DELETE": "Delete {name}",
+      "EDIT": "Edit {name}",
       "HEIGHT": "Height",
       "LOCATION": "Screen Location",
       "LOCATIONPRESET": "Screen location presets",
-      "EDIT": "Edit {name}",
-      "DELETE": "Delete {name}",
+      "FONT": {
+        "FAMILY": "Font",
+        "SIZE": "Size",
+        "COLOR": "Color",
+        "DROPSHADOW": "Drop Shadow",
+        "DROPSHADOWCOLOR": "Drop Shadow Color",
+        "DROPSHADOWBLUR": "Drop Shadow Blur",
+        "DROPSHADOWALPHA": "Drop Shadow Alpha",
+        "DROPSHADOWANGLE": "Drop Shadow Angle",
+        "DROPSHADOWDISTANCE": "Drop Shadow Distance"
+      },
+      "LOCATIONPRESETS": {
+        "BOTTOM": "Bottom",
+        "BOTTOMLEFT": "Bottom left",
+        "BOTTOMRIGHT": "Bottom right",
+        "CENTER": "Center",
+        "LEFT": "Left",
+        "RIGHT": "Right",
+        "TOP": "Top",
+        "TOPLEFT": "Top left",
+        "TOPRIGHT": "Top right"
+      },
       "NAME": "Name",
       "POSX": "X",
       "POSY": "Y",
       "SIZE": "Size",
       "SKEW": "Skew",
       "SRC": "Image source",
+      "TEXT": "Text",
       "TITLE": "Edit {name}",
+      "TRIGGERLABELS": {
+        "MACRO": "Execute Macro: {macro}"
+      },
       "TRIGGERS": "Triggers",
+      "TRIGGERSENABLED": "Enable triggers",
       "VISUALBOUNDS": "Relative to Visual Bounds",
       "VISUALBOUNDSHIDE": "Hide Visual Bounds",
       "VISUALBOUNDSHINT": "The 'visual bounds' is an area of the screen calculated to ensure that elements placed will not be covered by Foundry's standard UI.",
       "VISUALBOUNDSSHOW": "Show Visual Bounds",
       "WIDTH": "Width",
-      "ZINDEX": "Sort Index",
-      "ADDTRIGGER": "Add Trigger",
-      "TRIGGERSENABLED": "Enable triggers",
-      "LOCATIONPRESETS": {
-        "TOPLEFT": "Top left",
-        "TOP": "Top",
-        "TOPRIGHT": "Top right",
-        "LEFT": "Left",
-        "CENTER": "Center",
-        "RIGHT": "Right",
-        "BOTTOMLEFT": "Bottom left",
-        "BOTTOM": "Bottom",
-        "BOTTOMRIGHT": "Bottom right"
-      },
-      "ACTOR": "Actor",
-      "TRIGGERLABELS": {
-        "MACRO": "Execute Macro: {macro}"
-      }
+      "ZINDEX": "Sort Index"
     },
     "TABS": {
+      "ACTOR": "Actor",
       "BASICS": "Basics",
       "IMAGE": "Image",
+      "TEXT": "Text",
       "TRIGGERS": "Triggers",
       "VIDEO": "Video",
-      "ACTOR": "Actor"
+      "FONT": "Font Style"
     }
   }
 }
