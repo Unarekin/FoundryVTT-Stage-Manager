@@ -49,6 +49,16 @@ export interface SerializedTextStageObject extends SerializedStageObject {
   style: Record<string, unknown>;
 }
 
+export interface SerializedPanelStageObject extends SerializedStageObject {
+  borders: {
+    left: number;
+    right: number;
+    top: number;
+    bottom: number;
+  }
+  src: string;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface SerializedFilter { }
 

@@ -3,6 +3,7 @@ import { StageObject } from "./StageObject";
 import mime from "../mime";
 import { StageManager } from "../StageManager";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export class ImageStageObject extends StageObject<PIXI.Sprite> {
   // #region Properties (3)
 

@@ -423,7 +423,9 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   /** Object's rotation, in degrees */
   public get angle() { return this.displayObject.angle; }
 
-  public set angle(angle) { this.displayObject.angle = angle; }
+  public set angle(angle) {
+    this.displayObject.angle = angle;
+  }
 
   // eslint-disable-next-line @typescript-eslint/class-literal-property-style
   public get baseHeight(): number { return 0; }
@@ -1066,10 +1068,13 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   public sizeInterfaceContainer() {
     if (this.destroyed) return;
     // Update interface container location
+    const bounds = this.displayObject.getBounds();
     if (this.interfaceContainer.visible && this.interfaceContainer.renderable) {
       if (this.resizeHandle) {
-        this.resizeHandle.x = this.absoluteLeft + this.width;
-        this.resizeHandle.y = this.absoluteTop + this.height;
+        this.resizeHandle.x = bounds.right;
+        this.resizeHandle.y = bounds.bottom;
+        // this.resizeHandle.x = this.absoluteLeft + this.width;
+        // this.resizeHandle.y = this.absoluteTop + this.height;
       }
 
       const border = this.interfaceContainer.children.find(child => child.name === "border");
@@ -1078,12 +1083,14 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
         const thickness = CONFIG.Canvas.objectBorderThickness;
 
-        const bounds = new PIXI.Rectangle(this.left - thickness, this.top - thickness, this.width + thickness * 2, this.height + thickness * 2);
+        // const bounds = new PIXI.Rectangle(this.left - thickness, this.top - thickness, this.width + thickness * 2, this.height + thickness * 2);
+        const newBounds = new PIXI.Rectangle(bounds.left - thickness, bounds.top - thickness, bounds.width + thickness * 2, bounds.height + thickness * 2);
+
         border.clear();
         border.lineStyle({ width: thickness, color: 0x000000, join: PIXI.LINE_JOIN.ROUND, alignment: 0.75 })
-          .drawShape(bounds);
+          .drawShape(newBounds);
         border.lineStyle({ width: thickness / 2, color: 0xFFFFFF, join: PIXI.LINE_JOIN.ROUND, alignment: 1 })
-          .drawShape(bounds);
+          .drawShape(newBounds);
       }
     }
   }

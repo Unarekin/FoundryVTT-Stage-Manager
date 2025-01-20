@@ -1,5 +1,5 @@
 import { ScreenSpaceCanvasGroup } from './ScreenSpaceCanvasGroup';
-import { ActorStageObject, ImageStageObject, StageObject, TextStageObject } from './stageobjects';
+import { ActorStageObject, ImageStageObject, PanelStageObject, StageObject, TextStageObject } from './stageobjects';
 import { PartialWithRequired, SerializedStageObject, StageLayer } from './types';
 import { coerceStageObject, coerceUser } from './coercion';
 import { StageObjects } from './StageObjectCollection';
@@ -13,7 +13,8 @@ import { ActorStageObjectApplication, ImageStageObjectApplication, StageObjectAp
 const ApplicationHash: Record<string, typeof StageObjectApplication> = {
   "image": ImageStageObjectApplication as typeof StageObjectApplication,
   "actor": ActorStageObjectApplication as unknown as typeof StageObjectApplication,
-  "text": TextStageObjectApplication as unknown as typeof StageObjectApplication
+  "text": TextStageObjectApplication as unknown as typeof StageObjectApplication,
+  "panel": StageObjectApplication
 }
 
 // #region Classes (1)
@@ -148,6 +149,26 @@ export class StageManager {
 
       StageManager.addStageObject(obj, layer);
       return obj;
+    } catch (err) {
+      ui.notifications?.error((err as Error).message, { localize: true, console: false });
+      console.error(err);
+    }
+  }
+
+  public static addPanel(path: string, left: number, right: number, top: number, bottom: number, layer?: StageLayer): PanelStageObject | undefined
+  public static addPanel(path: string, horizontal: number, vertical: number, layer?: StageLayer): PanelStageObject | undefined
+  public static addPanel(path: string, ...args: (number | StageLayer)[]): PanelStageObject | undefined {
+    try {
+      const left = args[0] as number;
+      const right = ((args.length === 2 || args.length === 3) ? args[0] : args[1]) as number;
+      const top = ((args.length === 2 || args.length === 3) ? args[1] : args[2]) as number;
+      const bottom = ((args.length === 2 || args.length === 3) ? args[1] : args[3]) as number;
+
+      const layer = (args.length === 5 ? args[4] : args.length === 3 ? args[2] : "primary") as StageLayer;
+
+      const panel = new PanelStageObject(path, left, right, top, bottom);
+      StageManager.addStageObject(panel, layer);
+      return panel;
     } catch (err) {
       ui.notifications?.error((err as Error).message, { localize: true, console: false });
       console.error(err);
