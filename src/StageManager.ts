@@ -17,6 +17,8 @@ const ApplicationHash: Record<string, typeof StageObjectApplication> = {
   "panel": StageObjectApplication
 }
 
+const OpenApplications = new WeakMap<StageObject, StageObjectApplication>();
+
 // #region Classes (1)
 
 /**
@@ -224,27 +226,34 @@ export class StageManager {
   public static async EditStageObject(arg: unknown): Promise<SerializedStageObject | undefined> {
     const obj = coerceStageObject(arg);
     if (!(obj instanceof StageObject)) throw new InvalidStageObjectError(arg);
+    if (OpenApplications.has(obj)) {
+      const app = OpenApplications.get(obj);
+      if (!app) throw new InvalidStageObjectError(arg);
+      app.bringToFront();
+    } else {
+      return new Promise<SerializedStageObject | undefined>((resolve, reject) => {
+        try {
+          const appClass = ApplicationHash[obj.type];
+          if (!appClass) throw new InvalidStageObjectError(obj.type);
 
-    return new Promise<SerializedStageObject | undefined>((resolve, reject) => {
-      try {
-        const appClass = ApplicationHash[obj.type];
-        if (!appClass) throw new InvalidStageObjectError(obj.type);
+          const layer = obj.layer;
 
-        const layer = obj.layer;
-
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-        const app = new (appClass as any)(obj, { layer: obj.layer ?? "primary" }) as StageObjectApplication;
-        app.render(true).catch(reject);
-        app.closed
-          .then(data => {
-            if (layer && StageManager.layers[layer]) StageManager.layers[layer].addChild(obj.displayObject);
-            resolve(data);
-          })
-          .catch(reject)
-      } catch (err) {
-        reject(err as Error);
-      }
-    });
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+          const app = new (appClass as any)(obj, { layer: obj.layer ?? "primary" }) as StageObjectApplication;
+          OpenApplications.set(obj, app);
+          app.render(true).catch(reject);
+          app.closed
+            .then(data => {
+              if (layer && StageManager.layers[layer]) StageManager.layers[layer].addChild(obj.displayObject);
+              OpenApplications.delete(obj);
+              resolve(data);
+            })
+            .catch(reject)
+        } catch (err) {
+          reject(err as Error);
+        }
+      });
+    }
   }
 
   public static HydrateStageObjects() {
