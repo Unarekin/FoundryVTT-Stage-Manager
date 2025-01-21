@@ -7,7 +7,7 @@ import { CannotDeserializeError, CanvasNotInitializedError, InvalidStageObjectEr
 import * as stageObjectTypes from "./stageobjects";
 import { getGlobalObjects, getSceneObjects, getSetting, getUserObjects, setGlobalObjects, setSceneObjects, setSetting, setUserObjects } from './Settings';
 import { CUSTOM_HOOKS } from './hooks';
-import { log } from './logging';
+import { log, logError } from './logging';
 import { ActorStageObjectApplication, ImageStageObjectApplication, StageObjectApplication, TextStageObjectApplication } from './applications';
 
 const ApplicationHash: Record<string, typeof StageObjectApplication> = {
@@ -152,8 +152,7 @@ export class StageManager {
       StageManager.addStageObject(obj, layer);
       return obj;
     } catch (err) {
-      ui.notifications?.error((err as Error).message, { localize: true, console: false });
-      console.error(err);
+      logError(err as Error);
     }
   }
 
@@ -172,8 +171,7 @@ export class StageManager {
       StageManager.addStageObject(panel, layer);
       return panel;
     } catch (err) {
-      ui.notifications?.error((err as Error).message, { localize: true, console: false });
-      console.error(err);
+      logError(err as Error);
     }
   }
 
@@ -186,8 +184,7 @@ export class StageManager {
       StageManager.addStageObject(obj, layer);
       return obj;
     } catch (err) {
-      ui.notifications?.error((err as Error).message, { localize: true, console: false });
-      console.error(err);
+      logError(err as Error);
     }
   }
 
@@ -200,8 +197,7 @@ export class StageManager {
       StageManager.addStageObject(obj, layer);
       return obj;
     } catch (err) {
-      ui.notifications?.error((err as Error).message, { localize: true, console: false });
-      console.error(err);
+      logError(err as Error);
     }
   }
 
@@ -310,8 +306,7 @@ export class StageManager {
         }
       }
     } catch (err) {
-      ui.notifications?.error((err as Error).message, { localize: true, console: false });
-      console.error(err);
+      logError(err as Error);
     }
   }
 
@@ -340,8 +335,7 @@ export class StageManager {
       return StageManager.getOwners(objId);
     } catch (err) {
       if (err instanceof Error) {
-        ui.notifications?.error(err.message, { console: false, localize: true });
-        console.error(err);
+        logError(err);
       }
     }
   }
@@ -359,8 +353,7 @@ export class StageManager {
       StageManager.setStageObjectLayer(stageObject, layer);
       return stageObject;
     } catch (err) {
-      ui.notifications?.error((err as Error).message, { localize: true, console: false });
-      console.error(err);
+      logError(err as Error);
     }
   }
 
@@ -393,8 +386,7 @@ export class StageManager {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       return newType.deserialize(serialized as any);
     } catch (err) {
-      ui.notifications?.error((err as Error).message, { console: false });
-      console.error(err);
+      logError(err as Error);
     }
   }
 
@@ -522,8 +514,7 @@ export class StageManager {
       });
     } catch (err) {
       if (err instanceof Error) {
-        ui.notifications?.error(err.message, { console: false, localize: true });
-        console.error(err);
+        logError(err);
       }
     }
   }

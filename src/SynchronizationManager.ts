@@ -6,6 +6,7 @@ import { CanvasNotInitializedError, InvalidStageObjectError } from './errors';
 import { coerceStageObject } from './coercion';
 import { SynchronizationMessage } from "./types";
 import { StageObject } from './stageobjects';
+import { logError } from './logging';
 
 let isSynchronizing = false;
 
@@ -24,7 +25,7 @@ export class SynchronizationManager {
       const obj = coerceStageObject(serialized);
       if (!obj) {
         const err = new InvalidStageObjectError(obj);
-        ui.notifications?.error(err.message, { localize: true });
+        logError(err);
       } else {
         Hooks.callAll(CUSTOM_HOOKS.SYNC_OBJECT, serialized, obj);
         obj.deserialize(serialized);
