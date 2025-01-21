@@ -66,8 +66,8 @@ export class PanelStageObject extends StageObject<PIXI.NineSlicePlane> {
   }
 
   protected updatePivot() {
-    this.pivot.x = this.width / 2;
-    this.pivot.y = this.height / 2;
+    // this.pivot.x = this.width / 2;
+    // this.pivot.y = this.height / 2;
   }
 
   public get width() { return this.displayObject.width; }

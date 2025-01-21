@@ -211,6 +211,7 @@ function resizeItem(event: PIXI.FederatedPointerEvent, item: StageObject) {
   }
 }
 
+
 function onScrollWheel(e: JQuery.TriggeredEvent<HTMLElement, undefined, HTMLElement, HTMLElement>) {
   if (!(e.ctrlKey || e.shiftKey)) return;
   const event = e.originalEvent as WheelEvent;
