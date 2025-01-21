@@ -8,7 +8,7 @@ import deepProxy from "../lib/deepProxy";
 import { CUSTOM_HOOKS } from "../hooks";
 import * as tempTriggers from "../triggeractions";
 import { StageManagerControlsLayer } from "../ControlButtonsHandler";
-import { log } from "../logging";
+import { log, logError } from "../logging";
 import { getTriggerActionType } from "../applications/functions";
 // import { getTriggerActionType } from "../applications/functions";
 
@@ -972,15 +972,13 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       })
         .then(() => { registerContextMenu(menu); })
         .catch((err: Error) => {
-          ui.notifications?.error(err.message, { console: false, localize: true });
-          console.error(err);
+          logError(err);
         })
     } else {
       void closeAllContextMenus()
         .then(() => registerContextMenu(menu))
         .catch((err: Error) => {
-          ui.notifications?.error(err.message, { console: false, localize: true });
-          console.error(err);
+          logError(err);
         });
     }
   }

@@ -1,6 +1,6 @@
 import { inputPrompt } from "./applications/functions";
 import { InputManager } from "./InputManager";
-import { log } from "./logging";
+import { log, logError } from "./logging";
 import { StageManager } from "./StageManager";
 import { ImageStageObject, TextStageObject } from "./stageobjects";
 import { TOOL_LAYERS } from "./types";
@@ -131,8 +131,7 @@ async function addText() {
     if (created) StageManager.addStageObject(created, layer);
 
   } catch (err) {
-    ui.notifications?.error((err as Error).message, { console: false, localize: true });
-    console.error(err);
+    logError(err);
   }
 }
 
@@ -173,8 +172,7 @@ function addImage() {
             }
           })
           .catch((err: Error) => {
-            ui.notifications?.error(err.message, { localize: true, console: false });
-            console.error(err);
+            logError(err);
           })
 
       }

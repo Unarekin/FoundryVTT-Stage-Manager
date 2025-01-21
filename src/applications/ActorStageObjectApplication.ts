@@ -8,6 +8,7 @@ import ApplicationV2 from 'Foundry-VTT/src/foundry/client-esm/applications/api/a
 import HandlebarsApplicationMixin from 'Foundry-VTT/src/foundry/client-esm/applications/api/handlebars-application.mjs';
 import { InvalidActorError } from '../errors';
 import { getActorSettings } from '../Settings';
+import { logError } from '../logging';
 
 export class ActorStageObjectApplication extends StageObjectApplication<ActorStageObject, SerializedActorStageObject> {
 
@@ -120,8 +121,7 @@ export class ActorStageObjectApplication extends StageObjectApplication<ActorSta
           elem.find("#src input").val(settings.image);
 
         }).catch((err: Error) => {
-          ui.notifications?.error(err.message, { localize: true, console: false });
-          console.error(err);
+          logError(err);
         });
 
     })

@@ -2,6 +2,7 @@ import { SerializedImageStageObject } from "../types";
 import { StageObject } from "./StageObject";
 import mime from "../mime";
 import { StageManager } from "../StageManager";
+import { logError } from "../logging";
 
 export class ImageStageObject extends StageObject<PIXI.Sprite> {
   // #region Properties (3)
@@ -54,8 +55,7 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
       PIXI.Assets.load(path)
         .then(img => { this.displayObject = img as PIXI.Sprite; })
         .catch((err: Error) => {
-          ui.notifications?.error(err.message, { console: false, localize: true });
-          console.error(err);
+          logError(err);
         });
     }
 
