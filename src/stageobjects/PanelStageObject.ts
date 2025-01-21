@@ -1,12 +1,71 @@
 import { SerializedPanelStageObject } from "../types";
 import { StageObject } from "./StageObject";
 
+type BorderCallback = (left: number, right: number, top: number, bottom: number) => void;
+
+class ObservableBorder {
+
+  #left = 0;
+  #right = 0;
+  #top = 0;
+  #bottom = 0;
+
+  #cb: BorderCallback;
+
+  public get left() { return this.#left; }
+  public set left(val) {
+    if (val !== this.left) {
+      this.#left = val;
+      this.#callCallback();
+    }
+  }
+
+  public get right() { return this.#right; }
+  public set right(val) {
+    if (val !== this.right) {
+      this.#right = val;
+      this.#callCallback();
+    }
+  }
+
+  public get top() { return this.#top; }
+  public set top(val) {
+    if (val !== this.top) {
+      this.#top = val;
+      this.#callCallback();
+    }
+  }
+
+  public get bottom() { return this.#bottom; }
+  public set bottom(val) {
+    if (val !== this.bottom) {
+      this.#bottom = val;
+      this.#callCallback();
+    }
+  }
+
+  #callCallback() { this.#cb(this.#left, this.#right, this.#top, this.#bottom); }
+
+  constructor(left: number, right: number, top: number, bottom: number, cb: BorderCallback) {
+    this.#left = left;
+    this.#right = right;
+    this.#top = top;
+    this.#bottom = bottom;
+    this.#cb = cb;
+  }
+}
+
 export class PanelStageObject extends StageObject<PIXI.NineSlicePlane> {
   public static readonly type: string = "panel";
   public readonly type: string = "panel";
 
 
-  public get borders() { return { left: this.displayObject.leftWidth, right: this.displayObject.rightWidth, top: this.displayObject.topHeight, bottom: this.displayObject.bottomHeight } }
+  private _borders: ObservableBorder;
+  public get borders() { return this._borders; }
+
+
+  // public get borders() { return { left: this.displayObject.leftWidth, right: this.displayObject.rightWidth, top: this.displayObject.topHeight, bottom: this.displayObject.bottomHeight } }
+
 
   private _imageSrc = "";
   public get src() { return this._imageSrc; }
@@ -38,7 +97,12 @@ export class PanelStageObject extends StageObject<PIXI.NineSlicePlane> {
 
   public deserialize(serialized: SerializedPanelStageObject) {
     super.deserialize(serialized);
+    this.borders.left = serialized.borders.left;
+    this.borders.right = serialized.borders.right;
+    this.borders.top = serialized.borders.top;
+    this.borders.bottom = serialized.borders.bottom;
 
+    this.src = serialized.src;
   }
 
   public serialize(): SerializedPanelStageObject {
@@ -46,7 +110,12 @@ export class PanelStageObject extends StageObject<PIXI.NineSlicePlane> {
       ...super.serialize(),
       type: PanelStageObject.type,
       src: this.src,
-      borders: { ...this.borders }
+      borders: {
+        left: this.borders.left,
+        right: this.borders.right,
+        top: this.borders.top,
+        bottom: this.borders.bottom
+      }
     }
   }
 
@@ -142,6 +211,12 @@ export class PanelStageObject extends StageObject<PIXI.NineSlicePlane> {
   public get baseHeight() { return this.displayObject.texture.height; }
 
 
+  protected borderChanged(left: number, right: number, top: number, bottom: number) {
+    this.displayObject.leftWidth = left;
+    this.displayObject.rightWidth = right;
+    this.displayObject.topHeight = top;
+    this.displayObject.bottomHeight = bottom;
+  }
 
   constructor(image: string, left: number, right: number, top: number, bottom: number)
   constructor(image: string, vertical: number, horizontal: number)
@@ -155,6 +230,8 @@ export class PanelStageObject extends StageObject<PIXI.NineSlicePlane> {
     super(panel);
     this._imageSrc = image;
     this.resizable = true;
+
+    this._borders = new ObservableBorder(left, right, top, bottom, this.borderChanged.bind(this));
 
     if (!this.displayObject.texture.valid) {
       this.displayObject.texture.baseTexture.once("loaded", () => {

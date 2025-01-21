@@ -219,10 +219,6 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
     return parsed;
   }
 
-  protected getTabs(): Record<string, Tab> {
-    return {}
-  }
-
   protected submittedObject: v | undefined = undefined;
   public static onSubmit(this: StageObjectApplication, event: Event, form: HTMLFormElement, formData: FormDataExtended) {
     this.wasSubmitted = true;
@@ -283,7 +279,6 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
 
     const form = this.element instanceof HTMLFormElement ? new FormDataExtended(this.element) : new FormDataExtended($(this.element).find("form")[0]);
     const data = this.parseFormData(form.object);
-    // log("Form change:", data);
     this.stageObject.deserialize(data);
   }
 

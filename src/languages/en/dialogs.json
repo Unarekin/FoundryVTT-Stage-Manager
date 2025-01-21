@@ -1,8 +1,8 @@
 {
   "STAGEMANAGER": {
     "ADDTEXT": {
-      "TITLE": "Add Text",
-      "CONTENT": "Enter text to add:"
+      "CONTENT": "Enter text to add:",
+      "TITLE": "Add Text"
     },
     "ADDTRIGGERDIALOG": {
       "ARGS": {
@@ -36,22 +36,29 @@
       "ALPHA": "Opacity",
       "ANGLE": "Rotation",
       "ANGLEHINT": "(In degrees)",
+      "BORDERS": {
+        "TITLE": "Border Sizes",
+        "BOTTOM": "Bottom",
+        "LEFT": "Left",
+        "RIGHT": "Right",
+        "TOP": "Top"
+      },
       "DELETE": "Delete {name}",
       "EDIT": "Edit {name}",
+      "FONT": {
+        "COLOR": "Color",
+        "DROPSHADOW": "Drop Shadow",
+        "DROPSHADOWALPHA": "Drop Shadow Alpha",
+        "DROPSHADOWANGLE": "Drop Shadow Angle",
+        "DROPSHADOWBLUR": "Drop Shadow Blur",
+        "DROPSHADOWCOLOR": "Drop Shadow Color",
+        "DROPSHADOWDISTANCE": "Drop Shadow Distance",
+        "FAMILY": "Font",
+        "SIZE": "Size"
+      },
       "HEIGHT": "Height",
       "LOCATION": "Screen Location",
       "LOCATIONPRESET": "Screen location presets",
-      "FONT": {
-        "FAMILY": "Font",
-        "SIZE": "Size",
-        "COLOR": "Color",
-        "DROPSHADOW": "Drop Shadow",
-        "DROPSHADOWCOLOR": "Drop Shadow Color",
-        "DROPSHADOWBLUR": "Drop Shadow Blur",
-        "DROPSHADOWALPHA": "Drop Shadow Alpha",
-        "DROPSHADOWANGLE": "Drop Shadow Angle",
-        "DROPSHADOWDISTANCE": "Drop Shadow Distance"
-      },
       "LOCATIONPRESETS": {
         "BOTTOM": "Bottom",
         "BOTTOMLEFT": "Bottom left",
@@ -86,11 +93,12 @@
     "TABS": {
       "ACTOR": "Actor",
       "BASICS": "Basics",
+      "FONT": "Font Style",
       "IMAGE": "Image",
+      "PANEL": "Panel",
       "TEXT": "Text",
       "TRIGGERS": "Triggers",
-      "VIDEO": "Video",
-      "FONT": "Font Style"
+      "VIDEO": "Video"
     }
   }
 }
