@@ -196,10 +196,11 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
   protected onClick(e: PIXI.FederatedPointerEvent) {
     // Do not trigger when control layer is active
-    if (canvas?.activeLayer instanceof StageManagerControlsLayer) return;
+    // if (canvas?.activeLayer instanceof StageManagerControlsLayer) return;
 
     if (!this._clickHandle) {
       this._clickHandle = setTimeout(() => {
+        if (canvas?.activeLayer instanceof StageManagerControlsLayer) return;
         const { x, y } = this.displayObject.toLocal(e);
         this._clickHandle = null;
         void this.triggerEvent("click", { pos: { x, y, clientX: e.clientX, clientY: e.clientY }, modKeys: { ctrl: e.ctrlKey, alt: e.altKey, shift: e.shiftKey }, user: game.user as User });
@@ -223,6 +224,8 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
           },
           user: game.user as User
         })
+    } else if (StageManager.canModifyStageObject(game.user?.id ?? "", this.id)) {
+      void StageManager.EditStageObject(this);
     }
   }
   protected onRightClick(e: PIXI.FederatedPointerEvent) {
