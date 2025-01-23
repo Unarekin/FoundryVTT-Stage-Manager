@@ -22,6 +22,9 @@ export class ActorStageObjectApplication extends StageObjectApplication<ActorSta
     actor: {
       template: `modules/${__MODULE_ID__}/templates/editObject/actor.hbs`
     },
+    triggers: {
+      template: `modules/${__MODULE_ID__}/templates/editObject/triggers.hbs`
+    },
     footer: {
       template: "templates/generic/form-footer.hbs"
     }

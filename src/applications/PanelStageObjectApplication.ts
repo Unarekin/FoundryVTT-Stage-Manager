@@ -96,7 +96,6 @@ export class PanelStageObjectApplication extends StageObjectApplication<PanelSta
   protected _onRender(context: StageObjectApplicationContext, options: StageObjectApplicationOptions): void {
     super._onRender(context, options);
     this.drawPreview();
-
   }
 
 
