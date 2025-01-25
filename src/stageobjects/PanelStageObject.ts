@@ -142,20 +142,28 @@ export class PanelStageObject extends StageObject<PIXI.NineSlicePlane> {
   public get width() { return this.displayObject.width; }
   public set width(val) {
     if (val !== this.width) {
-      this.dirty = true;
-      this.displayObject.width = val;
-      this.updateScaledDimensions();
-      this.updatePivot();
+      if (!this.displayObject.texture.valid) {
+        this.displayObject.texture.baseTexture.once("loaded", () => { this.width = val; });
+      } else {
+        this.dirty = true;
+        this.displayObject.width = val;
+        // this.updateScaledDimensions();
+        this.updatePivot();
+      }
     }
   }
 
   public get height() { return this.displayObject.height; }
   public set height(val) {
     if (val !== this.height) {
-      this.dirty = true;
-      this.displayObject.height = val;
-      this.updateScaledDimensions();
-      this.updatePivot();
+      if (!this.displayObject.texture.valid) {
+        this.displayObject.texture.baseTexture.once("loaded", () => { this.height = val; });
+      } else {
+        this.dirty = true;
+        this.displayObject.height = val;
+        // this.updateScaledDimensions();
+        this.updatePivot();
+      }
     }
   }
 
@@ -164,7 +172,7 @@ export class PanelStageObject extends StageObject<PIXI.NineSlicePlane> {
   public set left(val) {
     if (this.left !== val) {
       this.x = val + this.actualBounds.left + (this.width * this.pivot.x);
-      this.updateScaledDimensions();
+      // this.updateScaledDimensions();
       this.updatePinLocations();
       this.updatePivot()
     }
@@ -178,7 +186,7 @@ export class PanelStageObject extends StageObject<PIXI.NineSlicePlane> {
       this.displayObject.x = this.actualBounds.right - val - this.pivot.x;
       this.dirty = true;
 
-      this.updateScaledDimensions();
+      // this.updateScaledDimensions();
       this.updatePinLocations();
       this.updatePivot();
     }
@@ -190,7 +198,7 @@ export class PanelStageObject extends StageObject<PIXI.NineSlicePlane> {
     if (this.top !== val) {
       this.y = val + this.actualBounds.top + this.pivot.y;
       this.dirty = true;
-      this.updateScaledDimensions();
+      // this.updateScaledDimensions();
       this.updatePinLocations();
       this.updatePivot();
     }
@@ -201,7 +209,7 @@ export class PanelStageObject extends StageObject<PIXI.NineSlicePlane> {
   public set bottom(val) {
     if (this.bottom !== val) {
       this.displayObject.y = this.actualBounds.bottom - val - this.pivot.y;
-      this.updateScaledDimensions();
+      // this.updateScaledDimensions();
       this.updatePinLocations();
       this.updatePivot();
     }

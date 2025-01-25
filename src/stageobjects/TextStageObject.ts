@@ -61,7 +61,7 @@ export class TextStageObject extends StageObject<PIXI.HTMLText> {
   public set left(val) {
     if (this.left !== val) {
       this.x = val + this.actualBounds.left + (this.width * this.anchor.x);
-      this.updateScaledDimensions();
+      // this.updateScaledDimensions();
       this.updatePinLocations();
     }
   }
@@ -74,7 +74,7 @@ export class TextStageObject extends StageObject<PIXI.HTMLText> {
       this.displayObject.x = this.actualBounds.right - val - (this.width * this.anchor.x);
       this.dirty = true;
 
-      this.updateScaledDimensions();
+      // this.updateScaledDimensions();
       this.updatePinLocations();
     }
   }
@@ -85,7 +85,7 @@ export class TextStageObject extends StageObject<PIXI.HTMLText> {
     if (this.top !== val) {
       this.y = val + this.actualBounds.top + (this.height * this.anchor.y);
       this.dirty = true;
-      this.updateScaledDimensions();
+      // this.updateScaledDimensions();
       this.updatePinLocations();
     }
   }
@@ -95,7 +95,7 @@ export class TextStageObject extends StageObject<PIXI.HTMLText> {
   public set bottom(val) {
     if (this.bottom !== val) {
       this.displayObject.y = this.actualBounds.bottom - val - (this.height * this.anchor.y);
-      this.updateScaledDimensions();
+      // this.updateScaledDimensions();
       this.updatePinLocations();
     }
   }

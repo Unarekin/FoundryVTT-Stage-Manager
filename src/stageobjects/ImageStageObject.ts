@@ -1,7 +1,6 @@
 import { SerializedImageStageObject } from "../types";
 import { StageObject } from "./StageObject";
 import mime from "../mime";
-import { StageManager } from "../StageManager";
 import { logError } from "../logging";
 
 export class ImageStageObject extends StageObject<PIXI.Sprite> {
@@ -98,7 +97,7 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
   public set bottom(val) {
     if (this.bottom !== val) {
       this.displayObject.y = this.actualBounds.bottom - val - (this.height * this.anchor.y);
-      this.updateScaledDimensions();
+      // this.updateScaledDimensions();
       this.updatePinLocations();
     }
   }
@@ -123,8 +122,13 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
 
   public set height(height) {
     if (this.height !== height) {
-      this.displayObject.height = height;
-      super.height = height;
+      if (!this.displayObject.texture.valid) {
+        this.displayObject.texture.baseTexture.once("loaded", () => { this.height = height; });
+      } else {
+        this.displayObject.height = height;
+        super.height = height;
+        this.dirty = true;
+      }
     }
   }
 
@@ -138,7 +142,7 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
   public set left(val) {
     if (this.left !== val) {
       this.x = val + this.actualBounds.left + (this.width * this.anchor.x);
-      this.updateScaledDimensions();
+      // this.updateScaledDimensions();
       this.updatePinLocations();
     }
   }
@@ -170,7 +174,7 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
       this.displayObject.x = this.actualBounds.right - val - (this.width * this.anchor.x);
       this.dirty = true;
 
-      this.updateScaledDimensions();
+      // this.updateScaledDimensions();
       this.updatePinLocations();
     }
   }
@@ -185,7 +189,7 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
     if (this.top !== val) {
       this.y = val + this.actualBounds.top + (this.height * this.anchor.y);
       this.dirty = true;
-      this.updateScaledDimensions();
+      // this.updateScaledDimensions();
       this.updatePinLocations();
     }
   }
@@ -213,9 +217,13 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
 
   public set width(width) {
     if (this.width !== width) {
-      this.displayObject.width = width;
-      super.width = width;
-      this.dirty = true;
+      if (!this.displayObject.texture.valid) {
+        this.displayObject.texture.baseTexture.once("loaded", () => { this.width = width; });
+      } else {
+        this.displayObject.width = width;
+        super.width = width;
+        this.dirty = true;
+      }
     }
   }
 
@@ -250,13 +258,16 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
     // If the texture isn't loaded into memory, wait for it to be then set the width/height
     if (!this.displayObject.texture.baseTexture.valid) {
       this.displayObject.texture.baseTexture.once("loaded", () => {
-        this.scaledDimensions.x = serialized.bounds.x;
-        this.scaledDimensions.y = serialized.bounds.y;
-        this.scaledDimensions.width = serialized.bounds.width;
-        this.scaledDimensions.height = serialized.bounds.height;
 
-        this.width = this.actualBounds.width * this.scaledDimensions.width;
-        this.height = this.actualBounds.height * this.scaledDimensions.height;
+        this.width = this.actualBounds.width * serialized.bounds.width;
+        this.height = this.actualBounds.height * serialized.bounds.height;
+        // this.scaledDimensions.x = serialized.bounds.x;
+        // this.scaledDimensions.y = serialized.bounds.y;
+        // this.scaledDimensions.width = serialized.bounds.width;
+        // this.scaledDimensions.height = serialized.bounds.height;
+
+        // this.width = this.actualBounds.width * this.scaledDimensions.width;
+        // this.height = this.actualBounds.height * this.scaledDimensions.height;
         // this.createRenderTexture();
       });
     } else {
@@ -275,19 +286,19 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
   }
 
   public scaleToScreen() {
-    const effectiveBounds = this.restrictToVisualArea ? StageManager.VisualBounds : StageManager.ScreenBounds;
+    // const effectiveBounds = this.restrictToVisualArea ? StageManager.VisualBounds : StageManager.ScreenBounds;
 
-    const width = effectiveBounds.width * this.scaledDimensions.width;
-    const height = effectiveBounds.height * this.scaledDimensions.height;
+    // const width = effectiveBounds.width * this.scaledDimensions.width;
+    // const height = effectiveBounds.height * this.scaledDimensions.height;
 
-    const x = effectiveBounds.width * this.scaledDimensions.x;
-    const y = effectiveBounds.height * this.scaledDimensions.y;
+    // const x = effectiveBounds.width * this.scaledDimensions.x;
+    // const y = effectiveBounds.height * this.scaledDimensions.y;
 
-    this.width = width;
-    this.height = height;
+    // this.width = width;
+    // this.height = height;
 
-    this.x = x;
-    this.y = y;
+    // this.x = x;
+    // this.y = y;
 
     this.sizeInterfaceContainer();
   }

@@ -34,12 +34,12 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   private _selected = false;
   private _dragging = false;
 
-  protected scaledDimensions = {
-    x: 0,
-    y: 0,
-    width: 0,
-    height: 0
-  }
+  // protected scaledDimensions = {
+  //   x: 0,
+  //   y: 0,
+  //   width: 0,
+  //   height: 0
+  // }
 
   private _dirty = false;
   public get dirty() { return this._dirty; }
@@ -441,7 +441,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     if (bottom !== this.y) {
       this.dirty = true;
       this.y = bottom;
-      this.updateScaledDimensions();
+      // this.updateScaledDimensions();
       this.updatePinLocations();
     }
   }
@@ -502,7 +502,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   // eslint-disable-next-line no-unused-private-class-members
   #revokeProxy: (() => void) | null = null;
 
-  #ignoredProperties = ["worldAlpha", "uvs"];
+  #ignoredProperties = ["worldAlpha", "uvs", "dirty", "indices", "vertexDirty"];
 
   private proxyDisplayObject(val: t): t {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -511,8 +511,9 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     (val as any).stageObject = this;
     const { proxy, revoke } = deepProxy<t>(val, {
       set(target, prop, value) {
-        if (typeof prop === "string" && !prop.startsWith("_") && !temp.#ignoredProperties.includes(prop))
+        if (typeof prop === "string" && !prop.startsWith("_") && !temp.#ignoredProperties.includes(prop) && temp[prop as keyof typeof temp] !== value) {
           temp.dirty = true;
+        }
 
         return Reflect.set(target, prop, value);
       }
@@ -533,7 +534,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   public set height(height) {
     if (height !== this.height) {
       this.dirty = true;
-      this.updateScaledDimensions();
+      // this.updateScaledDimensions();
       this.updatePinLocations();
     }
   }
@@ -567,7 +568,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   public set left(left) {
     if (left !== this.x) {
       this.x = left;
-      this.updateScaledDimensions();
+      // this.updateScaledDimensions();
       this.updatePinLocations();
       this.dirty = true;
     }
@@ -608,7 +609,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     if (this.x !== this.actualBounds.right - right) {
       this.dirty = true;
       this.x = this.actualBounds.right - right;
-      this.updateScaledDimensions();
+      // this.updateScaledDimensions();
       this.updatePinLocations();
     }
   }
@@ -649,7 +650,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     if (top !== this.y) {
       this.y = top;
       this.dirty = true;
-      this.updateScaledDimensions();
+      // this.updateScaledDimensions();
       this.updatePinLocations();
     }
   }
@@ -658,17 +659,17 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   public set width(width) {
     if (this.width !== width) {
       this.dirty = true;
-      this.updateScaledDimensions();
+      // this.updateScaledDimensions();
       this.updatePinLocations();
     }
   }
 
-  protected updateScaledDimensions() {
-    this.scaledDimensions.x = this.x / this.actualBounds.width;
-    this.scaledDimensions.y = this.y / this.actualBounds.height;
-    this.scaledDimensions.width = this.width / this.actualBounds.width;
-    this.scaledDimensions.height = this.height / this.actualBounds.height;
-  }
+  // protected updateScaledDimensions() {
+  //   this.scaledDimensions.x = this.x / this.actualBounds.width;
+  //   this.scaledDimensions.y = this.y / this.actualBounds.height;
+  //   this.scaledDimensions.width = this.width / this.actualBounds.width;
+  //   this.scaledDimensions.height = this.height / this.actualBounds.height;
+  // }
 
   protected updatePinLocations() {
     if (this.pin.left) this._leftPinPos = this.left;
@@ -680,14 +681,14 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   public get x() { return this.displayObject.x; }
   public set x(x) {
     this.displayObject.x = x;
-    this.updateScaledDimensions();
+    // this.updateScaledDimensions();
     this.updatePinLocations();
   }
 
   public get y() { return this.displayObject.y; }
   public set y(y) {
     this.displayObject.y = y;
-    this.updateScaledDimensions();
+    // this.updateScaledDimensions();
     this.updatePinLocations();
   }
 
@@ -775,15 +776,16 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   // #region Public Methods (6)
 
   public deserialize(serialized: SerializedStageObject) {
+    log("Deserializing:", serialized);
     this.id = serialized.id;
     this.name = serialized.name;
     // void StageManager.setOwners(this.id, serialized.owners);
     this.setLayer(serialized.layer ?? "primary");
     this.restrictToVisualArea = serialized.restrictToVisualArea;
-    this.scaledDimensions.x = serialized.bounds.x;
-    this.scaledDimensions.y = serialized.bounds.y;
-    this.scaledDimensions.width = serialized.bounds.width;
-    this.scaledDimensions.height = serialized.bounds.height;
+    // this.scaledDimensions.x = serialized.bounds.x;
+    // this.scaledDimensions.y = serialized.bounds.y;
+    // this.scaledDimensions.width = serialized.bounds.width;
+    // this.scaledDimensions.height = serialized.bounds.height;
     this.skew.x = serialized.skew.x;
     this.skew.y = serialized.skew.y;
     this.angle = serialized.angle;
@@ -888,7 +890,13 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       type: "",
       name: this.name ?? this.id,
       locked: this.locked,
-      bounds: { ...this.scaledDimensions },
+      // bounds: { ...this.scaledDimensions },
+      bounds: {
+        x: this.x / this.actualBounds.width,
+        y: this.y / this.actualBounds.height,
+        width: this.width / this.actualBounds.width,
+        height: this.height / this.actualBounds.height
+      },
       angle: this.angle,
       restrictToVisualArea: this.restrictToVisualArea,
       scope: this.scope ?? "global",

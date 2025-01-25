@@ -7,6 +7,7 @@ export * from './InvalidTriggerError';
 export * from './InvalidUserError';
 export * from './LocalizedError';
 export * from './MacroPermDeniedError';
+export * from './NoPortraitError';
 export * from './NotImplementedError';
 export * from './PermissionDeniedError';
 export * from './UnknownDocumentTypeError';

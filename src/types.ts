@@ -59,10 +59,11 @@ export interface SerializedPanelStageObject extends SerializedStageObject {
   src: string;
 }
 
-export type SerializedDialogStageObject = SerializedPanelStageObject & SerializedTextStageObject & ({
-  portrait: string;
-  showPortrait: boolean;
-})
+export interface SerializedDialogStageObject extends SerializedStageObject {
+  portrait?: SerializedImageStageObject;
+  panel: SerializedPanelStageObject;
+  text: SerializedTextStageObject;
+}
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface SerializedFilter { }
