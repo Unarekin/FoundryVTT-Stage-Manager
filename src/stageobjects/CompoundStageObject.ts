@@ -18,6 +18,8 @@ export abstract class CompoundStageObject extends StageObject<PIXI.Container> {
 
   constructor(name?: string) {
     const container = new PIXI.Container();
+    container.sortableChildren = true;
     super(container, name)
+
   }
 }

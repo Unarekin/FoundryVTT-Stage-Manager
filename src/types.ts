@@ -60,7 +60,7 @@ export interface SerializedPanelStageObject extends SerializedStageObject {
 }
 
 export interface SerializedDialogStageObject extends SerializedStageObject {
-  portrait?: SerializedImageStageObject;
+  portrait: SerializedImageStageObject;
   panel: SerializedPanelStageObject;
   text: SerializedTextStageObject;
 }

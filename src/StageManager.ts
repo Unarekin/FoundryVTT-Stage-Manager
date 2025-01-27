@@ -8,14 +8,14 @@ import * as stageObjectTypes from "./stageobjects";
 import { getGlobalObjects, getSceneObjects, getSetting, getUserObjects, setGlobalObjects, setSceneObjects, setSetting, setUserObjects } from './Settings';
 import { CUSTOM_HOOKS } from './hooks';
 import { log, logError } from './logging';
-import { ActorStageObjectApplication, ImageStageObjectApplication, PanelStageObjectApplication, StageObjectApplication, TextStageObjectApplication } from './applications';
+import { ActorStageObjectApplication, DialogStageObjectApplication, ImageStageObjectApplication, PanelStageObjectApplication, StageObjectApplication, TextStageObjectApplication } from './applications';
 
 const ApplicationHash: Record<string, typeof StageObjectApplication> = {
   "image": ImageStageObjectApplication as typeof StageObjectApplication,
   "actor": ActorStageObjectApplication as unknown as typeof StageObjectApplication,
   "text": TextStageObjectApplication as unknown as typeof StageObjectApplication,
   "panel": PanelStageObjectApplication as unknown as typeof StageObjectApplication,
-  // dialog: DialogStageObjectApplication as unknown as typeof StageObjectApplication
+  dialog: DialogStageObjectApplication as unknown as typeof StageObjectApplication
 }
 
 const OpenApplications = new WeakMap<StageObject, StageObjectApplication>();

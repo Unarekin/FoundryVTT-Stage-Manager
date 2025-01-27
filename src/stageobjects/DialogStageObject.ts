@@ -1,6 +1,5 @@
 import { NoPortraitError } from "../errors";
-import { log } from "../logging";
-import { SerializedDialogStageObject } from "../types";
+import { SerializedDialogStageObject, StageLayer } from "../types";
 import { CompoundStageObject } from "./CompoundStageObject";
 import { ImageStageObject } from "./ImageStageObject";
 import { PanelStageObject } from "./PanelStageObject";
@@ -12,7 +11,7 @@ export class DialogStageObject extends CompoundStageObject {
 
   private _panelObj: PanelStageObject;
   private _textObj: TextStageObject;
-  private _portraitObj: ImageStageObject | null = null;
+  private _portraitObj: ImageStageObject;
 
   public get panelObject() { return this._panelObj; }
   public get textObject() { return this._textObj; }
@@ -79,6 +78,7 @@ export class DialogStageObject extends CompoundStageObject {
       this.textObject.x += this.portraitObject.width;
       this.textObject.style.wordWrapWidth -= this.portraitObject.width;
     }
+    this.textObject.scale.x = this.textObject.scale.y = 1;
   }
 
   public deserialize(serialized: SerializedDialogStageObject) {
@@ -90,27 +90,23 @@ export class DialogStageObject extends CompoundStageObject {
     if (!(this._panelObj instanceof PanelStageObject)) this._panelObj = PanelStageObject.deserialize(serialized.panel);
     else this._panelObj.deserialize(serialized.panel);
 
-    log("Setting size:", this.actualBounds.width * serialized.bounds.width, this.actualBounds.height * serialized.bounds.height)
-    this._panelObj.width = this.actualBounds.width * serialized.bounds.width;
-    this._panelObj.height = this.actualBounds.height * serialized.bounds.height;
-    log(this.width, this.height);
-    log(this._panelObj.displayObject.texture.valid);
+    if (!serialized.portrait.src) serialized.portrait.src = `modules/${__MODULE_ID__}/assets/transparent.webp`;
 
-    if (serialized.portrait?.src) {
-      if (!(this._portraitObj instanceof ImageStageObject)) this._portraitObj = ImageStageObject.deserialize(serialized.portrait);
-      else this._portraitObj.deserialize(serialized.portrait);
-    } else if (this._portraitObj instanceof ImageStageObject) {
-      this._portraitObj.destroy();
-      this._portraitObj = null;
-    }
+    if (!(this._portraitObj instanceof ImageStageObject)) this._portraitObj = ImageStageObject.deserialize(serialized.portrait);
+    else this._portraitObj.deserialize(serialized.portrait);
 
+    this.displayObject.addChild(this._panelObj.displayObject);
+    this.displayObject.addChild(this._textObj.displayObject);
+    this.displayObject.addChild(this._portraitObj.displayObject);
 
-    // this.width = this.actualBounds.width * serialized.bounds.width;
-    // this.height = this.actualBounds.height * serialized.bounds.height;
-    // this.scale.x = 1;
-    // this.scale.y = 1;
-    // this.width = this.panelObject.width;
-    // this.height = this.panelObject.height;
+    this.panelObject.displayObject.name = `${this.id}-panel`;
+    this.portraitObject.displayObject.name = `${this.id}-portrait`;
+    this.textObject.displayObject.name = `${this.id}-text`;
+
+    this.panelObject.x = 0;
+    this.panelObject.y = 0;
+
+    this.positionTextObject();
   }
 
   public static deserialize(serialized: SerializedDialogStageObject): DialogStageObject {
@@ -121,14 +117,38 @@ export class DialogStageObject extends CompoundStageObject {
   }
 
   public serialize(): SerializedDialogStageObject {
-    const panel = this.panelObject.serialize();
-    return {
+
+    const defaultPortrait = {
+      id: foundry.utils.randomID(),
+      name: "",
+      src: `modules/${__MODULE_ID__}/assets/transparent.webp`,
+      bounds: { x: 0, y: 0, width: 0, height: 0 },
+      loop: false,
+      type: "image",
+      owners: [],
+      version: __MODULE_VERSION__,
+      layer: this.layer as StageLayer,
+      scope: this.scope,
+      scopeOwners: [...this.scopeOwners],
+      triggersEnabled: true,
+      locked: false,
+      triggers: {},
+      skew: { x: 0, y: 0 },
+      angle: 0,
+      restrictToVisualArea: false,
+      filters: [],
+      alpha: 1,
+      zIndex: 0
+    }
+
+    const serialized = {
       ...super.serialize(),
       type: DialogStageObject.type,
       text: this.textObject.serialize(),
-      ...(this.portraitObject ? { portrait: this.portraitObject.serialize() } : {}),
-      panel
+      portrait: this.portraitObject instanceof ImageStageObject ? this.portraitObject.serialize() : defaultPortrait,
+      panel: this.panelObject.serialize()
     }
+    return serialized;
   }
 
   public set dirty(val) {
@@ -145,8 +165,8 @@ export class DialogStageObject extends CompoundStageObject {
   public get portrait() { return this.portraitObject?.path }
   public set portrait(val) {
     if (!val && this.portraitObject instanceof ImageStageObject) {
-      this.portraitObject.destroy();
-      this._portraitObj = null;
+      // this.portraitObject.destroy();
+      this.portraitObject.path = `modules/${__MODULE_ID__}/assets/transparent.webp`;
       this.dirty = true;
     } else if (val && !(this.portraitObject instanceof ImageStageObject)) {
       this._portraitObj = new ImageStageObject(val, this.name);
@@ -166,8 +186,11 @@ export class DialogStageObject extends CompoundStageObject {
     this._textObj.anchor.x = 0;
     this._textObj.anchor.y = 0;
 
+    this._portraitObj = new ImageStageObject(`modules/${__MODULE_ID__}/assets/transparent.webp`);
+
     this.displayObject.addChild(this.panelObject.displayObject);
     this.displayObject.addChild(this.textObject.displayObject);
+    this.displayObject.addChild(this._portraitObj.displayObject);
 
     this.resizable = true;
     this.positionTextObject();

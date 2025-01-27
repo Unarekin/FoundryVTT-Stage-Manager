@@ -98,7 +98,8 @@
       "PANEL": "Panel",
       "TEXT": "Text",
       "TRIGGERS": "Triggers",
-      "VIDEO": "Video"
+      "VIDEO": "Video",
+      "PORTRAIT": "Portrait"
     }
   }
 }

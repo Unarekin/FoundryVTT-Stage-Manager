@@ -452,7 +452,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
   public set controlled(value) { this.selected = value; }
 
-  public get destroyed() { return this.displayObject.destroyed; }
+  public get destroyed() { return this.displayObject?.destroyed ?? true; }
 
   #displayObject: t;
 
@@ -748,7 +748,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   }
 
   public get locked(): boolean { return this._locked; }
-  protected set locked(value) {
+  public set locked(value) {
     if (value !== this._locked) this.dirty = true;
     this._locked = value;
     if (value && this.resizeHandle) this.resizeHandle.visible = false;
@@ -840,7 +840,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   }
 
 
-  protected get actualBounds() { return this.restrictToVisualArea ? StageManager.VisualBounds : StageManager.ScreenBounds; }
+  public get actualBounds() { return this.restrictToVisualArea ? StageManager.VisualBounds : StageManager.ScreenBounds; }
 
   public scaleToScreen() {
     // Calculate and apply a new transform.
@@ -935,7 +935,6 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       } else {
         this.selected = true;
       }
-      log("StageObject onPointerDown");
       event.stopPropagation();
     }
   }

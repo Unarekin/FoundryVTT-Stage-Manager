@@ -34,7 +34,7 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
   static DEFAULT_OPTIONS = {
     tag: "form",
     position: {
-      width: 400
+      width: 500
     },
     window: {
       icon: "fas fa-gear",
@@ -224,6 +224,11 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
     this.wasSubmitted = true;
     this.submittedObject = this.parseFormData(formData.object);
   }
+
+  protected onRevert(): SerializedStageObject {
+    return this.originalObject;
+  }
+
   protected _onClose(): void {
     StageManager.HideVisualBounds();
 
@@ -233,7 +238,8 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
       if (this.submittedObject) this.stageObject.deserialize(this.submittedObject);
       this.#resolve(this.submittedObject);
     } else {
-      this.stageObject.deserialize(this.originalObject);
+      const reverted = this.onRevert();
+      this.stageObject.deserialize(reverted);
       this.#resolve();
     }
     this.stageObject.displayObject.removeFromParent();
@@ -265,6 +271,12 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
   }
 
 
+  protected getElementValue<t>(parent: HTMLElement, selector: string, attr: string): t | undefined {
+    const elem = parent.querySelector(selector);
+    if (!(elem instanceof HTMLElement)) return;
+    return elem.getAttribute(attr) as t;
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected async _preparePartContext(partId: string, context: this extends ApplicationV2.Internal.Instance<any, any, infer RenderContext extends AnyObject> ? RenderContext : unknown, options: DeepPartial<HandlebarsApplicationMixin.HandlebarsRenderOptions>): Promise<this extends ApplicationV2.Internal.Instance<any, any, infer RenderContext extends AnyObject> ? RenderContext : unknown> {
     const tabs = this._getTabs();
@@ -279,7 +291,9 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
 
     const form = this.element instanceof HTMLFormElement ? new FormDataExtended(this.element) : new FormDataExtended($(this.element).find("form")[0]);
     const data = this.parseFormData(form.object);
+
     this.stageObject.deserialize(data);
+
   }
 
   protected prepareStageObject(): v {
@@ -302,6 +316,28 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
     this.stageObject.synchronize = false;
     if (this.stageObject.layer) StageManager.setStageObjectLayer(this.stageObject, this.stageObject.layer);
     // addEventListeners(this.element);
+  }
+
+  protected normalizeBounds(bounds: { x: number, y: number, width: number, height: number }): { x: number, y: number, width: number, height: number } {
+    const { width, height } = this.stageObject.actualBounds;
+
+    return {
+      x: bounds.x / width,
+      y: bounds.y / height,
+      width: bounds.width / width,
+      height: bounds.height / height
+    }
+  }
+
+  protected boundsToScreen(bounds: { x: number, y: number, width: number, height: number }): { x: number, y: number, width: number, height: number } {
+    const { width, height } = this.stageObject.actualBounds;
+
+    return {
+      x: bounds.x * width,
+      y: bounds.y * height,
+      width: bounds.width * width,
+      height: bounds.height * height
+    }
   }
 
   protected async _prepareContext(options: { force?: boolean | undefined; position?: { top?: number | undefined; left?: number | undefined; width?: number | "auto" | undefined; height?: number | "auto" | undefined; scale?: number | undefined; zIndex?: number | undefined; } | undefined; window?: { title?: string | undefined; icon?: string | false | undefined; controls?: boolean | undefined; } | undefined; parts?: string[] | undefined; isFirstRender?: boolean | undefined; }): Promise<StageObjectApplicationContext> {
