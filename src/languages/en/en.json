@@ -1,6 +1,12 @@
 {
   "STAGEMANAGER": {
     "IMAGE": "Image",
-    "TEXT": "Text"
+    "TEXT": "Text",
+    "LAYERS": {
+      "PRIMARY": "Primary",
+      "BACKGROUND": "Background",
+      "FOREGROUND": "Foreground",
+      "TEXT": "Text"
+    }
   }
 }

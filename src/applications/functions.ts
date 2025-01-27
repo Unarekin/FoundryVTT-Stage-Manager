@@ -94,6 +94,14 @@ export interface EventSpec {
   addlArgs: { name: string, label: string }[]
 }
 
+export function getLayerContext(): Record<string, string> {
+  return {
+    primary: "STAGEMANAGER.LAYERS.PRIMARY",
+    foreground: "STAGEMANAGER.LAYERS.FOREGROUND",
+    background: "STAGEMANAGER.LAYERS.BACKGROUND",
+    text: "STAGEMANAGER.LAYERS.TEXT"
+  }
+}
 
 export function getTriggerEvents(trigger?: SerializedTrigger): EventSpec[] {
   return [
@@ -476,7 +484,9 @@ export function getFontContext(stageObject: SerializedStageObject) {
 
 
 function getDocuments(documentName: string, selected?: string): SectionSpec[] {
+  if (!(game instanceof Game)) return [];
   const documents: SectionSpec[] = [];
+
   const collection = game.collections.get(documentName);
   if (!collection) throw new UnknownDocumentTypeError(documentName);
 

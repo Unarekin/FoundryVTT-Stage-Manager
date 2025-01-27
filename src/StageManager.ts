@@ -252,7 +252,7 @@ export class StageManager {
           const appClass = ApplicationHash[obj.type];
           if (!appClass) throw new InvalidStageObjectError(obj.type);
 
-          const layer = obj.layer;
+          // const layer = obj.layer;
 
           // eslint-disable-next-line @typescript-eslint/no-unsafe-call
           const app = new (appClass as any)(obj, { layer: obj.layer ?? "primary" }) as StageObjectApplication;
@@ -260,7 +260,7 @@ export class StageManager {
           app.render(true).catch(reject);
           app.closed
             .then(data => {
-              if (layer && StageManager.layers[layer]) StageManager.layers[layer].addChild(obj.displayObject);
+              if (data?.layer && StageManager.layers[data.layer]) StageManager.layers[data.layer].addChild(obj.displayObject);
               OpenApplications.delete(obj);
               resolve(data);
             })
@@ -540,18 +540,20 @@ export class StageManager {
   }
 
   public static setStageObjectLayer(stageObject: StageObject, layer: StageLayer) {
-    switch (layer) {
-      case "background":
-        StageManager.backgroundCanvasGroup.addChild(stageObject.displayObject);
-        break;
-      case "foreground":
-        StageManager.foregroundCanvasGroup.addChild(stageObject.displayObject);
-        break;
-      case "primary":
-        StageManager.primaryCanvasGroup.addChild(stageObject.displayObject);
-        break;
-      case "text":
-        StageManager.textCanvasGroup.addChild(stageObject.displayObject);
+    if (stageObject.layer !== layer) {
+      switch (layer) {
+        case "background":
+          StageManager.backgroundCanvasGroup.addChild(stageObject.displayObject);
+          break;
+        case "foreground":
+          StageManager.foregroundCanvasGroup.addChild(stageObject.displayObject);
+          break;
+        case "primary":
+          StageManager.primaryCanvasGroup.addChild(stageObject.displayObject);
+          break;
+        case "text":
+          StageManager.textCanvasGroup.addChild(stageObject.displayObject);
+      }
     }
   }
 

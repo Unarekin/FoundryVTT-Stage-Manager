@@ -37,10 +37,10 @@
       "ANGLE": "Rotation",
       "ANGLEHINT": "(In degrees)",
       "BORDERS": {
-        "TITLE": "Border Sizes",
         "BOTTOM": "Bottom",
         "LEFT": "Left",
         "RIGHT": "Right",
+        "TITLE": "Border Sizes",
         "TOP": "Top"
       },
       "DELETE": "Delete {name}",
@@ -57,6 +57,7 @@
         "SIZE": "Size"
       },
       "HEIGHT": "Height",
+      "LAYER": "Layer",
       "LOCATION": "Screen Location",
       "LOCATIONPRESET": "Screen location presets",
       "LOCATIONPRESETS": {
@@ -96,10 +97,10 @@
       "FONT": "Font Style",
       "IMAGE": "Image",
       "PANEL": "Panel",
+      "PORTRAIT": "Portrait",
       "TEXT": "Text",
       "TRIGGERS": "Triggers",
-      "VIDEO": "Video",
-      "PORTRAIT": "Portrait"
+      "VIDEO": "Video"
     }
   }
 }

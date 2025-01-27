@@ -6,7 +6,7 @@ import { StageManager } from "../StageManager";
 import ApplicationV2 from "Foundry-VTT/src/foundry/client-esm/applications/api/application.mjs";
 import HandlebarsApplicationMixin from "Foundry-VTT/src/foundry/client-esm/applications/api/handlebars-application.mjs";
 import { localize } from "../functions";
-import { addTriggerItem, editTriggerItem, getTriggerActionType, removeTriggerItem } from "./functions";
+import { addTriggerItem, editTriggerItem, getLayerContext, getTriggerActionType, removeTriggerItem } from "./functions";
 import { InvalidTriggerError } from "../errors";
 import { log } from "../logging";
 
@@ -348,6 +348,7 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
       ...(await super._prepareContext(options)),
       stageObject: serialized,
       tabs: this._getTabs(),
+      layerSelect: getLayerContext(),
       triggers: triggers.map(trigger => {
         const triggerClass = getTriggerActionType(trigger.action);
         if (triggerClass) {

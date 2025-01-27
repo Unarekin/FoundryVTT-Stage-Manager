@@ -780,12 +780,8 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     this.id = serialized.id;
     this.name = serialized.name;
     // void StageManager.setOwners(this.id, serialized.owners);
-    this.setLayer(serialized.layer ?? "primary");
+
     this.restrictToVisualArea = serialized.restrictToVisualArea;
-    // this.scaledDimensions.x = serialized.bounds.x;
-    // this.scaledDimensions.y = serialized.bounds.y;
-    // this.scaledDimensions.width = serialized.bounds.width;
-    // this.scaledDimensions.height = serialized.bounds.height;
     this.skew.x = serialized.skew.x;
     this.skew.y = serialized.skew.y;
     this.angle = serialized.angle;
@@ -800,6 +796,9 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     this.y = serialized.bounds.y * this.actualBounds.height;
     this.width = serialized.bounds.width * this.actualBounds.width;
     this.height = serialized.bounds.height * this.actualBounds.height;
+
+    if (serialized.layer)
+      this.setLayer(serialized.layer ?? "primary");
 
     this.dirty = false;
   }
