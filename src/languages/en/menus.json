@@ -5,7 +5,9 @@
       "EDITOBJECT": "Edit {name}",
       "LOCKOBJECT": "Lock {name}",
       "UNLOCKOBJECT": "Unlock {name}",
-      "ACTORSHEET": "Actor Sheet"
+      "ACTORSHEET": "Actor Sheet",
+      "TOFRONT": "Bring to Front",
+      "TOBACK": "Send to Back"
     }
   }
 }

@@ -704,6 +704,18 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
         callback: () => { void StageManager.EditStageObject(this); },
         condition: StageManager.canModifyStageObject(game.user?.id ?? "", this.id)
       },
+      {
+        name: localize("STAGEMANAGER.MENUS.TOFRONT", {}),
+        icon: `<i class="fas fa-sort-up"></i>`,
+        condition: StageManager.canModifyStageObject(game.user?.id ?? "", this.id),
+        callback: () => { this.bringToFront(); }
+      },
+      {
+        name: localize("STAGEMANAGER.MENUS.TOBACK"),
+        icon: `<i class="fas fa-sort-down"></i>`,
+        condition: StageManager.canModifyStageObject(game.user?.id ?? "", this.id),
+        callback: () => { this.sendToBack(); }
+      },
       // {
       //   name: localize("STAGEMANAGER.MENUS.LOCKOBJECT", { name: this.name ?? this.id }),
       //   icon: `<i class="fas fa-lock"></i>`,
