@@ -252,7 +252,7 @@ export class StageManager {
           const appClass = ApplicationHash[obj.type];
           if (!appClass) throw new InvalidStageObjectError(obj.type);
 
-          // const layer = obj.layer;
+          const layer = obj.layer;
 
           // eslint-disable-next-line @typescript-eslint/no-unsafe-call
           const app = new (appClass as any)(obj, { layer: obj.layer ?? "primary" }) as StageObjectApplication;
@@ -260,11 +260,17 @@ export class StageManager {
           app.render(true).catch(reject);
           app.closed
             .then(data => {
+              log("Then:", data);
               if (data?.layer && StageManager.layers[data.layer]) StageManager.layers[data.layer].addChild(obj.displayObject);
+              else if (layer && StageManager.layers[layer]) StageManager.layers[layer].addChild(obj.displayObject);
               OpenApplications.delete(obj);
               resolve(data);
             })
-            .catch(reject)
+            .catch((err: Error) => {
+              logError(err);
+              reject(err);
+              if (layer && StageManager.layers[layer]) StageManager.layers[layer].addChild(obj.displayObject);
+            })
         } catch (err) {
           OpenApplications.delete(obj);
           reject(err as Error);

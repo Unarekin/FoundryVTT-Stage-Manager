@@ -519,6 +519,7 @@ function getDocuments(documentName: string, selected?: string): SectionSpec[] {
     game.packs.forEach(pack => {
       if (pack.documentName === documentName) {
 
+
         documents.push(...pack.index.map(item => ({ uuid: item.uuid, name: item.name ?? item.uuid, pack: pack.metadata.label, selected: item.uuid === selected })));
       }
     })
