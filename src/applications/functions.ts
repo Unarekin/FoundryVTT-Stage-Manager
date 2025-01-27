@@ -4,6 +4,7 @@ import * as tempTriggerActions from "../triggeractions";
 import { InvalidTriggerError, LocalizedError, UnknownDocumentTypeError } from "../errors";
 import { log } from "../logging";
 import { EditTriggerDialogV2 } from "./EditTriggerDialogV2";
+import { StageObject } from "../stageobjects";
 
 const triggerActions = Object.values(tempTriggerActions).filter(item => !!item.type);
 
@@ -482,12 +483,31 @@ export function getFontContext(stageObject: SerializedStageObject) {
   }
 }
 
+export function getScopeContext(): Record<string, string> {
+  return {
+    global: "STAGEMANAGER.SCOPES.GLOBAL",
+    scene: "STAGEMANAGER.SCOPES.SCENE",
+    user: "STAGEMANAGER.SCOPES.USER",
+    temp: "STAGEMANAGER.SCOPES.TEMP"
+  }
+}
+
+export function getScenesContext(obj: StageObject): { label: string, value: string, selected: boolean }[] {
+  if (!game.scenes) return [];
+  return game.scenes.map((scene: Scene) => ({ label: scene.name, value: scene.uuid, selected: obj.scope === "scene" && obj.scopeOwners.includes(scene.uuid) }));
+}
+
+
+export function getUsersContext(obj: StageObject): { label: string, value: string, selected: boolean }[] {
+  if (!game.users) return [];
+  return game.users.map((user: User) => ({ label: user.name, value: user.uuid, selected: obj.scope === "user" && obj.scopeOwners.includes(user.uuid) }));
+}
 
 function getDocuments(documentName: string, selected?: string): SectionSpec[] {
   if (!(game instanceof Game)) return [];
   const documents: SectionSpec[] = [];
 
-  const collection = game.collections.get(documentName);
+  const collection = game.collections?.get(documentName);
   if (!collection) throw new UnknownDocumentTypeError(documentName);
 
   // Add non-compendium documents

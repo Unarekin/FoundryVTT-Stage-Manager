@@ -6,7 +6,7 @@ import { StageManager } from "../StageManager";
 import ApplicationV2 from "Foundry-VTT/src/foundry/client-esm/applications/api/application.mjs";
 import HandlebarsApplicationMixin from "Foundry-VTT/src/foundry/client-esm/applications/api/handlebars-application.mjs";
 import { localize } from "../functions";
-import { addTriggerItem, editTriggerItem, getLayerContext, getTriggerActionType, removeTriggerItem } from "./functions";
+import { addTriggerItem, editTriggerItem, getLayerContext, getScenesContext, getScopeContext, getTriggerActionType, getUsersContext, removeTriggerItem } from "./functions";
 import { InvalidTriggerError } from "../errors";
 import { log } from "../logging";
 
@@ -191,7 +191,23 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
   }
 
   protected parseFormData(data: Record<string, unknown>): v {
+    // try {
+    // console.group("Parsing form data");
+    // console.log("Data:", data);
     const parsed = foundry.utils.expandObject(data) as v;
+    // console.log("Initial parsing:", parsed);
+
+
+    if (parsed.scope === "user") {
+      parsed.scopeOwners = data["scopeOwners.users"] as string[] ?? [];
+    } else if (parsed.scope === "scene") {
+      parsed.scopeOwners = data["scopeOwners.scenes"] as string[] ?? [];
+    } else {
+      parsed.scopeOwners = [];
+    }
+
+    // log("Scope owners:", parsed.scopeOwners);
+
     const bounds = parsed.restrictToVisualArea ? StageManager.VisualBounds : StageManager.ScreenBounds;
     parsed.bounds.x /= bounds.width;
     parsed.bounds.y /= bounds.height;
@@ -216,7 +232,12 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
     } else {
       parsed.triggers = {};
     }
+
+    // console.log("Final:", parsed)
     return parsed;
+    // } finally {
+    // console.groupEnd();
+    // }
   }
 
   protected submittedObject: v | undefined = undefined;
@@ -316,6 +337,22 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
     this.stageObject.synchronize = false;
     if (this.stageObject.layer) StageManager.setStageObjectLayer(this.stageObject, this.stageObject.layer);
     // addEventListeners(this.element);
+
+    this.setScopeOwners();
+    const scopeSelect = this.element.querySelector(`select[name="scope"]`);
+    if (scopeSelect instanceof HTMLSelectElement)
+      scopeSelect.addEventListener("input", () => { this.setScopeOwners(); });
+
+  }
+
+  protected setScopeOwners() {
+    const select = this.element.querySelector(`select[name="scope"]`);
+    if (!(select instanceof HTMLSelectElement)) return;
+
+    const scope = select.value;
+    const sections = this.element.querySelectorAll(`[data-scope]`) as HTMLElement[];
+    for (const section of sections)
+      section.style.display = scope === section.dataset.scope ? "block" : "none";
   }
 
   protected normalizeBounds(bounds: { x: number, y: number, width: number, height: number }): { x: number, y: number, width: number, height: number } {
@@ -343,12 +380,14 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
   protected async _prepareContext(options: { force?: boolean | undefined; position?: { top?: number | undefined; left?: number | undefined; width?: number | "auto" | undefined; height?: number | "auto" | undefined; scale?: number | undefined; zIndex?: number | undefined; } | undefined; window?: { title?: string | undefined; icon?: string | false | undefined; controls?: boolean | undefined; } | undefined; parts?: string[] | undefined; isFirstRender?: boolean | undefined; }): Promise<StageObjectApplicationContext> {
     const serialized = this.prepareStageObject();
     const triggers = Object.values(serialized.triggers).flat();
-
     return {
       ...(await super._prepareContext(options)),
       stageObject: serialized,
       tabs: this._getTabs(),
       layerSelect: getLayerContext(),
+      scopeSelect: getScopeContext(),
+      usersSelect: getUsersContext(this.stageObject),
+      scenesSelect: getScenesContext(this.stageObject),
       triggers: triggers.map(trigger => {
         const triggerClass = getTriggerActionType(trigger.action);
         if (triggerClass) {

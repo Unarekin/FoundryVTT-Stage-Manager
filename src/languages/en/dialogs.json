@@ -31,7 +31,11 @@
       "TITLE": "Remove Trigger"
     },
     "EDITDIALOG": {
+      "SCENES": "Scenes",
+      "USERS": "Users",
       "ACTOR": "Actor",
+      "SCOPE": "Object scope",
+      "OWNERS": "Owner(s)",
       "ADDTRIGGER": "Add Trigger",
       "ALPHA": "Opacity",
       "ANGLE": "Rotation",

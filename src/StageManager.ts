@@ -266,6 +266,7 @@ export class StageManager {
             })
             .catch(reject)
         } catch (err) {
+          OpenApplications.delete(obj);
           reject(err as Error);
         }
       });
