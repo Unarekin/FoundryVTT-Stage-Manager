@@ -224,7 +224,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
           },
           user: game.user as User
         })
-    } else if (StageManager.canModifyStageObject(game.user?.id ?? "", this.id)) {
+    } else if (game.activeTool === this.selectTool && StageManager.canModifyStageObject(game.user?.id ?? "", this.id)) {
       void StageManager.EditStageObject(this);
     }
   }

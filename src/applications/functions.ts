@@ -520,6 +520,7 @@ function getDocuments(documentName: string, selected?: string): SectionSpec[] {
       if (pack.documentName === documentName) {
 
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         documents.push(...pack.index.map(item => ({ uuid: item.uuid, name: item.name ?? item.uuid, pack: pack.metadata.label, selected: item.uuid === selected })));
       }
     })
