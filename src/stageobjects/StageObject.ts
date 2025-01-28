@@ -716,18 +716,24 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
         condition: StageManager.canModifyStageObject(game.user?.id ?? "", this.id),
         callback: () => { this.sendToBack(); }
       },
-      // {
-      //   name: localize("STAGEMANAGER.MENUS.LOCKOBJECT", { name: this.name ?? this.id }),
-      //   icon: `<i class="fas fa-lock"></i>`,
-      //   callback: () => { this.locked = true; },
-      //   condition: !this.locked
-      // },
-      // {
-      //   name: localize("STAGEMANAGER.MENUS.UNLOCKOBJECT", { name: this.name ?? this.id }),
-      //   icon: `<i class="fas fa-lock-open"></i>`,
-      //   callback: () => { this.locked = false; },
-      //   condition: this.locked
-      // },
+      {
+        name: localize("STAGEMANAGER.MENUS.LOCKOBJECT", { name: this.name ?? this.id }),
+        icon: `<i class="fas fa-lock"></i>`,
+        callback: (elem: JQuery<HTMLElement>) => {
+          log("Locking", this.locked, elem[0]);
+          this.locked = true;
+        },
+        condition: !this.locked
+      },
+      {
+        name: localize("STAGEMANAGER.MENUS.UNLOCKOBJECT", { name: this.name ?? this.id }),
+        icon: `<i class="fas fa-lock-open"></i>`,
+        callback: (elem: JQuery<HTMLElement>) => {
+          log("Unlocking", this.locked, elem[0]);
+          this.locked = false;
+        },
+        condition: !!this.locked
+      },
       {
         name: localize("STAGEMANAGER.MENUS.DELETEOBJECT", { name: this.name ?? this.id }),
         icon: `<i class="fas fa-trash"></i>`,
@@ -967,6 +973,8 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
     event.preventDefault();
 
+
+
     const menu = new ContextMenu(
       $(`#sm-menu-container`),
       `[data-object="${this.id}"]`,
@@ -974,30 +982,23 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       { onClose: () => { elem.remove(); }, }
     );
     const render = menu.render($(`#sm-menu-container [data-object="${this.id}"]`));
-    if (render instanceof Promise) {
-      void render.then(() => {
-        const listener = (e: MouseEvent) => {
-          const elems = document.elementsFromPoint(e.clientX, e.clientY);
 
-          if (!elems.includes(menu.element[0])) {
-            document.removeEventListener("mousedown", listener);
-            void menu.close();
+    void closeAllContextMenus()
+      .then(() => render)
+      .then(() => registerContextMenu(menu))
+      .then(() => {
+        const listener = (e: MouseEvent) => {
+          if (!menu.element[0].contains(e.currentTarget as HTMLElement)) {
+            void closeAllContextMenus();
+            document.removeEventListener("click", listener);
           }
         }
-        document.addEventListener("mousedown", listener);
-        return closeAllContextMenus()
+        document.addEventListener("click", listener);
       })
-        .then(() => { registerContextMenu(menu); })
-        .catch((err: Error) => {
-          logError(err);
-        })
-    } else {
-      void closeAllContextMenus()
-        .then(() => registerContextMenu(menu))
-        .catch((err: Error) => {
-          logError(err);
-        });
-    }
+
+      .catch((err: Error) => {
+        logError(err);
+      });
   }
 
   public get absoluteLeft() { return this.left + this.actualBounds.left; }
