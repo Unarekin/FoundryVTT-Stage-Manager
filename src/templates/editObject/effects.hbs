@@ -1,0 +1,55 @@
+<section class="tab {{tab.cssClass}}" data-group="primary" data-tab="effects">
+  {{#with stageObject}}
+    <div class="form-group">
+      <label for="enableEffects">{{localize
+          "STAGEMANAGER.EDITDIALOG.EFFECTS.ENABLE"
+        }}</label>
+      <input
+        type="checkbox"
+        name="effectsEnabled"
+        id="effectsEnabled"
+        {{checked effectsEnabled}}
+      />
+    </div>
+
+    <table style="margin:0;padding:0;">
+      <tr>
+        <td style="width:50%;margin:0;padding-left:0;">
+          <section data-role="effects-list" class="flex-col">
+            <select
+              name="effectsList"
+              id="effectsList"
+              style="height:100%"
+              size="10"
+              class="stage-manager multiselect"
+              data-action="selectEffect"
+            >
+              {{#each ../effects}}
+                <option
+                  value="{{id}}"
+                  data-type="{{type}}"
+                  data-serialized="{{serialized}}"
+                >{{localize label}}</option>
+              {{/each}}
+            </select>
+          </section>
+        </td>
+        <td style="margin:0;padding-right:0;" valign="top">
+          <section class="flex1" data-role="effect-config"></section>
+        </td>
+      </tr>
+      <tr style="background-color: inherit">
+        <td style="margin:0;padding-left:0">
+          <button type="button" data-action="addEffect">{{localize
+              "STAGEMANAGER.EDITDIALOG.EFFECTS.ADD"
+            }}</button>
+        </td>
+        <td style="padding-right:1">
+          <button type="button" data-action="deleteEffect" disabled>{{localize
+              "STAGEMANAGER.EDITDIALOG.EFFECTS.DELETE"
+            }}</button>
+        </td>
+      </tr>
+    </table>
+  {{/with}}
+</section>

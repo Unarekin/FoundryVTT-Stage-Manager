@@ -28,7 +28,8 @@ export interface SerializedStageObject {
   skew: { x: number, y: number };
   angle: number;
   locked: boolean;
-  filters: SerializedFilter[];
+  effects: SerializedEffect[];
+  effectsEnabled: boolean;
   restrictToVisualArea: boolean;
   zIndex: number;
   alpha: number;
@@ -65,8 +66,37 @@ export interface SerializedDialogStageObject extends SerializedStageObject {
   text: SerializedTextStageObject;
 }
 
+/*
+export const StageLayers = ["primary", "foreground", "background", "text", "ui"] as const;
+export type StageLayer = typeof StageLayers[number];
+*/
+
+export const EffectTypes = ["outline", "dropshadow", "hsv", "blur", "pixelate", "glow", "bevel"] as const;
+export type EffectType = typeof EffectTypes[number];
+
+export interface SerializedEffect {
+  id: string;
+  type: EffectType;
+  version: string;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface SerializedFilter { }
+export interface SerializedOutlineEffect extends SerializedEffect { }
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface SerializedDropShadowEffect extends SerializedEffect { }
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface SerializedHSVEffect extends SerializedEffect { }
+
+export interface SerializedBlurEffect extends SerializedEffect {
+  strength: number;
+  quality: number;
+}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface SerializedPixelateEffect extends SerializedEffect { }
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface SerializedGlowEffect extends SerializedEffect { }
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface SerializedBevelEffect extends SerializedEffect { }
 
 export interface SynchronizationMessage {
   timestamp: number;

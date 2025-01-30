@@ -260,7 +260,6 @@ export class StageManager {
           app.render(true).catch(reject);
           app.closed
             .then(data => {
-              log("Then:", data);
               if (data?.layer && StageManager.layers[data.layer]) StageManager.layers[data.layer].addChild(obj.displayObject);
               else if (layer && StageManager.layers[layer]) StageManager.layers[layer].addChild(obj.displayObject);
               OpenApplications.delete(obj);

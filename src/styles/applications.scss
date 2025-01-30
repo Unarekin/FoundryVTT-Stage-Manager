@@ -31,4 +31,10 @@
   [data-role="customArguments"] .form-group.slim:last-child {
     margin-left: 2px;
   }
+
+  &.multiselect {
+    option {
+      color: var(--input-text-color);
+    }
+  }
 }

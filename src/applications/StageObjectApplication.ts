@@ -1,14 +1,17 @@
 import type { AnyObject, DeepPartial } from "Foundry-VTT/src/types/utils.d.mts";
 import { StageObject } from "../stageobjects";
 import { StageObjectApplicationContext, StageObjectApplicationOptions, StageObjectApplicationConfiguration, Tab } from "./types";
-import { SerializedStageObject, SerializedTrigger } from "../types";
+import { SerializedEffect, SerializedStageObject, SerializedTrigger } from "../types";
 import { StageManager } from "../StageManager";
 import ApplicationV2 from "Foundry-VTT/src/foundry/client-esm/applications/api/application.mjs";
 import HandlebarsApplicationMixin from "Foundry-VTT/src/foundry/client-esm/applications/api/handlebars-application.mjs";
 import { localize } from "../functions";
-import { addTriggerItem, editTriggerItem, getLayerContext, getScenesContext, getScopeContext, getTriggerActionType, getUsersContext, removeTriggerItem } from "./functions";
+import { addTriggerItem, editTriggerItem, getLayerContext, getScenesContext, getScopeContext, getTriggerActionType, getUsersContext, removeTriggerItem, selectEffectDialog } from "./functions";
 import { InvalidTriggerError } from "../errors";
-import { log } from "../logging";
+import { log, logError } from "../logging";
+import { defaultEffect, deserializeEffect, getEffectHandler, getEffectTemplate } from "../lib/effects";
+
+
 
 export abstract class StageObjectApplication<t extends StageObject = StageObject, v extends SerializedStageObject = SerializedStageObject> extends foundry.applications.api.HandlebarsApplicationMixin(foundry.applications.api.ApplicationV2<
   StageObjectApplicationContext,
@@ -77,7 +80,13 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
       // eslint-disable-next-line @typescript-eslint/unbound-method
       editTrigger: StageObjectApplication.EditTrigger,
       // eslint-disable-next-line @typescript-eslint/unbound-method
-      removeTrigger: StageObjectApplication.RemoveTrigger
+      removeTrigger: StageObjectApplication.RemoveTrigger,
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      addEffect: StageObjectApplication.AddEffect,
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      selectEffect: StageObjectApplication.SelectEffect,
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      deleteEffect: StageObjectApplication.DeleteEffect
     }
   }
 
@@ -85,8 +94,104 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
     this._onChangeForm();
   }
 
+  protected selectedEffectId = "";
+
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public static async DeleteEffect(this: StageObjectApplication, e: PointerEvent, element: HTMLSelectElement) {
+
+    const idElem = this.element.querySelector(`input[name="effect.id"]`);
+    if (!(idElem instanceof HTMLInputElement)) return;
+    const id = idElem.value;
+    const option = this.element.querySelector(`select#effectsList option[value="${id}"]`);
+    if (!(option instanceof HTMLOptionElement)) return;
+
+    const confirm = await foundry.applications.api.DialogV2.confirm({
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      window: ({ title: localize(`STAGEMANAGER.EDITDIALOG.DELETEEFFECT.TITLE`, { type: option.dataset.type }) } as any),
+      content: localize("STAGEMANAGER.EDITDIALOG.DELETEEFFECT.MESSAGE").replaceAll("\n", "<br>")
+    });
+    if (confirm) {
+      option.remove();
+      this.selectEffect("");
+      this.triggerFormChange();
+    }
+  }
+
+
+  public static ChangeEffect(this: StageObjectApplication, e: PointerEvent, element: HTMLSelectElement) {
+    log("Effect changed", element);
+    // const elements: NodeListOf<HTMLElement> = element.querySelectorAll(`input,select`);
+
+  }
+
+  public static SelectEffect(this: StageObjectApplication, e: PointerEvent, element: HTMLSelectElement) {
+    this.selectEffect(element.value);
+  }
+
+  protected selectEffect(id: string) {
+
+    const section = this.element.querySelector(`section[data-role="effect-config"]`);
+    if (!(section instanceof HTMLElement)) return;
+
+    section.innerHTML = "";
+    const option = this.element.querySelector(`select[name="effectsList"] option[value="${id}"]`);
+
+    if (option instanceof HTMLOptionElement) {
+      if (typeof option.dataset.serialized !== "string") return;
+      const deserialized = JSON.parse(option.dataset.serialized) as SerializedEffect;
+      const template = getEffectTemplate(deserialized.type);
+      if (!template) return;
+      renderTemplate(`modules/${__MODULE_ID__}/templates/effects/${template}`, {
+        ...deserialized,
+        serialized: option.dataset.serialized
+      })
+        .then(content => { section.innerHTML = content; })
+        .catch((err: Error) => { logError(err); })
+        ;
+      const deleteButton = this.element.querySelector(`button[data-action="deleteEffect"]`);
+      if (deleteButton instanceof HTMLButtonElement) deleteButton.removeAttribute("disabled");
+
+    } else {
+      const deleteButton = this.element.querySelector(`button[data-action="deleteEffect"]`);
+      if (deleteButton instanceof HTMLButtonElement) deleteButton.removeAttribute("disabled");
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public static async AddEffect(this: StageObjectApplication, e: PointerEvent, element: HTMLElement) {
+    const selected = await selectEffectDialog();
+    if (!selected) return;
+
+    const handler = getEffectHandler(selected);
+    if (!handler) return;
+
+    const effect = defaultEffect(selected);
+    if (!effect) return;
+
+    effect.id = foundry.utils.randomID();
+
+    const filter = deserializeEffect(effect);
+    if (!(filter instanceof PIXI.Filter)) return;
+
+    if (Array.isArray(this.stageObject.effects)) this.stageObject.effects.push(filter);
+    else this.stageObject.effects = [filter];
+
+    const selectList = this.element.querySelector(`select[name="effectsList"]`);
+    if (!(selectList instanceof HTMLSelectElement)) return;
+
+    const option = document.createElement("option");
+    option.setAttribute("value", effect.id);
+    option.dataset.type = effect.type;
+    option.dataset.serialized = JSON.stringify(effect);
+    option.innerText = localize(`STAGEMANAGER.EDITDIALOG.EFFECTS.${handler.label}`);
+    selectList.add(option);
+    selectList.value = effect.id;
+    this.selectEffect(effect.id);
+    this.triggerFormChange();
+  }
+
   public static RemoveTrigger(this: StageObjectApplication, e: PointerEvent, element: HTMLElement) {
-    log("Removing:", element.dataset.id)
     const id = element.dataset.id ?? "";
     if (id)
       void removeTriggerItem(this.element, id);
@@ -192,8 +297,8 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
 
   protected parseFormData(data: Record<string, unknown>): v {
     // try {
-    // console.group("Parsing form data");
-    // console.log("Data:", data);
+    //   console.group("Parsing form data");
+    //   console.log("Data:", data);
     const parsed = foundry.utils.expandObject(data) as v;
     // console.log("Initial parsing:", parsed);
 
@@ -233,10 +338,41 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
       parsed.triggers = {};
     }
 
-    // console.log("Final:", parsed)
+    // Effects
+    // Check to see if we're editing an effect
+    const effectConfig = this.element.querySelector(`section[data-role="effect-config"]`);
+    if (effectConfig instanceof HTMLElement) {
+      // We *are* editing one
+      const typeElem = effectConfig.querySelector(`[name="effect.type"]`)
+      const effectType = typeElem instanceof HTMLInputElement ? typeElem.value : "";
+      const handler = getEffectHandler(effectType);
+      if (handler) {
+        const fromForm = handler.fromForm(effectConfig);
+        if (fromForm) {
+          const option = this.element.querySelector(`option[value="${fromForm.id}"]`);
+          if (option instanceof HTMLOptionElement) {
+            option.dataset.serialized = JSON.stringify(fromForm);
+          }
+        }
+      }
+
+    }
+
+
+    const options = Array.from(this.element.querySelectorAll(`select[name="effectsList"] option`).values()) as HTMLElement[];
+
+    parsed.effects = options.map(option => option.dataset.serialized ? JSON.parse(option.dataset.serialized) as SerializedEffect : "").filter(item => !!item);
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    delete (parsed as any).effect;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    delete (parsed as any).effectsList;
+
+
+
     return parsed;
     // } finally {
-    // console.groupEnd();
+    //   console.groupEnd();
     // }
   }
 
@@ -280,6 +416,14 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
         label: `STAGEMANAGER.TABS.BASICS`
       },
       ...(this.getTabs()),
+      effects: {
+        id: "effects",
+        group: "primary",
+        active: false,
+        cssClass: "",
+        icon: "fas fa-fire",
+        label: "STAGEMANAGER.TABS.EFFECTS"
+      },
       triggers: {
         id: "triggers",
         group: "primary",
@@ -312,9 +456,9 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
 
     const form = this.element instanceof HTMLFormElement ? new FormDataExtended(this.element) : new FormDataExtended($(this.element).find("form")[0]);
     const data = this.parseFormData(form.object);
+    log("Changed:", data);
 
     this.stageObject.deserialize(data);
-
   }
 
   protected prepareStageObject(): v {
@@ -342,7 +486,6 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
     const scopeSelect = this.element.querySelector(`select[name="scope"]`);
     if (scopeSelect instanceof HTMLSelectElement)
       scopeSelect.addEventListener("input", () => { this.setScopeOwners(); });
-
   }
 
   protected setScopeOwners() {
@@ -350,7 +493,7 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
     if (!(select instanceof HTMLSelectElement)) return;
 
     const scope = select.value;
-    const sections = this.element.querySelectorAll(`[data-scope]`) as HTMLElement[];
+    const sections = this.element.querySelectorAll(`[data-scope]`) as unknown as HTMLElement[];
     for (const section of sections)
       section.style.display = scope === section.dataset.scope ? "block" : "none";
   }
@@ -380,7 +523,7 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
   protected async _prepareContext(options: { force?: boolean | undefined; position?: { top?: number | undefined; left?: number | undefined; width?: number | "auto" | undefined; height?: number | "auto" | undefined; scale?: number | undefined; zIndex?: number | undefined; } | undefined; window?: { title?: string | undefined; icon?: string | false | undefined; controls?: boolean | undefined; } | undefined; parts?: string[] | undefined; isFirstRender?: boolean | undefined; }): Promise<StageObjectApplicationContext> {
     const serialized = this.prepareStageObject();
     const triggers = Object.values(serialized.triggers).flat();
-    return {
+    const context = {
       ...(await super._prepareContext(options)),
       stageObject: serialized,
       tabs: this._getTabs(),
@@ -388,6 +531,15 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
       scopeSelect: getScopeContext(),
       usersSelect: getUsersContext(this.stageObject),
       scenesSelect: getScenesContext(this.stageObject),
+      effects: serialized.effects.map(effect => {
+        const handler = getEffectHandler(effect.type);
+        if (!handler) throw new Error();
+        return {
+          ...effect,
+          serialized: JSON.stringify(effect),
+          label: `STAGEMANAGER.EDITDIALOG.EFFECTS.${handler.label}`
+        }
+      }),
       triggers: triggers.map(trigger => {
         const triggerClass = getTriggerActionType(trigger.action);
         if (triggerClass) {
@@ -400,6 +552,8 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
         }
       })
     };
+
+    return context;
   }
 
   get title() {
@@ -434,6 +588,6 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
       // this.#rejectPromise = reject;
       this.#resolve = resolve;
       this.#reject = reject;
-    })
+    });
   }
 }

@@ -10,7 +10,7 @@ import * as tempTriggers from "../triggeractions";
 import { StageManagerControlsLayer } from "../ControlButtonsHandler";
 import { log, logError } from "../logging";
 import { getTriggerActionType } from "../applications/functions";
-// import { getTriggerActionType } from "../applications/functions";
+import { deserializeEffect, serializeEffect } from '../lib/effects';
 
 
 const TriggerActions = Object.fromEntries(Object.values(tempTriggers).map(val => [val.type, val]));
@@ -655,6 +655,15 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     }
   }
 
+  public get effects() { return this.displayObject.filters; }
+  public set effects(val) {
+    if (!foundry.utils.objectsEqual({ test: val }, { test: this.effects })) {
+      this.dirty = true;
+      this.displayObject.filters = val;
+    }
+  }
+
+
   public get width() { return 0 }
   public set width(width) {
     if (this.width !== width) {
@@ -664,12 +673,6 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     }
   }
 
-  // protected updateScaledDimensions() {
-  //   this.scaledDimensions.x = this.x / this.actualBounds.width;
-  //   this.scaledDimensions.y = this.y / this.actualBounds.height;
-  //   this.scaledDimensions.width = this.width / this.actualBounds.width;
-  //   this.scaledDimensions.height = this.height / this.actualBounds.height;
-  // }
 
   protected updatePinLocations() {
     if (this.pin.left) this._leftPinPos = this.left;
@@ -794,7 +797,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   // #region Public Methods (6)
 
   public deserialize(serialized: SerializedStageObject) {
-    log("Deserializing:", serialized);
+    // log("Deserializing:", serialized);
     this.id = serialized.id;
     this.name = serialized.name;
     // void StageManager.setOwners(this.id, serialized.owners);
@@ -817,6 +820,25 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
     if (serialized.layer)
       this.setLayer(serialized.layer ?? "primary");
+
+    this.effectsEnabled = !!serialized.effectsEnabled;
+    log("Deserializing:", serialized.effects);
+
+    if (Array.isArray(this.displayObject.filters)) {
+      for (const filter of this.displayObject.filters)
+        filter.destroy();
+      this.displayObject.filters = [];
+    }
+
+    if (Array.isArray(serialized.effects)) {
+      for (const effect of serialized.effects) {
+        const filter = deserializeEffect(effect);
+        if (filter) {
+          if (Array.isArray(this.displayObject.filters)) this.displayObject.filters.push(filter);
+          else this.displayObject.filters = [filter];
+        }
+      }
+    }
 
     this.dirty = false;
   }
@@ -898,6 +920,17 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     }
   }
 
+  private _effectsEnabled = true;
+  public get effectsEnabled() { return this._effectsEnabled; }
+  public set effectsEnabled(enabled) {
+    if (enabled !== this.effectsEnabled) {
+      this.dirty = true;
+      const filters = this.displayObject.filters ?? [];
+      for (const filter of filters)
+        filter.enabled = enabled;
+    }
+  }
+
   public serialize(): SerializedStageObject {
     return {
       id: this.id,
@@ -907,7 +940,6 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       type: "",
       name: this.name ?? this.id,
       locked: this.locked,
-      // bounds: { ...this.scaledDimensions },
       bounds: {
         x: this.x / this.actualBounds.width,
         y: this.y / this.actualBounds.height,
@@ -918,7 +950,8 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       restrictToVisualArea: this.restrictToVisualArea,
       scope: this.scope ?? "global",
       scopeOwners: this.scopeOwners ?? [],
-      filters: [],
+      effects: this.effects?.map(effect => serializeEffect(effect)).filter(effect => !!effect) ?? [],
+      effectsEnabled: this.effectsEnabled,
       triggers: this.triggers ?? {},
       triggersEnabled: this.triggersEnabled,
       zIndex: this.zIndex,

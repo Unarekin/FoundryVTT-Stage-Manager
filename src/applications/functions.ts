@@ -5,6 +5,7 @@ import { InvalidTriggerError, LocalizedError, UnknownDocumentTypeError } from ".
 import { log } from "../logging";
 import { EditTriggerDialogV2 } from "./EditTriggerDialogV2";
 import { StageObject } from "../stageobjects";
+import { localize } from "../functions";
 
 const triggerActions = Object.values(tempTriggerActions).filter(item => !!item.type);
 
@@ -374,7 +375,6 @@ export async function setMacroArgs(element: HTMLElement) {
 
 export async function addTriggerItem(element: HTMLElement) {
   const newTrigger = await (foundry.applications.api.DialogV2 ? EditTriggerDialogV2.prompt() : Promise.resolve(undefined));
-  log("New trigger:", newTrigger);
   if (!newTrigger) return;
 
   const triggerList = element.querySelector(`[data-role="trigger-list"]`);
@@ -529,6 +529,12 @@ function getDocuments(documentName: string, selected?: string): SectionSpec[] {
   return documents;
 }
 
+export function getEffectsContext(obj: StageObject): Record<string, string> {
+  return Object.fromEntries(
+    obj.effects.map(effect => [effect.id, `STAGEMANAGER.EDITDIALOG.EFFECTS.${effect.type.toUpperCase()}`])
+  )
+}
+
 export async function inputPrompt(content: string, title?: string): Promise<string | undefined> {
   if (foundry.applications.api.DialogV2) {
     const input = await foundry.applications.api.DialogV2.wait({
@@ -559,4 +565,38 @@ export async function inputPrompt(content: string, title?: string): Promise<stri
     //empty
   }
   return Promise.resolve(undefined);
+}
+
+export async function selectEffectDialog(): Promise<string | undefined> {
+  const content = await renderTemplate(`modules/${__MODULE_ID__}/templates/addEffect.hbs`, {
+    effects: [
+      { value: "outline", label: "STAGEMANAGER.EDITDIALOG.EFFECTS.OUTLINE" },
+      { value: "dropshadow", label: "STAGEMANAGER.EDITDIALOG.EFFECTS.DROPSHADOW" },
+      { value: "hsv", label: "STAGEMANAGER.EDITDIALOG.EFFECTS.HSV" },
+      { value: "blur", label: "STAGEMANAGER.EDITDIALOG.EFFECTS.BLUR" },
+      { value: "pixelate", label: "STAGEMANAGER.EDITDIALOG.EFFECTS.PIXELATE" },
+      { value: "glow", label: "STAGEMANAGER.EDITDIALOG.EFFECTS.GLOW" },
+      { value: "bevel", label: "STAGEMANAGER.EDITDIALOG.EFFECTS.BEVEL" }
+    ].sort((a, b) => localize(a.label).localeCompare(localize(b.label)))
+  });
+  const selection = await new Promise<string | undefined>(resolve => {
+    void foundry.applications.api.DialogV2.wait({
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      window: ({ title: "STAGEMANAGER.EDITDIALOG.EFFECTS.ADD" } as any),
+      content,
+      rejectClose: false,
+      actions: {
+        select: (e, elem) => { resolve(elem.dataset.effect); }
+      },
+      buttons: [
+        {
+          action: "cancel",
+          label: `<i class="fas fa-times"></i> ${localize("Cancel")}`
+        }
+      ]
+    }).then(val => {
+      resolve(val ?? undefined);
+    });
+  })
+  return selection === "cancel" ? undefined : selection ?? undefined;
 }

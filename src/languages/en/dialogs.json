@@ -31,11 +31,7 @@
       "TITLE": "Remove Trigger"
     },
     "EDITDIALOG": {
-      "SCENES": "Scenes",
-      "USERS": "Users",
       "ACTOR": "Actor",
-      "SCOPE": "Object scope",
-      "OWNERS": "Owner(s)",
       "ADDTRIGGER": "Add Trigger",
       "ALPHA": "Opacity",
       "ANGLE": "Rotation",
@@ -49,6 +45,28 @@
       },
       "DELETE": "Delete {name}",
       "EDIT": "Edit {name}",
+      "DELETEEFFECT": {
+        "TITLE": "Delete {type}",
+        "MESSAGE": "Are you sure you wish to delete this effect?\nThis cannot be undone."
+      },
+      "EFFECTS": {
+        "BEVEL": "Bevel",
+        "BLUR": "Blur",
+        "DROPSHADOW": "Drop Shadow",
+        "ENABLE": "Enable Effects",
+        "GLOW": "Glow",
+        "HSV": "HSV Adjustment",
+        "OUTLINE": "Outline",
+        "PIXELATE": "Pixelate",
+        "ADD": "Add Effect",
+        "DELETE": "Delete Effect",
+        "CONFIG": {
+          "BLUR": {
+            "STRENGTH": "Strength",
+            "QUALITY": "Quality"
+          }
+        }
+      },
       "FONT": {
         "COLOR": "Color",
         "DROPSHADOW": "Drop Shadow",
@@ -76,8 +94,11 @@
         "TOPRIGHT": "Top right"
       },
       "NAME": "Name",
+      "OWNERS": "Owner(s)",
       "POSX": "X",
       "POSY": "Y",
+      "SCENES": "Scenes",
+      "SCOPE": "Object scope",
       "SIZE": "Size",
       "SKEW": "Skew",
       "SRC": "Image source",
@@ -88,6 +109,7 @@
       },
       "TRIGGERS": "Triggers",
       "TRIGGERSENABLED": "Enable triggers",
+      "USERS": "Users",
       "VISUALBOUNDS": "Relative to Visual Bounds",
       "VISUALBOUNDSHIDE": "Hide Visual Bounds",
       "VISUALBOUNDSHINT": "The 'visual bounds' is an area of the screen calculated to ensure that elements placed will not be covered by Foundry's standard UI.",
@@ -98,6 +120,7 @@
     "TABS": {
       "ACTOR": "Actor",
       "BASICS": "Basics",
+      "EFFECTS": "Effects",
       "FONT": "Font Style",
       "IMAGE": "Image",
       "PANEL": "Panel",
