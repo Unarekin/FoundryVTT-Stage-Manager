@@ -6,6 +6,7 @@ import { log } from "../logging";
 import { EditTriggerDialogV2 } from "./EditTriggerDialogV2";
 import { StageObject } from "../stageobjects";
 import { localize } from "../functions";
+import { serializeEffect } from "../lib/effects";
 
 const triggerActions = Object.values(tempTriggerActions).filter(item => !!item.type);
 
@@ -530,9 +531,11 @@ function getDocuments(documentName: string, selected?: string): SectionSpec[] {
 }
 
 export function getEffectsContext(obj: StageObject): Record<string, string> {
-  return Object.fromEntries(
-    obj.effects.map(effect => [effect.id, `STAGEMANAGER.EDITDIALOG.EFFECTS.${effect.type.toUpperCase()}`])
-  )
+  if (!Array.isArray(obj.effects)) return {};
+
+
+  const serialized = obj.effects.map(effect => serializeEffect(effect)).filter(item => !!item);
+  return Object.fromEntries(serialized.map(item => [item.id, `STAGEMANAGER.EDITDIALOG.EFFECTS.${item.label}`]));
 }
 
 export async function inputPrompt(content: string, title?: string): Promise<string | undefined> {

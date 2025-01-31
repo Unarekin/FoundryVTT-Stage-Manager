@@ -9,3 +9,5 @@ declare const TweenMax: any;
 declare const libWrapper: any;
 
 declare const socketlib: any;
+
+declare const ColorPicker: any;

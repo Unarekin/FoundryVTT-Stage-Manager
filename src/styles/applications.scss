@@ -37,4 +37,15 @@
       color: var(--input-text-color);
     }
   }
+
+  .center {
+    text-align: center;
+  }
+
+  .effects-body {
+    display: grid;
+    grid-template-columns: 0.5fr 1fr;
+    grid-gap: 5px;
+    grid-auto-rows: max-content;
+  }
 }

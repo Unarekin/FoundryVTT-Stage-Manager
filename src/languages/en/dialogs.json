@@ -64,6 +64,14 @@
           "BLUR": {
             "STRENGTH": "Strength",
             "QUALITY": "Quality"
+          },
+          "BEVEL": {
+            "THICKNESS": "Thickness",
+            "ROTATION": "Rotation",
+            "LIGHTALPHA": "Light Alpha",
+            "SHADOWALPHLA": "Shadow Alpha",
+            "LIGHTCOLOR": "Light Color",
+            "SHADOWCOLOR": "Shadow Color"
           }
         }
       },

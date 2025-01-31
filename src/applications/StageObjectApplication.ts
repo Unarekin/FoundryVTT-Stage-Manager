@@ -37,7 +37,7 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
   static DEFAULT_OPTIONS = {
     tag: "form",
     position: {
-      width: 500
+      width: 550
     },
     window: {
       icon: "fas fa-gear",
@@ -108,7 +108,7 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
 
     const confirm = await foundry.applications.api.DialogV2.confirm({
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      window: ({ title: localize(`STAGEMANAGER.EDITDIALOG.DELETEEFFECT.TITLE`, { type: option.dataset.type }) } as any),
+      window: ({ title: localize(`STAGEMANAGER.EDITDIALOG.DELETEEFFECT.TITLE`, { type: option.dataset.type ?? "" }) } as any),
       content: localize("STAGEMANAGER.EDITDIALOG.DELETEEFFECT.MESSAGE").replaceAll("\n", "<br>")
     });
     if (confirm) {
@@ -119,19 +119,13 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
   }
 
 
-  public static ChangeEffect(this: StageObjectApplication, e: PointerEvent, element: HTMLSelectElement) {
-    log("Effect changed", element);
-    // const elements: NodeListOf<HTMLElement> = element.querySelectorAll(`input,select`);
-
-  }
-
   public static SelectEffect(this: StageObjectApplication, e: PointerEvent, element: HTMLSelectElement) {
     this.selectEffect(element.value);
   }
 
   protected selectEffect(id: string) {
 
-    const section = this.element.querySelector(`section[data-role="effect-config"]`);
+    const section = this.element.querySelector(`[data-role="effect-config"]`);
     if (!(section instanceof HTMLElement)) return;
 
     section.innerHTML = "";
@@ -146,7 +140,11 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
         ...deserialized,
         serialized: option.dataset.serialized
       })
-        .then(content => { section.innerHTML = content; })
+        .then(content => {
+          section.innerHTML = content;
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+          ColorPicker.install();
+        })
         .catch((err: Error) => { logError(err); })
         ;
       const deleteButton = this.element.querySelector(`button[data-action="deleteEffect"]`);
@@ -340,7 +338,7 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
 
     // Effects
     // Check to see if we're editing an effect
-    const effectConfig = this.element.querySelector(`section[data-role="effect-config"]`);
+    const effectConfig = this.element.querySelector(`[data-role="effect-config"]`);
     if (effectConfig instanceof HTMLElement) {
       // We *are* editing one
       const typeElem = effectConfig.querySelector(`[name="effect.type"]`)
@@ -473,10 +471,12 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
   }
 
 
+
   protected ghost: PIXI.DisplayObject | null = null;
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected _onRender(context: StageObjectApplicationContext, options: StageObjectApplicationOptions): void {
+
     // Create ghost
     this.stageObject.synchronize = false;
     if (this.stageObject.layer) StageManager.setStageObjectLayer(this.stageObject, this.stageObject.layer);
@@ -486,6 +486,9 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
     const scopeSelect = this.element.querySelector(`select[name="scope"]`);
     if (scopeSelect instanceof HTMLSelectElement)
       scopeSelect.addEventListener("input", () => { this.setScopeOwners(); });
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    ColorPicker.install();
   }
 
   protected setScopeOwners() {

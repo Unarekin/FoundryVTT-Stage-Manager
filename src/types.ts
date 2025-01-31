@@ -88,6 +88,7 @@ export interface SerializedDropShadowEffect extends SerializedEffect { }
 export interface SerializedHSVEffect extends SerializedEffect { }
 
 export interface SerializedBlurEffect extends SerializedEffect {
+  type: "blur",
   strength: number;
   quality: number;
 }
@@ -95,8 +96,14 @@ export interface SerializedBlurEffect extends SerializedEffect {
 export interface SerializedPixelateEffect extends SerializedEffect { }
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface SerializedGlowEffect extends SerializedEffect { }
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface SerializedBevelEffect extends SerializedEffect { }
+
+export interface SerializedBevelEffect extends SerializedEffect {
+  type: "bevel",
+  rotation: number;
+  thickness: number;
+  lightColor: string;
+  shadowColor: string;
+}
 
 export interface SynchronizationMessage {
   timestamp: number;

@@ -1,7 +1,7 @@
-import { SerializedEffect } from "../types";
+import { EffectType, SerializedEffect } from "../types";
 
 export interface Effect<t extends SerializedEffect = SerializedEffect> {
-  type: string;
+  type: EffectType,
   default: t;
   label: string;
   template: string;
