@@ -40,10 +40,14 @@ Hooks.once("canvasReady", () => {
   libWrapper.register(__MODULE_ID__, "CONFIG.Macro.documentClass.prototype.execute", function (this: Macro, wrapped: Function, scope: Record<string, any> = {}, ...args: unknown[]) {
     let shouldHydrate = false;
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
-    const specificUser = (this.getFlag as any)("advanced-macros", "runForSpecificUser");
-    if (!specificUser || (specificUser && specificUser === game.user?.id))
+    if (game?.modules?.get("advanced-macros")?.active) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+      const specificUser = (this.getFlag as any)("advanced-macros", "runForSpecificUser");
+      if (!specificUser || (specificUser && specificUser === game.user?.id))
+        shouldHydrate = true;
+    } else {
       shouldHydrate = true;
+    }
 
     if (shouldHydrate && scope.stageObject)
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
