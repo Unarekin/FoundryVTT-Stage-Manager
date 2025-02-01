@@ -17,6 +17,7 @@ export interface SerializedStageObject {
   name: string;
   scope: Scope;
   scopeOwners: string[];
+  clickThrough: boolean;
   triggersEnabled: boolean;
   triggers: Partial<Record<keyof TriggerEventSignatures, SerializedTrigger[]>>;
   bounds: {

@@ -33,6 +33,7 @@
     "EDITDIALOG": {
       "ACTOR": "Actor",
       "ADDTRIGGER": "Add Trigger",
+      "CLICKTHROUGH": "Ignore Mouse Events",
       "ALPHA": "Opacity",
       "ANGLE": "Rotation",
       "ANGLEHINT": "(In degrees)",

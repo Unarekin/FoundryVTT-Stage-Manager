@@ -353,7 +353,6 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
           }
         }
       }
-
     }
 
 
@@ -365,7 +364,6 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
     delete (parsed as any).effect;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     delete (parsed as any).effectsList;
-
 
 
     return parsed;

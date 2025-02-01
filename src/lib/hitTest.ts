@@ -8,6 +8,7 @@ export function hitTestFn(wrapped: Function, target: PIXI.DisplayObject, pos: PI
   const stageObject: StageObject = (target as any).stageObject;
 
   if (stageObject instanceof StageObject) {
+    if (game.activeTool !== stageObject.selectTool && stageObject.clickThrough) return false;
     if (stageObject.bounds.contains(pos.x, pos.y)) {
 
       const local = stageObject.displayObject.toLocal(pos);

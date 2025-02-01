@@ -812,6 +812,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     this.scope = serialized.scope ?? "global";
     this.scopeOwners = serialized.scopeOwners ?? [];
     this.triggers = serialized.triggers ?? {};
+    this.clickThrough = serialized.clickThrough;
 
     this.x = serialized.bounds.x * this.actualBounds.width;
     this.y = serialized.bounds.y * this.actualBounds.height;
@@ -931,6 +932,15 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     }
   }
 
+  private _clickThrough = false;
+  public get clickThrough() { return this._clickThrough; }
+  public set clickThrough(val) {
+    if (val !== this.clickThrough) {
+      this._clickThrough = val;
+      this.dirty = true;
+    }
+  }
+
   public serialize(): SerializedStageObject {
     return {
       id: this.id,
@@ -940,6 +950,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       type: "",
       name: this.name ?? this.id,
       locked: this.locked,
+      clickThrough: this.clickThrough,
       bounds: {
         x: this.x / this.actualBounds.width,
         y: this.y / this.actualBounds.height,
