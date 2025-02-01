@@ -80,6 +80,9 @@
             "SHADOWONLY": "Shadow Only",
             "BLUR": "Blur",
             "QUALITY": "Quality"
+          },
+          "PIXELATE": {
+            "SIZE": "Size"
           }
         }
       },

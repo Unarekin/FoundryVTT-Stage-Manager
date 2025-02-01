@@ -101,7 +101,9 @@ export interface SerializedBlurEffect extends SerializedEffect {
   quality: number;
 }
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface SerializedPixelateEffect extends SerializedEffect { }
+export interface SerializedPixelateEffect extends SerializedEffect {
+  size: number;
+}
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface SerializedGlowEffect extends SerializedEffect { }
 
