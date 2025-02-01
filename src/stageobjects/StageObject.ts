@@ -475,6 +475,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
         val.pivot.x = pivot.x;
         val.pivot.y = pivot.y;
         this.#displayObject.destroy();
+        this._displayObject = val;
       }
     }
 
@@ -1096,6 +1097,10 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   public getPixelColor(x: number, y: number): PIXI.Color {
     // if (!(canvas?.app?.renderer && this.renderTexture)) throw new CanvasNotInitializedError();
     if (!canvas?.app?.renderer) throw new CanvasNotInitializedError();
+
+    // const rt = PIXI.RenderTexture.create({ width: this.baseWidth, height: this.baseHeight });
+    // canvas.app.renderer.render(this._displayObject, { renderTexture: rt });
+    // const pixels = Uint8ClampedArray.from(canvas.app.renderer.extract.pixels(rt, new PIXI.Rectangle(x, y, 1, 1)));
     const pixels = Uint8ClampedArray.from(canvas.app.renderer.extract.pixels(this._displayObject, new PIXI.Rectangle(x, y, 1, 1)));
 
     const color = new PIXI.Color(pixels)
