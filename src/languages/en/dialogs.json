@@ -83,6 +83,12 @@
           },
           "PIXELATE": {
             "SIZE": "Size"
+          },
+          "OUTLINE": {
+            "COLOR": "Color",
+            "THICKNESS": "Thickness",
+            "OUTLINEONLY": "Outline Only",
+            "QUALITY": "Quality"
           }
         }
       },

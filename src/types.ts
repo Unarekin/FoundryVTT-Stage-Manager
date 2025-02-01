@@ -81,8 +81,12 @@ export interface SerializedEffect {
   version: string;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface SerializedOutlineEffect extends SerializedEffect { }
+export interface SerializedOutlineEffect extends SerializedEffect {
+  color: string;
+  outlineOnly: boolean;
+  thickness: number;
+  quality: number;
+}
 
 export interface SerializedDropShadowEffect extends SerializedEffect {
   type: "dropshadow";
@@ -100,7 +104,8 @@ export interface SerializedBlurEffect extends SerializedEffect {
   strength: number;
   quality: number;
 }
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+
+
 export interface SerializedPixelateEffect extends SerializedEffect {
   size: number;
 }
