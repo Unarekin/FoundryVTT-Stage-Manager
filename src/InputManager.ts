@@ -81,6 +81,15 @@ export class InputManager {
         canvas.stage.once("pointerdown", e => {
           obj.x = e.clientX;
           obj.y = e.clientY;
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          if ((obj as any).width)
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            obj.x -= ((obj as any).width / 2);
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          if ((obj as any).height)
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            obj.y -= (obj as any).height / 2;
+
           // Remove from array
           const index = PLACING_GHOSTS.indexOf(obj);
           if (index !== -1) PLACING_GHOSTS.splice(index, 1);
