@@ -82,8 +82,15 @@ export interface SerializedEffect {
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface SerializedOutlineEffect extends SerializedEffect { }
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface SerializedDropShadowEffect extends SerializedEffect { }
+
+export interface SerializedDropShadowEffect extends SerializedEffect {
+  type: "dropshadow";
+  offsetX: number;
+  offsetY: number;
+  color: string;
+  blur: number;
+  quality: number;
+}
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface SerializedHSVEffect extends SerializedEffect { }
 

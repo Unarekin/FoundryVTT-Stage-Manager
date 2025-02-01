@@ -68,10 +68,17 @@
           "BEVEL": {
             "THICKNESS": "Thickness",
             "ROTATION": "Rotation",
-            "LIGHTALPHA": "Light Alpha",
-            "SHADOWALPHLA": "Shadow Alpha",
             "LIGHTCOLOR": "Light Color",
             "SHADOWCOLOR": "Shadow Color"
+          },
+          "DROPSHADOW": {
+            "OFFSET": "Offset",
+            "X": "x",
+            "Y": "y",
+            "COLOR": "Color",
+            "SHADOWONLY": "Shadow Only",
+            "BLUR": "Blur",
+            "QUALITY": "Quality"
           }
         }
       },
