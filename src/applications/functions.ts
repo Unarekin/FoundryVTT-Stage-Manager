@@ -575,7 +575,6 @@ export async function selectEffectDialog(): Promise<string | undefined> {
     effects: [
       { value: "outline", label: "STAGEMANAGER.EDITDIALOG.EFFECTS.OUTLINE" },
       { value: "dropshadow", label: "STAGEMANAGER.EDITDIALOG.EFFECTS.DROPSHADOW" },
-      { value: "hsv", label: "STAGEMANAGER.EDITDIALOG.EFFECTS.HSV" },
       { value: "blur", label: "STAGEMANAGER.EDITDIALOG.EFFECTS.BLUR" },
       { value: "pixelate", label: "STAGEMANAGER.EDITDIALOG.EFFECTS.PIXELATE" },
       { value: "glow", label: "STAGEMANAGER.EDITDIALOG.EFFECTS.GLOW" },

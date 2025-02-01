@@ -56,7 +56,6 @@
         "DROPSHADOW": "Drop Shadow",
         "ENABLE": "Enable Effects",
         "GLOW": "Glow",
-        "HSV": "HSV Adjustment",
         "OUTLINE": "Outline",
         "PIXELATE": "Pixelate",
         "ADD": "Add Effect",
@@ -88,6 +87,13 @@
             "COLOR": "Color",
             "THICKNESS": "Thickness",
             "OUTLINEONLY": "Outline Only",
+            "QUALITY": "Quality"
+          },
+          "GLOW": {
+            "COLOR": "Color",
+            "INNERSTRENGTH": "Inner Strength",
+            "OUTERSTRENGTH": "Outer Strength",
+            "GLOWONLY": "Draw Glow Only",
             "QUALITY": "Quality"
           }
         }

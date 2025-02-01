@@ -1,0 +1,37 @@
+<section>
+  <input type="hidden" name="effect.id" id="effect.id" value="{{id}}">
+  <input type="hidden" name="effect.type" id="effect.type" value="{{type}}">
+  <input type="hidden" name="effect.serialized" id="effect.serialized" value="{{serialized}}">
+  <div class="center">{{localize "STAGEMANAGER.EDITDIALOG.EFFECTS.GLOW"}}</div>
+
+  <div class="form-group">
+    <label for="effect.color">{{localize "STAGEMANAGER.EDITDIALOG.EFFECTS.CONFIG.GLOW.COLOR"}}</label>
+    <input type="text" name="effect.color" id="effect.color" value="{{color}}" data-color-picker="{alphaChannel: true}">
+  </div>
+  <br>
+  
+  <div class="form-group">
+    <label for="effect.innerStrength">{{localize "STAGEMANAGER.EDITDIALOG.EFFECTS.CONFIG.GLOW.INNERSTRENGTH"}}</label>
+    <input type="number" name="effect.innerStrength" id="effect.innerStrength" min="0" step="1" value="{{innerStrength}}">
+  </div>
+  <br>
+
+  <div class="form-group">
+    <label for="effect.outerStrength">{{localize "STAGEMANAGER.EDITDIALOG.EFFECTS.CONFIG.GLOW.OUTERSTRENGTH"}}</label>
+    <input type="number" name="effect.outerStrength" id="effect.outerStrength" min="0" step="1" value="{{outerStrength}}">
+  </div>
+  <br>
+
+  <div class="form-group">
+    <label for="effect.glowOnly">{{localize "STAGEMANAGER.EDITDIALOG.EFFECTS.CONFIG.GLOW.GLOWONLY"}}</label>
+    <input type="checkbox" name="effect.glowOnly" id="effect.glowOnly" {{checked glowOnly}}>
+  </div>
+  <br>
+
+  <div class="form-group">
+    <label for="effect.quality">{{localize "STAGEMANAGER.EDITDIALOG.EFFECTS.CONFIG.GLOW.QUALITY"}}</label>
+    <range-picker min="0" max="100" step="1" value="{{quality}}"></range-picker>
+  </div>
+  <br>
+
+</section>

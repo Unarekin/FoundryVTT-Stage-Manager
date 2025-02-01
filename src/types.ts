@@ -72,7 +72,7 @@ export const StageLayers = ["primary", "foreground", "background", "text", "ui"]
 export type StageLayer = typeof StageLayers[number];
 */
 
-export const EffectTypes = ["outline", "dropshadow", "hsv", "blur", "pixelate", "glow", "bevel"] as const;
+export const EffectTypes = ["outline", "dropshadow", "blur", "pixelate", "glow", "bevel"] as const;
 export type EffectType = typeof EffectTypes[number];
 
 export interface SerializedEffect {
@@ -96,8 +96,6 @@ export interface SerializedDropShadowEffect extends SerializedEffect {
   blur: number;
   quality: number;
 }
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface SerializedHSVEffect extends SerializedEffect { }
 
 export interface SerializedBlurEffect extends SerializedEffect {
   type: "blur",
@@ -109,8 +107,14 @@ export interface SerializedBlurEffect extends SerializedEffect {
 export interface SerializedPixelateEffect extends SerializedEffect {
   size: number;
 }
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface SerializedGlowEffect extends SerializedEffect { }
+
+export interface SerializedGlowEffect extends SerializedEffect {
+  color: string;
+  quality: number;
+  innerStrength: number;
+  outerStrength: number;
+  glowOnly: boolean;
+}
 
 export interface SerializedBevelEffect extends SerializedEffect {
   type: "bevel",
