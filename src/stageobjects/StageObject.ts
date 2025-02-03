@@ -195,6 +195,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
 
   protected onClick(e: PIXI.FederatedPointerEvent) {
+    log("Clicked:", this.name);
     // Do not trigger when control layer is active
     // if (canvas?.activeLayer instanceof StageManagerControlsLayer) return;
 
@@ -339,7 +340,13 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   }
 
   public async triggerEvent<k extends keyof TriggerEventSignatures>(event: k, args: TriggerEventSignatures[k]) {
-    log("Event triggered:", event, args);
+    // console.groupCollapsed("Event Triggered");
+    // console.log("Event:", event)
+    // console.log("StageObject:", this);
+    // console.log("Args:", args);
+    // console.groupEnd();
+    log("Event triggered:", event);
+
     if (this.triggers[event]) {
       for (const trigger of this.triggers[event]) {
         if (TriggerActions[trigger.action]) {
@@ -798,7 +805,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   // #region Public Methods (6)
 
   public deserialize(serialized: SerializedStageObject) {
-    // log("Deserializing:", serialized);
+    log("Deserializing:", serialized);
     this.id = serialized.id;
     this.name = serialized.name;
     // void StageManager.setOwners(this.id, serialized.owners);
@@ -824,7 +831,6 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       this.setLayer(serialized.layer ?? "primary");
 
     this.effectsEnabled = !!serialized.effectsEnabled;
-    log("Deserializing:", serialized.effects);
 
     if (Array.isArray(this.displayObject.filters)) {
       for (const filter of this.displayObject.filters)
@@ -933,11 +939,13 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     }
   }
 
+
   private _clickThrough = false;
   public get clickThrough() { return this._clickThrough; }
   public set clickThrough(val) {
     if (val !== this.clickThrough) {
       this._clickThrough = val;
+
       this.dirty = true;
     }
   }
@@ -1068,12 +1076,13 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
   protected onPointerEnter(e: PIXI.FederatedPointerEvent) {
     if (this.#pointerEntered) return;
-    this.#pointerEntered = true;
+
     if (game.activeTool === this.selectTool && StageManager.canModifyStageObject(game.user?.id ?? "", this.id)) {
       this.highlighted = true;
       e.stopPropagation();
     } else if (!(canvas?.activeLayer instanceof StageManagerControlsLayer)) {
       const { x, y } = this.displayObject.toLocal({ x: e.x, y: e.y });
+      this.#pointerEntered = true;
       void this.triggerEvent("hoverIn", { pos: { x, y, clientX: e.clientX, clientY: e.clientY }, user: game.user as User });
       e.stopPropagation();
     }

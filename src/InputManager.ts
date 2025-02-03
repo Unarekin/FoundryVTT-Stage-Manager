@@ -3,6 +3,7 @@ import { CanvasNotInitializedError } from './errors/CanvasNotInitializedError';
 import { StageObject } from "./stageobjects";
 import { TOOLS } from "./ControlButtonsHandler";
 import { StageLayer } from "./types";
+import { log } from "./logging";
 
 // #region Classes (1)
 
@@ -14,18 +15,25 @@ const PLACING_GHOSTS: PIXI.DisplayObject[] = [];
 export class InputManager {
   // #region Public Static Methods (5)
 
-  /**
-   * Handles initializing the InputManager.  Must be called after PIXI stage is initialized.
-   */
-  public static init() {
-    if (!canvas?.stage) throw new CanvasNotInitializedError();
-
+  public static setCanvasEvents() {
     canvas.stage
       .on("mousemove", InputManager.onPointerMove)
       .on("pointerup", InputManager.onPointerUp)
       .on("pointerupoutside", InputManager.onPointerUp)
       .on("pointerdown", InputManager.onPointerDown)
       ;
+  }
+
+  /**
+   * Handles initializing the InputManager.  Must be called after PIXI stage is initialized.
+   */
+  public static init() {
+    if (!canvas?.stage) throw new CanvasNotInitializedError();
+
+
+    InputManager.setCanvasEvents();
+
+    Hooks.on("canvasReady", () => { InputManager.setCanvasEvents(); });
 
     $("#board")
       .on("wheel", onScrollWheel)
@@ -104,6 +112,7 @@ export class InputManager {
 
   public static onPointerMove(this: void, event: PIXI.FederatedPointerEvent) {
     const selected = StageManager.StageObjects.selected;
+    // log("Pointer move:", event, selected);
 
     if (event.buttons === 1 && selected.length && POINTER_DOWN) {
       // We are moving with the left mouse down and have objects selected
@@ -112,6 +121,7 @@ export class InputManager {
       if (resizing.length) {
         for (const item of resizing) resizeItem(event, item);
       } else if (selected.length) {
+        // log("Dragging:", selected);
         for (const item of selected) {
           if (item.destroyed) continue;
           if (!item.dragging) {
@@ -169,6 +179,7 @@ export class InputManager {
   }
 
   public static onPointerDown(this: void, e: PIXI.FederatedPointerEvent) {
+    // log("Pointer down:", e);
     const resizeHandles = StageManager.StageObjects.filter(obj => obj.selectTool === game?.activeTool && !!obj.resizeHandle?.getBounds().contains(e.clientX, e.clientY));
     if (!resizeHandles.length && game.settings?.get("core", "leftClickRelease"))
       StageManager.DeselectAll();

@@ -56,16 +56,20 @@ Hooks.once("canvasReady", () => {
     return wrapped(scope, ...args);
   });
 
+
+  log("Initialized.");
+});
+
+
+Hooks.on("canvasReady", () => {
+
   if (canvas?.app?.renderer?.events?.rootBoundary) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     libWrapper.register(__MODULE_ID__, "canvas.app.renderer.events.rootBoundary.hitTestFn", hitTestFn);
   }
 
-  log("Initialized.");
-});
-
-Hooks.on("canvasReady", () => {
   StageManager.HydrateStageObjects();
+
 })
 
 Hooks.on("getSceneControlButtons", (controls: SceneControl[]) => { ControlButtonsHandler.register(controls); });
