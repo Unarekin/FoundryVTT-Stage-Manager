@@ -23,6 +23,7 @@
     "@types/path-browserify": "^1.0.3",
     "@typescript-eslint/eslint-plugin": "^8.8.1",
     "@typescript-eslint/parser": "^8.8.1",
+    "BattleTransitions": "https://github.com/Unarekin/FoundryVTT-Battle-Transitions.git",
     "deepmerge-ts": "^7.1.0",
     "esbuild": "^0.23.1",
     "esbuild-copy-static-files": "^0.1.0",

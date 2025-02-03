@@ -7,7 +7,7 @@ import { CannotDeserializeError, CanvasNotInitializedError, InvalidStageObjectEr
 import * as stageObjectTypes from "./stageobjects";
 import { getGlobalObjects, getSceneObjects, getSetting, getUserObjects, setGlobalObjects, setSceneObjects, setSetting, setUserObjects } from './Settings';
 import { CUSTOM_HOOKS } from './hooks';
-import { log, logError } from './logging';
+import { log, logError, logInfo } from './logging';
 import { ActorStageObjectApplication, DialogStageObjectApplication, ImageStageObjectApplication, PanelStageObjectApplication, StageObjectApplication, TextStageObjectApplication } from './applications';
 
 const ApplicationHash: Record<string, typeof StageObjectApplication> = {
@@ -279,7 +279,6 @@ export class StageManager {
   }
 
   public static HydrateStageObjects() {
-    log("Hydrating");
     if (!canvas?.scene) throw new CanvasNotInitializedError();
     if (!game.user) throw new InvalidUserError(game.user);
     const objects = [
@@ -438,8 +437,24 @@ export class StageManager {
       textCanvasGroup = new ScreenSpaceCanvasGroup("StageManagerTextCanvasGroup", "text");
       uiCanvasGroup = new ScreenSpaceCanvasGroup("StageManagerUICanvasGroup", "ui");
 
+
+
+
+
       canvas.stage.addChild(bgCanvasGroup);
       canvas.stage.addChild(primaryCanvasGroup);
+
+      // Insert BT canvas group here, if it's available
+      if (game?.modules?.get("battle-transitions")?.active) {
+        logInfo("Battle Transitions active, checking for canvas group...");
+        for (const obj of canvas.stage.children) {
+          if (obj.name === "BattleTransitions") {
+            logInfo("Found BattleTransitions canvas group, reordering.");
+            canvas.stage.addChild(obj);
+          }
+        }
+      }
+
       canvas.stage.addChild(fgCanvasGroup);
       canvas.stage.addChild(textCanvasGroup);
       canvas.stage.addChild(uiCanvasGroup);
