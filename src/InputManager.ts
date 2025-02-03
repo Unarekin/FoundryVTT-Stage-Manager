@@ -3,7 +3,6 @@ import { CanvasNotInitializedError } from './errors/CanvasNotInitializedError';
 import { StageObject } from "./stageobjects";
 import { TOOLS } from "./ControlButtonsHandler";
 import { StageLayer } from "./types";
-import { log } from "./logging";
 
 // #region Classes (1)
 

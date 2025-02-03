@@ -38,6 +38,13 @@
     </section>
 
     <div class="form-group">
+      <label for="owners">{{localize "STAGEMANAGER.EDITDIALOG.OWNERS"}}</label>
+      <multi-select name="owners" id="owners">
+        {{selectOptions ../ownersSelect localize=true}}
+      </multi-select>
+    </div>
+
+    <div class="form-group">
       <label for="clickThrough">{{localize "STAGEMANAGER.EDITDIALOG.CLICKTHROUGH"}}</label>
       <input type="checkbox" name="clickThrough" id="clickThrough" {{checked clickThrough}}>
     </div>

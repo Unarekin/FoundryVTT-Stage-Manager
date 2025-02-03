@@ -195,7 +195,6 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
 
   protected onClick(e: PIXI.FederatedPointerEvent) {
-    log("Clicked:", this.name);
     // Do not trigger when control layer is active
     // if (canvas?.activeLayer instanceof StageManagerControlsLayer) return;
 
@@ -585,11 +584,12 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
 
 
-  public get owners() { return StageManager.getOwners(this.id).reduce((prev: User[], curr: string) => game?.users?.get(curr) ? [...prev, game.users.get(curr) as User] : prev, [] as User[]); }
+  // public get owners() { return StageManager.getOwners(this.id).reduce((prev: User[], curr: string) => game?.users?.get(curr) ? [...prev, game.users.get(curr) as User] : prev, [] as User[]); }
+  public get owners() { return StageManager.getOwners(this.id).map(id => game.users.get(id) as User); }
   protected set owners(val) {
     if (!foundry.utils.objectsEqual(this.owners, val)) {
       this.dirty = true;
-      void StageManager.setOwners(this.id, val.map(user => user.id ?? ""));
+      void StageManager.setOwners(this.id, val.map(item => item.id ?? "").filter(id => !!id));
     }
 
   }
@@ -821,6 +821,20 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     this.scopeOwners = serialized.scopeOwners ?? [];
     this.triggers = serialized.triggers ?? {};
     this.clickThrough = serialized.clickThrough;
+
+    if (game?.ready) {
+      void StageManager.setOwners(this.id, serialized.owners.map(id => {
+        if (id.startsWith("User.")) return id.substring(5);
+        else return id;
+      }));
+    } else {
+      Hooks.once("canvasReady", () => {
+        void StageManager.setOwners(this.id, serialized.owners.map(id => {
+          if (id.startsWith("User.")) return id.substring(5);
+          else return id;
+        }));
+      });
+    }
 
     this.x = serialized.bounds.x * this.actualBounds.width;
     this.y = serialized.bounds.y * this.actualBounds.height;

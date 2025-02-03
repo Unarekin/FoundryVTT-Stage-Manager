@@ -365,7 +365,6 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     delete (parsed as any).effectsList;
 
-
     return parsed;
     // } finally {
     //   console.groupEnd();
@@ -532,6 +531,13 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
       scopeSelect: getScopeContext(),
       usersSelect: getUsersContext(this.stageObject),
       scenesSelect: getScenesContext(this.stageObject),
+      ownersSelect: getUsersContext(this.stageObject).reduce((prev, curr) => {
+        const user = fromUuidSync(curr.value) as User;
+        if (user.isGM) return prev;
+        if (this.stageObject.owners.includes(user)) curr.selected = true;
+        else curr.selected = false;
+        return [...prev, curr];
+      }, [] as { value: string, label: string, selected: boolean }[]),
       effects: serialized.effects.map(effect => {
         const handler = getEffectHandler(effect.type);
         if (!handler) throw new Error();
