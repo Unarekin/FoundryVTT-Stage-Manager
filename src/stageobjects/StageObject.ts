@@ -640,10 +640,10 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
       if (this.resizeHandle && this.resizable) this.resizeHandle.visible = true;
     } else {
-      if (!this.highlighted) {
-        this.interfaceContainer.visible = false;
-        this.interfaceContainer.interactiveChildren = false;
-      }
+      // if (!this.highlighted) {
+      this.interfaceContainer.visible = false;
+      this.interfaceContainer.interactiveChildren = false;
+      // }
 
       if (this.resizeHandle) this.resizeHandle.visible = false;
     }
@@ -1086,17 +1086,14 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     this.synchronize = false;
   }
 
-  #pointerEntered = false;
 
   protected onPointerEnter(e: PIXI.FederatedPointerEvent) {
-    if (this.#pointerEntered) return;
 
     if (game.activeTool === this.selectTool && StageManager.canModifyStageObject(game.user?.id ?? "", this.id)) {
       this.highlighted = true;
       e.stopPropagation();
     } else if (!(canvas?.activeLayer instanceof StageManagerControlsLayer)) {
       const { x, y } = this.displayObject.toLocal({ x: e.x, y: e.y });
-      this.#pointerEntered = true;
       void this.triggerEvent("hoverIn", { pos: { x, y, clientX: e.clientX, clientY: e.clientY }, user: game.user as User });
       e.stopPropagation();
     }
@@ -1105,9 +1102,6 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
 
   protected onPointerLeave(e: PIXI.FederatedPointerEvent) {
-    if (!this.#pointerEntered) return;
-    this.#pointerEntered = false;
-
     if (this.highlighted) this.highlighted = false;
     if (!(canvas?.activeLayer instanceof StageManagerControlsLayer)) {
       const { x, y } = this.displayObject.toLocal({ x: e.x, y: e.y });
