@@ -97,7 +97,7 @@ export class ControlButtonsHandler {
         name: "view-as",
         title: "STAGEMANAGER.SCENECONTROLS.VIEWAS",
         icon: `fas ${StageManager.ViewingAs !== game.user ? "fa-eye-slash" : "fa-eye"}`,
-        visible: StageManager.canAddStageObjects(game?.user?.id ?? "") && game?.users?.some((user: User) => user !== game.user && user.canUserModify(game.user, "update")),
+        visible: StageManager.canAddStageObjects(game?.user?.id ?? "") && game?.users?.some((user: User) => user !== game.user && user.canUserModify(game.user as User, "update")),
         onClick: () => {
           void viewAsUser();
         },
@@ -169,6 +169,11 @@ function addImage() {
             image.y = obj.y;
             sprite.destroy();
 
+            if (StageManager.ViewingAs instanceof User && StageManager.ViewingAs !== game.user) {
+              image.scope = "user";
+              image.scopeOwners = [StageManager.ViewingAs.uuid];
+            }
+
             return StageManager.CreateStageObject<ImageStageObject>({
               ...image.serialize()
             })
@@ -223,6 +228,7 @@ async function viewAsUser() {
           window: ({ title: "STAGEMANAGER.VIEWASUSER.TITLE" } as any),
           content,
           actions,
+          rejectOnClose: false,
           buttons: [
             {
               label: localize("Cancel"),

@@ -58,6 +58,29 @@ export async function setSceneObjects(scene: Scene, objects: StageObject[] | Ser
     await scene.setFlag(__MODULE_ID__, "stageObjects", serialized);
 }
 
+export async function addSceneObject(scene: Scene, object: StageObject): Promise<void>
+export async function addSceneObject(scene: Scene, object: SerializedStageObject): Promise<void>
+export async function addSceneObject(scene: Scene, object: StageObject | SerializedStageObject): Promise<void> {
+  const serialized = object instanceof StageObject ? object.serialize() : object;
+  const current = getSceneObjects(scene);
+  if (current.findIndex(obj => obj.id === serialized.id) === -1) {
+    current.push(serialized);
+    await setSceneObjects(scene, current);
+  }
+}
+
+export async function removeSceneObject(scene: Scene, object: StageObject): Promise<void>
+export async function removeSceneObject(scene: Scene, object: SerializedStageObject): Promise<void>
+export async function removeSceneObject(scene: Scene, object: StageObject | SerializedStageObject): Promise<void> {
+  const serialized = object instanceof StageObject ? object.serialize() : object;
+  const current = getSceneObjects(scene);
+  const index = current.findIndex(obj => obj.id === serialized.id);
+  if (index !== -1) {
+    current.splice(index, 1);
+    await setSceneObjects(scene, current);
+  }
+}
+
 export function getSceneObjects(scene: Scene): SerializedStageObject[] {
   return scene.getFlag(__MODULE_ID__, "stageObjects") ?? [];
 }
@@ -69,6 +92,28 @@ export async function setUserObjects(user: User, objects: StageObject[] | Serial
   const current = getUserObjects(user);
   if (!foundry.utils.objectsEqual({ wrap: current }, { wrap: serialized }))
     await user.setFlag(__MODULE_ID__, "stageObjects", serialized);
+}
+
+export async function addUserObject(user: User, object: StageObject): Promise<void>
+export async function addUserObject(user: User, object: SerializedStageObject): Promise<void>
+export async function addUserObject(user: User, object: StageObject | SerializedStageObject): Promise<void> {
+  const serialized = object instanceof StageObject ? object.serialize() : object;
+  const current = getUserObjects(user);
+  if (current.findIndex(obj => obj.id === serialized.id) === -1) {
+    current.push(serialized);
+    await setUserObjects(user, current);
+  }
+}
+
+export async function removeUserObject(user: User, object: StageObject): Promise<void>
+export async function removeUserObject(user: User, object: SerializedStageObject): Promise<void>
+export async function removeUserObject(user: User, object: StageObject | SerializedStageObject): Promise<void> {
+  const current = getUserObjects(user);
+  const index = current.findIndex(obj => obj.id === object.id);
+  if (index !== -1) {
+    current.splice(index, 1);
+    await setUserObjects(user, current);
+  }
 }
 
 export function getUserObjects(user: User): SerializedStageObject[] {

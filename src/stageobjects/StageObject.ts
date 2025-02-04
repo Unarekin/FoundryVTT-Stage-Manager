@@ -947,6 +947,11 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     if (!foundry.utils.objectsEqual({ test: val }, { test: this._scopeOwners })) {
       this._scopeOwners = val;
 
+      if (game.user instanceof User) {
+        if (this.canUserModify(game.user, "update"))
+          void StageManager.SetScopeOwners(this, val);
+      }
+
       this.dirty = true;
     }
   }

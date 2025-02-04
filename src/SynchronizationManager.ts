@@ -19,6 +19,8 @@ const REMOVALS: StageObject[] = [];
 export class SynchronizationManager {
   public static get isSynchronizing() { return isSynchronizing; }
 
+  public static SuppressSynchronization = false;
+
   public static SynchronizationReceived(objects: SerializedStageObject[]) {
     // Many updates, left side.  Handle it.
     for (const serialized of objects) {
@@ -34,15 +36,18 @@ export class SynchronizationManager {
   }
 
   public static onObjectAdded(this: void, stageObject: StageObject) {
-    ADDITIONS.push(stageObject);
+    if (!SynchronizationManager.SuppressSynchronization)
+      ADDITIONS.push(stageObject);
   }
 
   public static onObjectRemoved(this: void, stageObject: StageObject) {
-    REMOVALS.push(stageObject);
+    if (!SynchronizationManager.SuppressSynchronization)
+      REMOVALS.push(stageObject);
   }
 
 
   public static async Synchronize(this: void) {
+    if (SynchronizationManager.SuppressSynchronization) return;
     // Early exit to avoid clogging the pipes
     if (SynchronizationManager.isSynchronizing) return;
 

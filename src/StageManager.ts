@@ -5,11 +5,11 @@ import { coerceStageObject, coerceUser } from './coercion';
 import { StageObjects } from './StageObjectCollection';
 import { CannotDeserializeError, CanvasNotInitializedError, InvalidStageObjectError, InvalidUserError, PermissionDeniedError } from './errors';
 import * as stageObjectTypes from "./stageobjects";
-import { getGlobalObjects, getSceneObjects, getSetting, getUserObjects, setGlobalObjects, setSceneObjects, setSetting } from './Settings';
+import { addSceneObject, addUserObject, getGlobalObjects, getSceneObjects, getSetting, getUserObjects, removeSceneObject, removeUserObject, setGlobalObjects, setSceneObjects, setSetting, setUserObjects } from './Settings';
 import { CUSTOM_HOOKS } from './hooks';
 import { log, logError, logInfo } from './logging';
 import { ActorStageObjectApplication, DialogStageObjectApplication, ImageStageObjectApplication, PanelStageObjectApplication, StageObjectApplication, TextStageObjectApplication } from './applications';
-import { SocketManager } from './SocketManager';
+import { SynchronizationManager } from './SynchronizationManager';
 
 const ApplicationHash: Record<string, typeof StageObjectApplication> = {
   "image": ImageStageObjectApplication as typeof StageObjectApplication,
@@ -308,12 +308,64 @@ export class StageManager {
     }
   }
 
+  public static async SetScopeOwners(object: StageObject, owners: string[]): Promise<void> {
+    if (!(game.user instanceof User)) return;
+
+    const promises: Promise<unknown>[] = [];
+    switch (object.scope) {
+      case "user": {
+        if (!game.users) return;
+        // const users = (game.users as User[]).filter(user => user.canUserModify(game.user, "update"));
+        const users = game.users.filter((user: User) => !!user && user.canUserModify(game.user, "update")) as User[];
+
+        for (const user of users) {
+          if (owners.includes(user.id ?? "") || owners.includes(user.uuid))
+            promises.push(addUserObject(user, object));
+          else
+            promises.push(removeUserObject(user, object));
+        }
+        break;
+      }
+      case "scene": {
+        if (!game.scenes) return;
+
+        const scenes = game.scenes.filter((scene: Scene) => !!scene && scene.canUserModify(game.user, "update")) as Scene[];
+        for (const scene of scenes) {
+          if (owners.includes(scene.id ?? "") || owners.includes(scene.uuid))
+            promises.push(addSceneObject(scene, object));
+          else
+            promises.push(removeSceneObject(scene, object));
+        }
+        break;
+      }
+      case "global":
+      case "temp": {
+        if (game.scenes) {
+          const scenes = game.scenes.filter((scene: Scene) => !!scene && scene.canUserModify(game.user, "update")) as Scene[];
+          for (const scene of scenes)
+            promises.push(removeSceneObject(scene, object));
+
+        }
+        if (game.users) {
+          const users = game.users.filter((user: User) => !!user && user.canUserModify(game.user, "update")) as User[];
+          for (const user of users)
+            promises.push(removeUserObject(user, object));
+        }
+
+      }
+
+    }
+    if (promises.length)
+      await Promise.all(promises);
+  }
+
   public static async PersistStageObjects() {
     try {
       if (!canvas?.scene) throw new CanvasNotInitializedError();
       if (!(game.user instanceof User)) throw new InvalidUserError(game.user);
 
       const promises: Promise<any>[] = [];
+      log("Persisting");
 
       // Global
       if (game.user.can("SETTINGS_MODIFY"))
@@ -324,8 +376,17 @@ export class StageManager {
         promises.push(setSceneObjects(canvas.scene, StageManager.StageObjects.scene));
 
       // Users
-      for (const user of game.users ?? []) {
-        promises.push(SocketManager.persistUserObjects((user as User).id));
+
+      const user = StageManager.ViewingAs;
+
+      if (user instanceof User && user.canUserModify(game.user, "update")) {
+        const objects = StageManager.StageObjects.filter(obj => obj.scope === "user" && (obj.scopeOwners.includes(game.user?.id ?? "") || obj.scopeOwners.includes(game.user?.uuid ?? "")));
+        promises.push(setUserObjects(game.user, objects));
+        console.group("Persisting for user");
+        console.log("User:", game.user);
+        console.log("Stage objects:", StageManager.StageObjects.contents.map(obj => obj.serialize()));
+        console.log("User objects:", objects.map(obj => obj.serialize()));
+        console.groupEnd();
       }
 
       await Promise.all(promises);
@@ -373,8 +434,20 @@ export class StageManager {
     try {
       if (!(stageObject instanceof StageObject)) throw new InvalidStageObjectError(stageObject);
       if (!StageManager.canAddStageObjects(game.user?.id ?? "")) throw new PermissionDeniedError();
+      if (!(game.user instanceof User)) throw new InvalidUserError(game.user);
+
+      if (StageManager.ViewingAs instanceof User && StageManager.ViewingAs !== game.user) {
+        if (StageManager.ViewingAs.canUserModify(game.user, "update")) {
+          stageObject.scope = "user";
+          stageObject.scopeOwners = [StageManager.ViewingAs.uuid];
+        } else {
+          throw new PermissionDeniedError();
+        }
+      }
+
       StageManager.StageObjects.set(stageObject.id, stageObject);
       StageManager.setStageObjectLayer(stageObject, layer);
+
       return stageObject;
     } catch (err) {
       logError(err as Error);
@@ -568,7 +641,9 @@ export class StageManager {
     if (!user.canUserModify(game.user, "update")) throw new PermissionDeniedError();
 
     StageManager.ViewingAs = user;
+    SynchronizationManager.SuppressSynchronization = true;
     StageManager.HydrateStageObjects(user);
+    SynchronizationManager.SuppressSynchronization = false;
   }
 
   public static setStageObjectLayer(stageObject: StageObject, layer: StageLayer) {

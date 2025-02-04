@@ -24,18 +24,12 @@ export class SocketManager {
     await socket.executeForOthers("syncStageObjects", message);
   }
 
-  // public static async syncStageObjects(stageObjects: SerializedStageObject[]) {
-  //   if (!StageManager.canAddStageObjects(game?.user?.id ?? "")) throw new PermissionDeniedError();
-  //   // log("Synchronizing:", stageObjects);
-  //   // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-  //   await socket.executeForOthers("syncStageObjects", stageObjects);
-  // }
 
   private static async onPersistUserObjects(this: void) {
-    log("Persisting user objects:", game.user);
     const user = game.user;
     if (!(user instanceof User)) throw new InvalidUserError(user);
     const objects = StageManager.StageObjects.contents.filter(item => item.scope === "user" && (item.scopeOwners.includes(user.id) || item.scopeOwners.includes(user.uuid)));
+    log("Persisting user objects:", user.name, objects.map(obj => obj.serialize()));
     await setUserObjects(user, objects);
   }
 
