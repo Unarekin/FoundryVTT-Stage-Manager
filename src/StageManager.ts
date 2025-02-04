@@ -278,14 +278,18 @@ export class StageManager {
     }
   }
 
-  public static HydrateStageObjects() {
+  public static HydrateStageObjects(user?: User) {
     if (!canvas?.scene) throw new CanvasNotInitializedError();
     if (!game.user) throw new InvalidUserError(game.user);
+
+    if (user && !user.canUserModify(game.user, "update")) throw new PermissionDeniedError();
+
     const objects = [
       ...getGlobalObjects(),
       ...getSceneObjects(canvas.scene),
-      ...getUserObjects(game.user)
+      ...getUserObjects(user ?? game.user)
     ];
+
 
     const objIds = objects.map(obj => obj.id);
     const toRemove = StageManager.StageObjects.filter(obj => !objIds.includes(obj.id));
@@ -313,12 +317,15 @@ export class StageManager {
         await setSceneObjects(canvas.scene, StageManager.StageObjects.scene);
 
       if (!game.users?.contents) return;
-      const activeUsers: User[] = game.users.contents.filter(user => user instanceof User && user.active) as User[];
-      for (const user of activeUsers) {
+      // const activeUsers: User[] = game.users.contents.filter(user => user instanceof User && user.active) as User[];
+      const promises: Promise<void>[] = [];
+
+      game.users.forEach((user: User) => {
         if (user.canUserModify(game.user as User, "update")) {
           const objects = [
             ...StageManager.StageObjects.reduce((prev, curr) => {
-              if (!curr.scopeOwners.includes(user.id ?? "")) return prev;
+              // log("Scope owners:", curr.scopeOwners, user.uuid);
+              if (!curr.scopeOwners.includes(user.uuid ?? "")) return prev;
               return [
                 ...prev,
                 curr.serialize()
@@ -327,9 +334,13 @@ export class StageManager {
 
             ...getUserObjects(user)
           ].filter((item, i, arr) => arr.findIndex(el => el.id === item.id) === i);
-          await setUserObjects(user, objects);
+          // log("User objects:", user, objects);
+          promises.push(setUserObjects(user, objects));
         }
-      }
+      });
+
+      await Promise.all(promises);
+
     } catch (err) {
       logError(err as Error);
     }
@@ -474,6 +485,8 @@ export class StageManager {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       (canvas.stage as any).stagemanager = layers;
       if (canvas.app?.renderer) canvas.app.renderer.addListener("prerender", () => { sizeObjectInterfaceContainers(); });
+
+      StageManager.ViewingAs = game.user as User;
     }
     const menuContainer = document.createElement("section");
     menuContainer.id = "sm-menu-container";
@@ -499,9 +512,7 @@ export class StageManager {
     });
 
     Hooks.on(CUSTOM_HOOKS.REMOTE_ADDED, (item: SerializedStageObject) => {
-
       const deserialized = StageManager.deserialize(item);
-      log("Item added:", item, deserialized);
       if (!deserialized) throw new CannotDeserializeError(item.type);
 
       StageManager.StageObjects.set(deserialized.id, deserialized);
@@ -519,7 +530,6 @@ export class StageManager {
 
     Hooks.on(CUSTOM_HOOKS.REMOTE_REMOVED, (id: string) => {
       const obj = StageManager.StageObjects.get(id);
-      log("Item removed:", id, obj);
       if (!obj) throw new InvalidStageObjectError(id);
       obj.destroy();
     });
@@ -558,6 +568,19 @@ export class StageManager {
         logError(err);
       }
     }
+  }
+
+  public static ViewingAs: User | undefined = undefined;
+
+  public static ViewStageAsUser(user: User) {
+    log("Viewing as:", user);
+    if (!(user instanceof User)) throw new InvalidUserError(user);
+    if (!(game.user instanceof User)) throw new InvalidUserError(game.user);
+
+    if (!user.canUserModify(game.user, "update")) throw new PermissionDeniedError();
+
+    StageManager.ViewingAs = user;
+    StageManager.HydrateStageObjects(user);
   }
 
   public static setStageObjectLayer(stageObject: StageObject, layer: StageLayer) {

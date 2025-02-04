@@ -24,7 +24,7 @@ export const PixelateEffect: Effect<SerializedPixelateEffect> = {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     return new (PIXI.filters as any).PixelateFilter(serialized.size);
   },
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   typeCheck(filter: PIXI.Filter): boolean { return filter instanceof (PIXI.filters as any).PixelateFilter; },
   fromForm(parent: HTMLElement): SerializedPixelateEffect {
 

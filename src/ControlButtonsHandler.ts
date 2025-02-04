@@ -1,4 +1,6 @@
 import { inputPrompt } from "./applications/functions";
+import { InvalidUserError } from "./errors";
+import { localize } from "./functions";
 import { InputManager } from "./InputManager";
 import { log, logError } from "./logging";
 import { StageManager } from "./StageManager";
@@ -90,6 +92,16 @@ export class ControlButtonsHandler {
         },
         visible: StageManager.canAddStageObjects(game?.user?.id ?? ""),
         button: true
+      },
+      {
+        name: "view-as",
+        title: "STAGEMANAGER.SCENECONTROLS.VIEWAS",
+        icon: `fas ${StageManager.ViewingAs !== game.user ? "fa-eye-slash" : "fa-eye"}`,
+        visible: StageManager.canAddStageObjects(game?.user?.id ?? "") && game?.users?.some((user: User) => user !== game.user && user.canUserModify(game.user, "update")),
+        onClick: () => {
+          void viewAsUser();
+        },
+        button: true
       }
     ]
 
@@ -131,7 +143,7 @@ async function addText() {
     if (created) StageManager.addStageObject(created, layer);
 
   } catch (err) {
-    logError(err);
+    logError(err as Error);
   }
 }
 
@@ -178,4 +190,56 @@ function addImage() {
       }
     },
   }).render(true);
+}
+
+function setViewAsIcon() {
+  const i = document.querySelector(`.control-tool[data-tool="view-as"] i`);
+  if (i instanceof HTMLElement) {
+    if (i.classList.contains("fa-eye")) {
+      i.classList.remove("fa-eye");
+      i.classList.add("fa-eye-slash");
+    } else {
+      i.classList.remove("fa-eye-slash");
+      i.classList.add("fa-eye");
+    }
+  }
+}
+
+async function viewAsUser() {
+  if (StageManager.ViewingAs !== game.user) {
+    if (game.user instanceof User) StageManager.ViewStageAsUser(game.user);
+    setViewAsIcon();
+  } else {
+    const selected = await new Promise<string | undefined>((resolve, reject) => {
+      const context = {
+        users: game?.users?.filter((user: User) => user !== game.user && game.user instanceof User ? user.canUserModify(game.user, "update") : false) ?? []
+      }
+
+      const actions = Object.fromEntries(context.users.map((user: User) => [user.id, () => { resolve(user.id ?? undefined); }])) as Record<string, any>;
+
+      void renderTemplate(`modules/${__MODULE_ID__}/templates/viewAsUser.hbs`, context)
+        .then(content => foundry.applications.api.DialogV2.wait({
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          window: ({ title: "STAGEMANAGER.VIEWASUSER.TITLE" } as any),
+          content,
+          actions,
+          buttons: [
+            {
+              label: localize("Cancel"),
+              action: "cancel"
+            }
+          ]
+        }))
+        .then(selected => { if (selected) resolve(undefined); })
+        .catch(reject);
+
+    });
+
+    if (selected) {
+      const user = game?.users?.get(selected) as User | undefined;
+      if (user instanceof User) StageManager.ViewStageAsUser(user);
+      else throw new InvalidUserError(selected);
+      setViewAsIcon();
+    }
+  }
 }

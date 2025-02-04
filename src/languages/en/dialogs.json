@@ -159,6 +159,9 @@
       "TEXT": "Text",
       "TRIGGERS": "Triggers",
       "VIDEO": "Video"
+    },
+    "VIEWASUSER": {
+      "TITLE": "View As User"
     }
   }
 }

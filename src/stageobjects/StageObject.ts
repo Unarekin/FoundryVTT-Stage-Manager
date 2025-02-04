@@ -806,6 +806,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
   public deserialize(serialized: SerializedStageObject) {
     log("Deserializing:", serialized);
+
     this.id = serialized.id;
     this.name = serialized.name;
     // void StageManager.setOwners(this.id, serialized.owners);
@@ -822,18 +823,9 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     this.triggers = serialized.triggers ?? {};
     this.clickThrough = serialized.clickThrough;
 
-    if (game?.ready) {
-      void StageManager.setOwners(this.id, serialized.owners.map(id => {
-        if (id.startsWith("User.")) return id.substring(5);
-        else return id;
-      }));
-    } else {
-      Hooks.once("canvasReady", () => {
-        void StageManager.setOwners(this.id, serialized.owners.map(id => {
-          if (id.startsWith("User.")) return id.substring(5);
-          else return id;
-        }));
-      });
+    if (StageManager.canModifyStageObject(game?.user?.id ?? "", this.id)) {
+      if (game?.ready) void StageManager.setOwners(this.id, serialized.owners);
+      else Hooks.once("canvasReady", () => { void StageManager.setOwners(this.id, serialized.owners) });
     }
 
     this.x = serialized.bounds.x * this.actualBounds.width;
@@ -938,6 +930,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   public set scopeOwners(val) {
     if (!foundry.utils.objectsEqual({ test: val }, { test: this._scopeOwners })) {
       this._scopeOwners = val;
+
       this.dirty = true;
     }
   }

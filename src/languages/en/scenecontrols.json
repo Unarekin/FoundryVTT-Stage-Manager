@@ -1,13 +1,14 @@
 {
   "STAGEMANAGER": {
     "SCENECONTROLS": {
-      "TITLE": "Stage Manager",
       "IMAGE": "Add Image",
-      "TEXT": "Add Text",
+      "SELECTBACKGROUND": "Select Background Objects",
       "SELECTFOREGROUND": "Select Foreground Objects",
       "SELECTPRIMARY": "Select Primary Layer Objects",
-      "SELECTBACKGROUND": "Select Background Objects",
-      "SELECTTEXT": "Select Text Layer Objects"
+      "SELECTTEXT": "Select Text Layer Objects",
+      "TEXT": "Add Text",
+      "TITLE": "Stage Manager",
+      "VIEWAS": "View As  User"
     }
   }
 }

@@ -73,6 +73,17 @@ Hooks.on("canvasReady", () => {
 })
 
 Hooks.on("getSceneControlButtons", (controls: SceneControl[]) => { ControlButtonsHandler.register(controls); });
+Hooks.on("renderSceneControls", (controls: SceneControls) => {
+  const smTools = controls.controls.find(control => control.name === "stage-manager");
+  if (smTools) {
+    const viewAs = smTools.tools.find(tool => tool.name === "view-as");
+    if (viewAs) {
+      if (StageManager.ViewingAs !== game.user) viewAs.icon = "fas fa-eye-slash";
+      else viewAs.icon = "fas fa-eye";
+    }
+  }
+});
+
 Hooks.once("socketlib.ready", () => { SocketManager.init(); })
 
 Hooks.once("init", () => {
@@ -86,132 +97,11 @@ Hooks.once("ready", () => {
     `modules/${__MODULE_ID__}/templates/editObject/trigger-item.hbs`,
     `modules/${__MODULE_ID__}/templates/triggers/macro.hbs`,
     `modules/${__MODULE_ID__}/templates/editObject/additional-arg.hbs`,
-    `modules/${__MODULE_ID__}/templates/events/actor.hbs`
+    `modules/${__MODULE_ID__}/templates/events/actor.hbs`,
+    `modules/${__MODULE_ID__}/templates/viewAsUser.hbs`
   ])
 });
 
 Hooks.on("deactivateStageManagerControlsLayer", () => {
   StageManager.DeselectAll();
 });
-
-// // StageObject trigger hooks
-
-// function triggerEvent<k extends keyof TriggerEventSignatures>(event: k, arg: TriggerEventSignatures[k]) {
-//   StageManager.StageObjects.forEach(obj => void obj.triggerEvent(event, arg));
-// }
-
-// Hooks.on("combatRound", combat => {
-//   triggerEvent("combatRound", { combat });
-// });
-
-// Hooks.on("combatStart", combat => {
-//   triggerEvent("combatStart", { combat });
-// });
-
-// Hooks.on("deleteCombat", (combat: Combat) => {
-//   if (combat.started) triggerEvent("combatEnd", { combat });
-// });
-
-// Hooks.on("updateCombat", (combat: Combat, delta: Partial<Combat>) => {
-//   if (typeof delta.round !== "undefined")
-//     triggerEvent("combatRound", { combat });
-// });
-
-// Hooks.on("combatTurnChange", (combat: Combat, prev: Combat.HistoryData, curr: Combat.HistoryData) => {
-//   if (prev.combatantId) {
-//     const actor = coerceActor(prev.combatantId);
-//     if (actor instanceof Actor)
-//       triggerEvent("combatTurnEnd", { combat, actor });
-//   }
-
-//   if (curr.combatantId) {
-//     const actor = coerceActor(curr.combatantId);
-//     if (actor instanceof Actor)
-//       triggerEvent("combatTurnStart", { combat, actor });
-//   }
-// });
-
-// Hooks.on("updateScene", (scene: Scene, delta: Partial<Scene>) => {
-//   if (delta.active) void triggerEvent("sceneChange", { scene });
-// });
-
-// Hooks.on("userConnected", (user, connected) => {
-//   if (connected)
-//     triggerEvent("userConnected", { user });
-//   else
-//     triggerEvent("userDisconnected", { user });
-// });
-
-// // Hooks.on("userDisconnected", user => {
-// //   triggerEvent("userDisconnected", { user });
-// // })
-
-// // createActiveEffect
-// Hooks.on("createActiveEffect", (effect: ActiveEffect) => {
-//   if (effect.parent instanceof Actor && effect.active) {
-//     const objs = ActorStageObject.GetActorObjects(effect.parent);
-//     for (const obj of objs) {
-//       void obj.triggerEvent("addActiveEffect", { actor: effect.parent, effect });
-//       for (const status of effect.statuses)
-//         void obj.triggerEvent("addStatusEffect", { actor: effect.parent, effect, status });
-//     }
-//   }
-// });
-
-// Hooks.on("deleteActiveEffect", (effect: ActiveEffect) => {
-//   if (effect.parent instanceof Actor) {
-//     const objs = ActorStageObject.GetActorObjects(effect.parent);
-//     for (const obj of objs) {
-//       void obj.triggerEvent("removeActiveEffect", { actor: effect.parent, effect });
-//       for (const status of effect.statuses)
-//         void obj.triggerEvent("removeStatusEffect", { actor: effect.parent, effect, status });
-//     }
-//   }
-// });
-
-// Hooks.on("updateActiveEffect", (effect: ActiveEffect, delta: Partial<ActiveEffect>) => {
-//   if (effect.parent instanceof Actor && typeof delta.disabled !== "undefined") {
-//     const objs = ActorStageObject.GetActorObjects(effect.parent);
-//     for (const obj of objs) {
-//       if (delta.disabled) {
-//         void obj.triggerEvent("removeActiveEffect", { actor: effect.parent, effect });
-//         for (const status of effect.statuses)
-//           void obj.triggerEvent("removeStatusEffect", { actor: effect.parent, effect, status });
-//       } else {
-//         void obj.triggerEvent("addActiveEffect", { actor: effect.parent, effect });
-//         for (const status of effect.statuses)
-//           void obj.triggerEvent("addStatusEffect", { actor: effect.parent, effect, status });
-//       }
-//     }
-//   }
-// });
-
-// Hooks.on("controlToken", (token: Token, controlled: boolean) => {
-//   const actor = coerceActor(token);
-//   if (actor instanceof Actor) {
-//     if (controlled)
-//       triggerEvent("selectToken", { token, actor });
-//     else
-//       triggerEvent("deselectToken", { token, actor });
-//   }
-// });
-
-// Hooks.on("targetToken", (user: User, token: Token, targeted) => {
-//   const actor = coerceActor(token);
-//   if (actor instanceof Actor) {
-//     if (targeted)
-//       triggerEvent("targetToken", { user, token, actor });
-//     else
-//       triggerEvent("untargetToken", { actor, token, user });
-//   }
-// });
-
-// Hooks.on("updateWorldTime", time => {
-//   triggerEvent("worldTimeChange", { time });
-// });
-
-// Hooks.on("updateActor", (actor: Actor) => {
-//   const objs = ActorStageObject.GetActorObjects(actor);
-//   for (const obj of objs)
-//     void obj.triggerEvent("actorChange", { actor });
-// });

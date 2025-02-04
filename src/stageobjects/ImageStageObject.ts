@@ -258,22 +258,16 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
     // If the texture isn't loaded into memory, wait for it to be then set the width/height
     if (!this.displayObject.texture.baseTexture.valid) {
       this.displayObject.texture.baseTexture.once("loaded", () => {
-
+        this.path = serialized.src;
+        this.loop = serialized.loop;
         this.width = this.actualBounds.width * serialized.bounds.width;
         this.height = this.actualBounds.height * serialized.bounds.height;
-        // this.scaledDimensions.x = serialized.bounds.x;
-        // this.scaledDimensions.y = serialized.bounds.y;
-        // this.scaledDimensions.width = serialized.bounds.width;
-        // this.scaledDimensions.height = serialized.bounds.height;
-
-        // this.width = this.actualBounds.width * this.scaledDimensions.width;
-        // this.height = this.actualBounds.height * this.scaledDimensions.height;
-        // this.createRenderTexture();
       });
     } else {
       this.path = serialized.src;
-      // this.playing = serialized.playing;
       this.loop = serialized.loop;
+      this.width = this.actualBounds.width * serialized.bounds.width;
+      this.height = this.actualBounds.height * serialized.bounds.height;
     }
     this.dirty = true;
   }
