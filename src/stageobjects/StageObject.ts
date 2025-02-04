@@ -794,6 +794,21 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     }
   }
 
+  public canUserModify(user: User, action: "create" | "update" | "modify" | "delete"): boolean {
+    if (typeof user?.id !== "string") return false;
+    switch (action) {
+      case "create":
+        return StageManager.canAddStageObjects(user.id);
+      case "update":
+      case "modify":
+        return StageManager.canModifyStageObject(user.id, this.id);
+      case "delete":
+        return StageManager.canDeleteStageObject(user.id, this.id);
+      default:
+        return false;
+    }
+  }
+
   // #endregion Protected Getters And Setters (5)
 
   // #region Public Static Methods (1)
@@ -806,6 +821,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
   public deserialize(serialized: SerializedStageObject) {
     log("Deserializing:", serialized);
+
 
     this.id = serialized.id;
     this.name = serialized.name;
