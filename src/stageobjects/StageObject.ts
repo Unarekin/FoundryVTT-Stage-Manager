@@ -551,7 +551,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   public set highlighted(value) {
     if (this._highlighted !== value) {
       this._highlighted = value;
-      this.dirty = true;
+      // this.dirty = true;
     }
     if (value) {
       this.interfaceContainer.visible = true;
