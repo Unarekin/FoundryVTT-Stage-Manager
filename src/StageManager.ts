@@ -5,10 +5,11 @@ import { coerceStageObject, coerceUser } from './coercion';
 import { StageObjects } from './StageObjectCollection';
 import { CannotDeserializeError, CanvasNotInitializedError, InvalidStageObjectError, InvalidUserError, PermissionDeniedError } from './errors';
 import * as stageObjectTypes from "./stageobjects";
-import { getGlobalObjects, getSceneObjects, getSetting, getUserObjects, setGlobalObjects, setSceneObjects, setSetting, setUserObjects } from './Settings';
+import { getGlobalObjects, getSceneObjects, getSetting, getUserObjects, setGlobalObjects, setSceneObjects, setSetting } from './Settings';
 import { CUSTOM_HOOKS } from './hooks';
 import { log, logError, logInfo } from './logging';
 import { ActorStageObjectApplication, DialogStageObjectApplication, ImageStageObjectApplication, PanelStageObjectApplication, StageObjectApplication, TextStageObjectApplication } from './applications';
+import { SocketManager } from './SocketManager';
 
 const ApplicationHash: Record<string, typeof StageObjectApplication> = {
   "image": ImageStageObjectApplication as typeof StageObjectApplication,
@@ -310,37 +311,24 @@ export class StageManager {
   public static async PersistStageObjects() {
     try {
       if (!canvas?.scene) throw new CanvasNotInitializedError();
+      if (!(game.user instanceof User)) throw new InvalidUserError(game.user);
 
-      if (game.user?.can("SETTINGS_MODIFY"))
-        await setGlobalObjects(StageManager.StageObjects.global);
-      if (canvas.scene.canUserModify(game.user as User, "update"))
-        await setSceneObjects(canvas.scene, StageManager.StageObjects.scene);
+      const promises: Promise<any>[] = [];
 
-      if (!game.users?.contents) return;
-      // const activeUsers: User[] = game.users.contents.filter(user => user instanceof User && user.active) as User[];
-      const promises: Promise<void>[] = [];
+      // Global
+      if (game.user.can("SETTINGS_MODIFY"))
+        promises.push(setGlobalObjects(StageManager.StageObjects.global));
 
-      game.users.forEach((user: User) => {
-        if (user.canUserModify(game.user as User, "update")) {
-          const objects = [
-            ...StageManager.StageObjects.reduce((prev, curr) => {
-              // log("Scope owners:", curr.scopeOwners, user.uuid);
-              if (!curr.scopeOwners.includes(user.uuid ?? "")) return prev;
-              return [
-                ...prev,
-                curr.serialize()
-              ]
-            }, [] as SerializedStageObject[]),
+      // Scene
+      if (canvas.scene.canUserModify(game.user, "update"))
+        promises.push(setSceneObjects(canvas.scene, StageManager.StageObjects.scene));
 
-            ...getUserObjects(user)
-          ].filter((item, i, arr) => arr.findIndex(el => el.id === item.id) === i);
-          // log("User objects:", user, objects);
-          promises.push(setUserObjects(user, objects));
-        }
-      });
+      // Users
+      for (const user of game.users ?? []) {
+        promises.push(SocketManager.persistUserObjects((user as User).id));
+      }
 
       await Promise.all(promises);
-
     } catch (err) {
       logError(err as Error);
     }

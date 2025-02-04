@@ -2,8 +2,10 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 import { SynchronizationMessage } from "./types";
 import { StageManager } from "./StageManager";
-import { PermissionDeniedError } from "./errors";
+import { InvalidUserError, PermissionDeniedError } from "./errors";
 import { CUSTOM_HOOKS } from "./hooks";
+import { setUserObjects } from "./Settings";
+import { log } from "./logging";
 
 
 let socket: any;
@@ -29,6 +31,19 @@ export class SocketManager {
   //   await socket.executeForOthers("syncStageObjects", stageObjects);
   // }
 
+  private static async onPersistUserObjects(this: void) {
+    log("Persisting user objects:", game.user);
+    const user = game.user;
+    if (!(user instanceof User)) throw new InvalidUserError(user);
+    const objects = StageManager.StageObjects.contents.filter(item => item.scope === "user" && (item.scopeOwners.includes(user.id) || item.scopeOwners.includes(user.uuid)));
+    await setUserObjects(user, objects);
+  }
+
+  public static async persistUserObjects(id: string) {
+    await socket.executeAsUser("persistUserObjects", id);
+  }
+
+
   public static onSynchronizationMessageReceived(this: void, message: SynchronizationMessage) {
     Hooks.callAll(CUSTOM_HOOKS.SYNC_START, message);
     for (const item of message.added) Hooks.callAll(CUSTOM_HOOKS.REMOTE_ADDED, item);
@@ -41,5 +56,6 @@ export class SocketManager {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     socket = socketlib.registerModule(__MODULE_ID__);
     socket.register("syncStageObjects", SocketManager.onSynchronizationMessageReceived);
+    socket.register("persistUserObjects", SocketManager.onPersistUserObjects);
   }
 }
