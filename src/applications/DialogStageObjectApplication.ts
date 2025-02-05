@@ -19,10 +19,7 @@ export class DialogStageObjectApplication extends StageObjectApplication<DialogS
       template: `modules/${__MODULE_ID__}/templates/editObject/panel.hbs`
     },
     text: {
-      template: `modules/${__MODULE_ID__}/templates/editObject/text.hbs`
-    },
-    font: {
-      template: `modules/${__MODULE_ID__}/templates/editObject/font.hbs`
+      template: `modules/${__MODULE_ID__}/templates/editObject/dialogText.hbs`
     },
     portrait: {
       template: `modules/${__MODULE_ID__}/templates/editObject/image.hbs`
@@ -49,14 +46,6 @@ export class DialogStageObjectApplication extends StageObjectApplication<DialogS
         id: "text",
         icon: "fas fa-paragraph",
         label: "STAGEMANAGER.TABS.TEXT",
-        active: false,
-        cssClass: "",
-        group: "primary"
-      },
-      font: {
-        id: "font",
-        icon: "fas fa-font",
-        label: "STAGEMANAGER.TABS.FONT",
         active: false,
         cssClass: "",
         group: "primary"
@@ -253,6 +242,24 @@ export class DialogStageObjectApplication extends StageObjectApplication<DialogS
       case "font":
         partContext.formPrefix = "text.";
         partContext.stageObject = stageObject.text;
+        partContext.textTabs = {
+          text: {
+            id: "text",
+            icon: "fas fa-paragraph",
+            label: "STAGEMANAGER.TABS.TEXT",
+            active: true,
+            cssClass: "active",
+            group: "text"
+          },
+          font: {
+            id: "font",
+            icon: "fas fa-font",
+            label: "STAGEMANAGER.TABS.FONT",
+            active: false,
+            cssClass: "",
+            group: "text"
+          },
+        };
         break;
       case "panel":
         partContext.formPrefix = "panel.";
@@ -266,7 +273,7 @@ export class DialogStageObjectApplication extends StageObjectApplication<DialogS
         partContext.stageObject = stageObject;
     }
 
-    // log("Part context:", partId, { ...context, ...partContext })
+    log("Part context:", partId, { ...context, ...partContext })
 
     return Promise.resolve({
       ...context,

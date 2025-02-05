@@ -1,0 +1,5 @@
+<section class="tab {{tab.cssClass}}" data-group="{{tab.group}}" data-tab="text">
+  {{> "templates/generic/tab-navigation.hbs" tabs=textTabs}}
+  {{> "modules/stage-manager/templates/editObject/text.hbs" tab=textTabs.text}}
+  {{> "modules/stage-manager/templates/editObject/font.hbs" tab=textTabs.font}}
+</section>

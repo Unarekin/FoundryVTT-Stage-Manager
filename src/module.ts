@@ -98,7 +98,9 @@ Hooks.once("ready", () => {
     `modules/${__MODULE_ID__}/templates/triggers/macro.hbs`,
     `modules/${__MODULE_ID__}/templates/editObject/additional-arg.hbs`,
     `modules/${__MODULE_ID__}/templates/events/actor.hbs`,
-    `modules/${__MODULE_ID__}/templates/viewAsUser.hbs`
+    `modules/${__MODULE_ID__}/templates/viewAsUser.hbs`,
+    `modules/${__MODULE_ID__}/templates/editObject/text.hbs`,
+    `modules/${__MODULE_ID__}/templates/editObject/font.hbs`
   ])
 });
 
