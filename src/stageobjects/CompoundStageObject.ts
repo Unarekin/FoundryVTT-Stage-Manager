@@ -5,16 +5,22 @@ export abstract class CompoundStageObject extends StageObject<PIXI.Container> {
   public static readonly type: string = "compound";
   public readonly type: string = "compound";
 
-  // public serialize(): t {
-  //   return super.serialize() as t;
-  // }
+  public readonly children: StageObject[] = [];
 
-  // // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  // public static deserialize(serialized: SerializedStageObject): CompoundStageObject { throw new NotImplementedError(); }
-  // // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  // public deserialize(serialized: t) { throw new NotImplementedError(); }
+  protected addChild(child: StageObject) {
+    this.children.push(child);
+  }
 
-  // public createDragGhost(): PIXI.Container { throw new NotImplementedError(); }
+  protected removeChild(child: StageObject) {
+    const index = this.children.indexOf(child);
+    if (index !== -1) this.children.splice(index, 1);
+  }
+
+  public destroy(): void {
+    const children = [...this.children];
+    for (const child of children)
+      child.destroy();
+  }
 
   constructor(name?: string) {
     const container = new PIXI.Container();

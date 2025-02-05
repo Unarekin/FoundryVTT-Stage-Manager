@@ -50,9 +50,6 @@ export class DialogStageObject extends CompoundStageObject {
   public destroy() {
     if (!this.destroyed) {
       super.destroy();
-      this._panelObj.destroy();
-      this._textObj.destroy()
-      if (this._portraitObj instanceof ImageStageObject) this._portraitObj.destroy();
     }
   }
 
@@ -185,6 +182,7 @@ export class DialogStageObject extends CompoundStageObject {
       this.dirty = true;
     } else if (val && !(this.portraitObject instanceof ImageStageObject)) {
       this._portraitObj = new ImageStageObject(val, this.name);
+      this.addChild(this._portraitObj);
       this.dirty = true;
     } else if (val && this.portraitObject instanceof ImageStageObject) {
       this.portraitObject.path = val;
@@ -205,7 +203,11 @@ export class DialogStageObject extends CompoundStageObject {
 
     this.displayObject.addChild(this.panelObject.displayObject);
     this.displayObject.addChild(this.textObject.displayObject);
-    this.displayObject.addChild(this._portraitObj.displayObject);
+    this.displayObject.addChild(this.portraitObject.displayObject);
+
+    this.addChild(this.panelObject)
+    this.addChild(this.textObject);
+    this.addChild(this.portraitObject);
 
     this.resizable = true;
     this.positionTextObject();
