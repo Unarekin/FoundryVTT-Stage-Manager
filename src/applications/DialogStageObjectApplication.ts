@@ -24,6 +24,9 @@ export class DialogStageObjectApplication extends StageObjectApplication<DialogS
     portrait: {
       template: `modules/${__MODULE_ID__}/templates/editObject/image.hbs`
     },
+    effects: {
+      template: `modules/${__MODULE_ID__}/templates/editObject/effects.hbs`
+    },
     triggers: {
       template: `modules/${__MODULE_ID__}/templates/editObject/triggers.hbs`
     },
