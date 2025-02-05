@@ -63,6 +63,7 @@ export class DialogStageObject extends CompoundStageObject {
       if (val !== this.showPortrait) {
         this.dirty = true;
         this._showPortrait = val;
+        this.portraitObject.displayObject.visible = val;
       }
     } else {
       throw new NoPortraitError();
@@ -106,7 +107,16 @@ export class DialogStageObject extends CompoundStageObject {
     this.panelObject.x = 0;
     this.panelObject.y = 0;
 
-    this.positionTextObject();
+    this.showPortrait = serialized.showPortrait;
+    this.portraitObject.x = this.panelObject.borders.left;
+    this.portraitObject.y = this.panelObject.borders.top;
+
+    this.showPortrait = serialized.showPortrait;
+
+    if (!this.portraitObject.texture.valid)
+      this.portraitObject.texture.baseTexture.once("loaded", () => { this.positionTextObject(); });
+    else
+      this.positionTextObject();
   }
 
   public static deserialize(serialized: SerializedDialogStageObject): DialogStageObject {
@@ -138,7 +148,10 @@ export class DialogStageObject extends CompoundStageObject {
       restrictToVisualArea: false,
       filters: [],
       alpha: 1,
-      zIndex: 0
+      zIndex: 0,
+      clickThrough: false,
+      effects: [],
+      effectsEnabled: true
     }
 
     const serialized = {
@@ -146,8 +159,10 @@ export class DialogStageObject extends CompoundStageObject {
       type: DialogStageObject.type,
       text: this.textObject.serialize(),
       portrait: this.portraitObject instanceof ImageStageObject ? this.portraitObject.serialize() : defaultPortrait,
-      panel: this.panelObject.serialize()
+      panel: this.panelObject.serialize(),
+      showPortrait: this.showPortrait
     }
+
     return serialized;
   }
 

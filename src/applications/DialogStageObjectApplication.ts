@@ -172,12 +172,6 @@ export class DialogStageObjectApplication extends StageObjectApplication<DialogS
       portrait: {
         ...prep.portrait,
         bounds: this.boundsToScreen(prep.portrait.bounds)
-        // bounds: {
-        //   x: prep.portrait.bounds.x * bounds.width,
-        //   y: prep.portrait.bounds.y * bounds.height,
-        //   width: prep.portrait.bounds.width * bounds.width,
-        //   height: prep.portrait.bounds.height * bounds.height
-        // }
       },
       // bounds: this.boundsToScreen(prep.bounds)
     }
@@ -224,7 +218,7 @@ export class DialogStageObjectApplication extends StageObjectApplication<DialogS
   protected onRevert(): SerializedDialogStageObject {
     const reverted = super.onRevert() as SerializedDialogStageObject;
     // reverted.panel.bounds = this.normalizeBounds(reverted.panel.bounds);
-    reverted.portrait.bounds = this.normalizeBounds(reverted.portrait.bounds);
+    // reverted.portrait.bounds = this.normalizeBounds(reverted.portrait.bounds);
     reverted.text.bounds = this.stageObject.textObject.serialize().bounds;
     // reverted.text.bounds = this.normalizeBounds(reverted.text.bounds);
 
@@ -269,6 +263,7 @@ export class DialogStageObjectApplication extends StageObjectApplication<DialogS
         partContext.formPrefix = "portrait.";
         partContext.stageObject = stageObject.portrait;
         partContext.showPortraitCheck = true;
+        partContext.showPortrait = stageObject.showPortrait;
         break;
       default:
         partContext.stageObject = stageObject;
