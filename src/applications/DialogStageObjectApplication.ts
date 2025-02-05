@@ -1,6 +1,6 @@
 import { AnyObject, DeepPartial } from 'Foundry-VTT/src/types/utils.mjs';
 import { CanvasNotInitializedError } from '../errors';
-import { log, logError } from '../logging';
+import { logError } from '../logging';
 import { DialogStageObject } from '../stageobjects';
 import { SerializedDialogStageObject } from '../types';
 import { getFontContext } from './functions';
@@ -144,7 +144,7 @@ export class DialogStageObjectApplication extends StageObjectApplication<DialogS
     const prep = super.prepareStageObject();
     // const bounds = this.originalObject.restrictToVisualArea ? StageManager.VisualBounds : StageManager.ScreenBounds;
 
-    log("Prep:", prep);
+    // log("Prep:", prep);
 
     // prep.panel.bounds = this.boundsToScreen(prep.panel.bounds);
     // prep.portrait.bounds = this.boundsToScreen(prep.portrait.bounds);
@@ -273,7 +273,7 @@ export class DialogStageObjectApplication extends StageObjectApplication<DialogS
         partContext.stageObject = stageObject;
     }
 
-    log("Part context:", partId, { ...context, ...partContext })
+    // log("Part context:", partId, { ...context, ...partContext })
 
     return Promise.resolve({
       ...context,
