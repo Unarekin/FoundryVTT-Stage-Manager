@@ -268,6 +268,7 @@ export class DialogStageObjectApplication extends StageObjectApplication<DialogS
       case "portrait":
         partContext.formPrefix = "portrait.";
         partContext.stageObject = stageObject.portrait;
+        partContext.showPortraitCheck = true;
         break;
       default:
         partContext.stageObject = stageObject;

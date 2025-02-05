@@ -4,6 +4,13 @@
       <label for="{{../formPrefix}}src">{{localize "STAGEMANAGER.EDITDIALOG.SRC"}}</label>
       <file-picker type="imagevideo" value="{{src}}" name="{{../formPrefix}}src" id="{{../formPrefix}}src"></file-picker>
     </div>
+
+    {{#if ../showPortraitCheck}}
+      <div class="form-group">
+        <label for="{{../formPrefix}}showPortrait">{{localize "STAGEMANAGER.EDITDIALOG.SHOWPORTRAIT"}}</label>
+        <input type="checkbox" id="{{../formPrefix}}showPortrait" name="{{../formPrefix}}showPortrait" {{checked showPortrait}}>
+      </div>
+    {{/if}}
     
     <div class="form-group slim">
       <label>{{localize "STAGEMANAGER.EDITDIALOG.SIZE"}}</label>

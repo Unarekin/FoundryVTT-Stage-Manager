@@ -33,7 +33,6 @@
     "EDITDIALOG": {
       "ACTOR": "Actor",
       "ADDTRIGGER": "Add Trigger",
-      "CLICKTHROUGH": "Ignore Mouse Events",
       "ALPHA": "Opacity",
       "ANGLE": "Rotation",
       "ANGLEHINT": "(In degrees)",
@@ -44,59 +43,60 @@
         "TITLE": "Border Sizes",
         "TOP": "Top"
       },
+      "CLICKTHROUGH": "Ignore Mouse Events",
       "DELETE": "Delete {name}",
-      "EDIT": "Edit {name}",
       "DELETEEFFECT": {
-        "TITLE": "Delete {type}",
-        "MESSAGE": "Are you sure you wish to delete this effect?\nThis cannot be undone."
+        "MESSAGE": "Are you sure you wish to delete this effect?\nThis cannot be undone.",
+        "TITLE": "Delete {type}"
       },
+      "EDIT": "Edit {name}",
       "EFFECTS": {
+        "ADD": "Add Effect",
         "BEVEL": "Bevel",
         "BLUR": "Blur",
+        "CONFIG": {
+          "BEVEL": {
+            "LIGHTCOLOR": "Light Color",
+            "ROTATION": "Rotation",
+            "SHADOWCOLOR": "Shadow Color",
+            "THICKNESS": "Thickness"
+          },
+          "BLUR": {
+            "QUALITY": "Quality",
+            "STRENGTH": "Strength"
+          },
+          "DROPSHADOW": {
+            "BLUR": "Blur",
+            "COLOR": "Color",
+            "OFFSET": "Offset",
+            "QUALITY": "Quality",
+            "SHADOWONLY": "Shadow Only",
+            "X": "x",
+            "Y": "y"
+          },
+          "GLOW": {
+            "COLOR": "Color",
+            "GLOWONLY": "Draw Glow Only",
+            "INNERSTRENGTH": "Inner Strength",
+            "OUTERSTRENGTH": "Outer Strength",
+            "QUALITY": "Quality"
+          },
+          "OUTLINE": {
+            "COLOR": "Color",
+            "OUTLINEONLY": "Outline Only",
+            "QUALITY": "Quality",
+            "THICKNESS": "Thickness"
+          },
+          "PIXELATE": {
+            "SIZE": "Size"
+          }
+        },
+        "DELETE": "Delete Effect",
         "DROPSHADOW": "Drop Shadow",
         "ENABLE": "Enable Effects",
         "GLOW": "Glow",
         "OUTLINE": "Outline",
-        "PIXELATE": "Pixelate",
-        "ADD": "Add Effect",
-        "DELETE": "Delete Effect",
-        "CONFIG": {
-          "BLUR": {
-            "STRENGTH": "Strength",
-            "QUALITY": "Quality"
-          },
-          "BEVEL": {
-            "THICKNESS": "Thickness",
-            "ROTATION": "Rotation",
-            "LIGHTCOLOR": "Light Color",
-            "SHADOWCOLOR": "Shadow Color"
-          },
-          "DROPSHADOW": {
-            "OFFSET": "Offset",
-            "X": "x",
-            "Y": "y",
-            "COLOR": "Color",
-            "SHADOWONLY": "Shadow Only",
-            "BLUR": "Blur",
-            "QUALITY": "Quality"
-          },
-          "PIXELATE": {
-            "SIZE": "Size"
-          },
-          "OUTLINE": {
-            "COLOR": "Color",
-            "THICKNESS": "Thickness",
-            "OUTLINEONLY": "Outline Only",
-            "QUALITY": "Quality"
-          },
-          "GLOW": {
-            "COLOR": "Color",
-            "INNERSTRENGTH": "Inner Strength",
-            "OUTERSTRENGTH": "Outer Strength",
-            "GLOWONLY": "Draw Glow Only",
-            "QUALITY": "Quality"
-          }
-        }
+        "PIXELATE": "Pixelate"
       },
       "FONT": {
         "COLOR": "Color",
@@ -130,6 +130,7 @@
       "POSY": "Y",
       "SCENES": "Scenes",
       "SCOPE": "Object scope",
+      "SHOWPORTRAIT": "Show Portrait",
       "SIZE": "Size",
       "SKEW": "Skew",
       "SRC": "Image source",
