@@ -3,18 +3,28 @@ import { StageObject } from "./StageObject";
 import mime from "../mime";
 import { logError } from "../logging";
 
+const VIDEO_OBJECTS: Record<string, ImageStageObject[]> = {};
+
 export class ImageStageObject extends StageObject<PIXI.Sprite> {
   // #region Properties (3)
-
-  #isVideo = false;
   private _path: string;
   public get path() { return this._path; }
   public set path(val) {
     if (this.path !== val) {
       this._path = val;
+      this.cleanVideoTexture();
       this.displayObject.texture = PIXI.Texture.from(val);
+
       this.dirty = true;
     }
+  }
+
+  protected pathIsVideo(path: string): boolean {
+    return pathIsVideo(path);
+  }
+
+  protected pathIsGif(path: string): boolean {
+    return pathIsGif(path);
   }
 
   public static readonly type: string = "image";
@@ -28,13 +38,12 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
   constructor(path: string, name?: string) {
     let sprite: PIXI.Sprite | null = null;
 
-    const mimeType = mime(path);
-    const split = mimeType ? mimeType.split("/") : [];
-
     let isVideo = false;
-    if (split[0] === "video") {
+
+    if (pathIsVideo(path)) {
       // Handle video
       isVideo = true;
+
       const vid = document.createElement("video");
       vid.src = path;
       // vid.autoplay = true;
@@ -50,7 +59,7 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
         sprite = PIXI.Sprite.from(vid);
       }
 
-    } else if (split[1] === "gif") {
+    } else if (pathIsGif(path)) {
       PIXI.Assets.load(path)
         .then(img => { this.displayObject = img as PIXI.Sprite; })
         .catch((err: Error) => {
@@ -63,9 +72,13 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
     // this.anchor.x = 0.5;
     // this.anchor.y = 0.5;
     this.resizable = true;
-    this.#isVideo = isVideo;
     this.loop = true;
     this._path = path;
+
+    if (isVideo) {
+      if (VIDEO_OBJECTS[path]) VIDEO_OBJECTS[path].push(this);
+      else VIDEO_OBJECTS[path] = [this];
+    }
 
     if (!this.displayObject.texture.valid) {
       this.displayObject.texture.baseTexture.once("loaded", () => {
@@ -79,6 +92,7 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
   // #endregion Constructors (1)
 
   // #region Public Getters And Setters (27)
+
 
   public get anchor() { return this.displayObject.anchor; }
 
@@ -273,10 +287,22 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
   }
 
   public destroy() {
-    // Make sure we destroy the video resource so it stops playing.
-    if (!this.destroyed && this.#isVideo && !this.displayObject.texture.baseTexture.resource.destroyed)
-      this.displayObject.texture.baseTexture.resource.destroy();
+    // // Make sure we destroy the video resource so it stops playing.
+    // if (!this.destroyed && this.#isVideo && !this.displayObject.texture.baseTexture.resource.destroyed)
+    //   this.displayObject.texture.baseTexture.resource.destroy();
     super.destroy();
+    this.cleanVideoTexture();
+  }
+
+  protected cleanVideoTexture() {
+    if (VIDEO_OBJECTS[this.path]) {
+      const index = VIDEO_OBJECTS[this.path].indexOf(this);
+      if (index !== -1)
+        VIDEO_OBJECTS[this.path].splice(index, 1);
+      // Pause the video if it is no longer being used.
+      if (!VIDEO_OBJECTS[this.path].length && this.displayObject.texture.baseTexture?.resource instanceof PIXI.VideoResource)
+        this.displayObject.texture.baseTexture.resource.source.pause();
+    }
   }
 
   public scaleToScreen() {
@@ -306,4 +332,14 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
       loop: this.loop,
     }
   }
+}
+
+function pathIsVideo(path: string): boolean {
+  const mimeType = mime(path);
+  const split = mimeType ? mimeType.split("/") : [];
+  return split[1] === "video";
+}
+
+function pathIsGif(path: string): boolean {
+  return mime(path) === "image/gif";
 }
