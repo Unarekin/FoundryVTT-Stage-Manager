@@ -8,6 +8,11 @@
     </div>
 
     <div class="form-group">
+      <label for="visible">{{localize "STAGEMANAGER.EDITDIALOG.VISIBLE"}}</label>
+      <input type="checkbox" name="visible" id="visible" {{checked visible}}>
+    </div>
+
+    <div class="form-group">
       <label for="layer">{{localize "STAGEMANAGER.EDITDIALOG.LAYER"}}</label>
       <select name="layer" id="layer">
         {{selectOptions ../layerSelect selected=layer localize=true}}

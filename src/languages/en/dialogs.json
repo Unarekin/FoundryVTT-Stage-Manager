@@ -142,6 +142,7 @@
       "TRIGGERS": "Triggers",
       "TRIGGERSENABLED": "Enable triggers",
       "USERS": "Users",
+      "VISIBLE": "Visible",
       "VISUALBOUNDS": "Relative to Visual Bounds",
       "VISUALBOUNDSHIDE": "Hide Visual Bounds",
       "VISUALBOUNDSHINT": "The 'visual bounds' is an area of the screen calculated to ensure that elements placed will not be covered by Foundry's standard UI.",

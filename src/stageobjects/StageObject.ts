@@ -838,6 +838,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     this.scopeOwners = serialized.scopeOwners ?? [];
     this.triggers = serialized.triggers ?? {};
     this.clickThrough = serialized.clickThrough;
+    this.visible = serialized.visible;
 
     if (StageManager.canModifyStageObject(game?.user?.id ?? "", this.id)) {
       if (game?.ready) void StageManager.setOwners(this.id, serialized.owners);
@@ -988,6 +989,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       name: this.name ?? this.id,
       locked: this.locked,
       clickThrough: this.clickThrough,
+      visible: this.visible,
       bounds: {
         x: this.x / this.actualBounds.width,
         y: this.y / this.actualBounds.height,
@@ -1080,6 +1082,14 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       .catch((err: Error) => {
         logError(err);
       });
+  }
+
+  public get visible() { return this.displayObject.renderable; }
+  public set visible(val) {
+    if (val !== this.displayObject.visible) {
+      this.displayObject.visible = val;
+      this.dirty = true;
+    }
   }
 
   public get absoluteLeft() { return this.left + this.actualBounds.left; }
