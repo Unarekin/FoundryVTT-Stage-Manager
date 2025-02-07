@@ -13,7 +13,28 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
     if (this.path !== val) {
       this._path = val;
       this.cleanVideoTexture();
-      this.displayObject.texture = PIXI.Texture.from(val);
+      const texture = PIXI.Texture.from(val);
+
+      if (texture.baseTexture.resource instanceof PIXI.VideoResource) {
+        const resource = texture.baseTexture.resource;
+        if (texture.valid) {
+          resource.source.loop = true;
+          resource.source.play()
+            .catch((err: Error) => { logError(err); });
+        } else {
+          texture.baseTexture.once("loaded", () => {
+            resource.source.loop = true;
+            resource.source.play()
+              .catch((err: Error) => { logError(err); });
+          });
+        }
+
+        if (VIDEO_OBJECTS[val]) VIDEO_OBJECTS[val].push(this);
+        else VIDEO_OBJECTS[val] = [this];
+      }
+
+
+      // game.video?.play(this.displayObject.texture);
 
       this.dirty = true;
     }
@@ -273,13 +294,13 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
     if (!this.displayObject.texture.baseTexture.valid) {
       this.displayObject.texture.baseTexture.once("loaded", () => {
         this.path = serialized.src;
-        this.loop = serialized.loop;
+        // this.loop = serialized.loop;
         this.width = this.actualBounds.width * serialized.bounds.width;
         this.height = this.actualBounds.height * serialized.bounds.height;
       });
     } else {
       this.path = serialized.src;
-      this.loop = serialized.loop;
+      // this.loop = serialized.loop;
       this.width = this.actualBounds.width * serialized.bounds.width;
       this.height = this.actualBounds.height * serialized.bounds.height;
     }
