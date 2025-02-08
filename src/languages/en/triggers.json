@@ -5,6 +5,7 @@
       "ACTIONS": {
         "MACRO": "Execute Macro"
       },
+      "UNKNOWN": "(Unknown Trigger)",
       "ACTION": "Triggered Action",
       "EVENT": "Triggering Event",
       "CATEGORIES": {

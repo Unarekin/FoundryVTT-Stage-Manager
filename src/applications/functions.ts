@@ -1,12 +1,13 @@
 import { TriggerAction } from "../triggeractions";
 import { FontSettings, SerializedStageObject, SerializedTrigger } from '../types';
 import * as tempTriggerActions from "../triggeractions";
-import { InvalidTriggerError, LocalizedError, UnknownDocumentTypeError } from "../errors";
+import { InvalidTriggerError, UnknownDocumentTypeError } from "../errors";
 import { log } from "../logging";
-import { EditTriggerDialogV2 } from "./EditTriggerDialogV2";
+// import { EditTriggerDialogV2 } from "./EditTriggerDialogV2";
 import { StageObject } from "../stageobjects";
 import { localize } from "../functions";
 import { serializeEffect } from "../lib/effects";
+import { getTriggerEvents } from "./triggerFunctions";
 
 const triggerActions = Object.values(tempTriggerActions).filter(item => !!item.type);
 
@@ -79,23 +80,17 @@ export function setSelectedConfig(element: HTMLElement) {
 }
 
 
-export function getTriggerFromForm(form: HTMLFormElement) {
-  const triggerSelect = form.querySelector("select#action");
-  if (triggerSelect instanceof HTMLSelectElement) {
-    const triggerType = triggerSelect.value;
-    const triggerClass = getTriggerActionType(triggerType);
-    if (!triggerClass) throw new InvalidTriggerError(triggerType);
-    return triggerClass.fromForm(form);
-  }
-}
+// export function getTriggerFromForm(form: HTMLFormElement) {
+//   const triggerSelect = form.querySelector("select#action");
+//   if (triggerSelect instanceof HTMLSelectElement) {
+//     const triggerType = triggerSelect.value;
+//     const triggerClass = getTriggerActionType(triggerType);
+//     if (!triggerClass) throw new InvalidTriggerError(triggerType);
+//     return triggerClass.fromForm(form);
+//   }
+// }
 
-export interface EventSpec {
-  value: string;
-  label: string;
-  category: string;
-  categoryLabel: string;
-  addlArgs: { name: string, label: string }[]
-}
+
 
 export function getLayerContext(): Record<string, string> {
   return {
@@ -106,247 +101,7 @@ export function getLayerContext(): Record<string, string> {
   }
 }
 
-export function getTriggerEvents(trigger?: SerializedTrigger): EventSpec[] {
-  return [
-    {
-      "value": "hoverIn",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.HOVERIN",
-      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MOUSE",
-      "category": "mouse",
-      "addlArgs": [
-        { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" },
-        { name: "pos", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.POS" },
-        { name: "modKeys", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.MODKEYS" }
-      ]
-    },
-    {
-      "value": "hoverOut",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.HOVEROUT",
-      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MOUSE",
-      "category": "mouse",
-      "addlArgs": [
-        { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" },
-        { name: "pos", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.POS" },
-        { name: "modKeys", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.MODKEYS" }
-      ]
-    },
-    {
-      "value": "click",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.CLICK",
-      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MOUSE",
-      "category": "mouse",
-      "addlArgs": [
-        { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" },
-        { name: "pos", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.POS" },
-        { name: "modKeys", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.MODKEYS" }
-      ]
-    },
-    {
-      "value": "doubleClick",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.DOUBLECLICK",
-      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MOUSE",
-      "category": "mouse",
-      "addlArgs": [
-        { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" },
-        { name: "pos", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.POS" },
-        { name: "modKeys", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.MODKEYS" }
-      ]
-    },
-    {
-      "value": "rightClick",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.RIGHTCLICK",
-      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MOUSE",
-      "category": "mouse",
-      "addlArgs": [
-        { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" },
-        { name: "pos", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.POS" },
-        { name: "modKeys", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.MODKEYS" }
-      ]
-    },
-    {
-      "value": "combatStart",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.COMBATSTART",
-      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.COMBAT",
-      "category": "combat",
-      "addlArgs": [
-        { name: "combat", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.COMBAT" }
-      ]
-    },
-    {
-      "value": "combatEnd",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.COMBATEND",
-      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.COMBAT",
-      "category": "combat",
-      "addlArgs": [
-        { name: "combat", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.COMBAT" }
-      ]
-    },
-    {
-      "value": "combatTurnStart",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.COMBATTURNSTART",
-      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.COMBAT",
-      "category": "combat",
-      "addlArgs": [
-        { name: "combat", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.COMBAT" },
-        { name: "combatant", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.COMBATANT" },
-        { name: "token", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.TOKEN" },
-        { name: "actor", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR" }
-      ]
-    },
-    {
-      "value": "combatTurnEnd",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.COMBATTURNEND",
-      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.COMBAT",
-      "category": "combat",
-      "addlArgs": [
-        { name: "combat", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.COMBAT" },
-        { name: "combatant", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.COMBATANT" },
-        { name: "token", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.TOKEN" },
-        { name: "actor", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR" }
-      ]
-    },
-    {
-      "value": "sceneChange",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.SCENECHANGE",
-      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
-      "category": "misc",
-      "addlArgs": [
-        { name: "scene", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.SCENE" }
-      ]
-    },
-    {
-      "value": "pause",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.PAUSE",
-      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
-      "category": "misc",
-      "addlArgs": []
-    },
-    {
-      "value": "unpause",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.UNPAUSE",
-      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
-      "category": "misc",
-      "addlArgs": []
-    },
-    {
-      "value": "userConnected",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.USERCONNECTED",
-      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
-      "category": "misc",
-      "addlArgs": [
-        { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" }
-      ]
-    },
-    {
-      "value": "userDisconnected",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.USERDISCONNECTED",
-      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
-      "category": "misc",
-      "addlArgs": [
-        { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" }
-      ]
-    },
-    {
-      "value": "addActiveEffect",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.ADDACTIVEEFFECT",
-      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.ACTOR",
-      "category": "actor",
-      "addlArgs": [
-        { name: "actor", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR" },
-        { name: "activeEffect", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTIVEEFFECT" }
-      ]
-    },
-    {
-      "value": "removeActiveEffect",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.REMOVEACTIVEEFFECT",
-      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.ACTOR",
-      "category": "actor",
-      "addlArgs": [
-        { name: "actor", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR" },
-        { name: "activeEffect", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTIVEEFFECT" }
-      ]
-    },
-    {
-      "value": "addStatusEffect",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.ADDSTATUSEFFECT",
-      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.ACTOR",
-      "category": "actor",
-      "addlArgs": [
-        { name: "actor", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR" },
-        { name: "activeEffect", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTIVEEFFECT" },
-        { name: "statusEffect", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.STATUSEFFECT" }
-      ]
-    },
-    {
-      "value": "selectToken",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.SELECTTOKEN",
-      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.TOKEN",
-      "category": "token",
-      "addlArgs": [
-        { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" },
-        { name: "token", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.TOKEN" },
-        { name: "actor", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR" }
-      ]
-    },
-    {
-      "value": "deselectToken",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.DESELECTTOKEN",
-      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.TOKEN",
-      "category": "token",
-      "addlArgs": [
-        { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" },
-        { name: "token", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.TOKEN" },
-        { name: "actor", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR" }
-      ]
-    },
-    {
-      "value": "targetToken",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.TARGETTOKEN",
-      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.TOKEN",
-      "category": "token",
-      "addlArgs": [
-        { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" },
-        { name: "token", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.TOKEN" },
-        { name: "actor", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR" }
-      ]
-    },
-    {
-      "value": "untargetToken",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.UNTARGETTOKEN",
-      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.TOKEN",
-      "category": "token",
-      "addlArgs": [
-        { name: "user", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER" },
-        { name: "token", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.TOKEN" },
-        { name: "actor", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR" }
-      ]
-    },
-    {
-      "value": "worldTimeChange",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.WORLDTIMECHANGE",
-      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
-      "category": "misc",
-      "addlArgs": [
-        { name: "time", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.TIME" }
-      ]
-    },
-    {
-      "value": "actorChange",
-      "label": "STAGEMANAGER.TRIGGERS.EVENTS.ACTORCHANGE",
-      "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.ACTOR",
-      "category": "actor",
-      "addlArgs": [
-        { name: "actor", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR" }
-      ]
-    }
-  ].map(item => ({
-    ...item,
-    label: game.i18n?.localize(item.label) ?? "",
-    categoryLabel: game.i18n?.localize(item.categoryLabel) ?? "",
-    selected: trigger?.event === item.value
-  }))
-    .sort((a, b) => a.label.localeCompare(b.label))
-}
+
 
 export async function setMacroArgs(element: HTMLElement) {
   const eventElem = element.querySelector("#event");
@@ -374,49 +129,67 @@ export async function setMacroArgs(element: HTMLElement) {
   }
 }
 
-export async function addTriggerItem(element: HTMLElement) {
-  const newTrigger = await (foundry.applications.api.DialogV2 ? EditTriggerDialogV2.prompt() : Promise.resolve(undefined));
-  if (!newTrigger) return;
+// export async function addTriggerItem(element: HTMLElement) {
+//   const newTrigger = await (foundry.applications.api.DialogV2 ? EditTriggerDialogV2.prompt() : Promise.resolve(undefined));
+//   if (!newTrigger) return;
 
-  const triggerList = element.querySelector(`[data-role="trigger-list"]`);
-  if (!(triggerList instanceof HTMLElement)) throw new LocalizedError("NOTRIGGERLIST");
+//   const triggerList = element.querySelector(`[data-role="trigger-list"]`);
+//   if (!(triggerList instanceof HTMLElement)) throw new LocalizedError("NOTRIGGERLIST");
 
-  const content = await renderTriggerItemRow(newTrigger);
+//   const content = await renderTriggerItemRow(newTrigger);
 
-  const tr = document.createElement("tr");
-  const td = document.createElement("td");
-  td.innerHTML = content;
-  tr.appendChild(td);
+//   const tr = document.createElement("tr");
+//   const td = document.createElement("td");
+//   td.innerHTML = content;
+//   tr.appendChild(td);
 
-  triggerList.appendChild(tr);
-}
+//   triggerList.appendChild(tr);
+// }
 
 
-export async function editTriggerItem(element: HTMLElement, id: string) {
-  const triggerElem = element.querySelector(`[data-role="trigger-item"][data-id="${id}"]`);
-  if (!triggerElem) throw new LocalizedError("NOTRIGGERELEMENT", { id });
-  const formElem = triggerElem.querySelector(`input[type="hidden"][name="triggers"]`);
-  if (!(formElem instanceof HTMLInputElement)) throw new LocalizedError("NOTRIGGERELEMENT", { id });
-  const serialized = formElem.value;
-  if (!serialized) throw new LocalizedError("NOTRIGGERELEMENT", { id });
-  const deserialized = JSON.parse(serialized) as SerializedTrigger;
-  const edited = await (foundry.applications.api.DialogV2 ? EditTriggerDialogV2.prompt(deserialized) : Promise.resolve(undefined));
-  log("Edited:", edited);
-  if (!edited) return;
+// export async function editTriggerItem(element: HTMLElement, id: string) {
+//   const triggerElem = element.querySelector(`[data-role="trigger-item"][data-id="${id}"]`);
+//   if (!triggerElem) throw new LocalizedError("NOTRIGGERELEMENT", { id });
+//   const formElem = triggerElem.querySelector(`input[type="hidden"][name="triggers"]`);
+//   if (!(formElem instanceof HTMLInputElement)) throw new LocalizedError("NOTRIGGERELEMENT", { id });
+//   const serialized = formElem.value;
+//   if (!serialized) throw new LocalizedError("NOTRIGGERELEMENT", { id });
+//   const deserialized = JSON.parse(serialized) as SerializedTrigger;
+//   const edited = await (foundry.applications.api.DialogV2 ? EditTriggerDialogV2.prompt(deserialized) : Promise.resolve(undefined));
+//   log("Edited:", edited);
+//   if (!edited) return;
 
-  const content = await renderTriggerItemRow(edited);
-  log("Content:", content);
-  triggerElem.outerHTML = content;
-}
+//   const content = await renderTriggerItemRow(edited);
+//   log("Content:", content);
+//   triggerElem.outerHTML = content;
+// }
 
-async function renderTriggerItemRow(trigger: SerializedTrigger): Promise<string> {
-  const actionClass = getTriggerActionType(trigger);
-  if (!actionClass) throw new InvalidTriggerError(trigger.action);
-  return renderTemplate(`modules/${__MODULE_ID__}/templates/editObject/trigger-item.hbs`, {
-    trigger,
-    eventLabel: game.i18n?.localize(`STAGEMANAGER.TRIGGERS.EVENTS.${trigger.event.toUpperCase()}`),
-    actionLabel: actionClass.getDialogLabel(trigger)
-  });
+// async function renderTriggerItemRow(trigger: SerializedTrigger): Promise<string> {
+//   const actionClass = getTriggerActionType(trigger);
+//   if (!actionClass) throw new InvalidTriggerError(trigger.action);
+//   return renderTemplate(`modules/${__MODULE_ID__}/templates/editObject/trigger-item.hbs`, {
+//     trigger,
+//     eventLabel: game.i18n?.localize(`STAGEMANAGER.TRIGGERS.EVENTS.${trigger.event.toUpperCase()}`),
+//     actionLabel: actionClass.getDialogLabel(trigger)
+//   });
+// }
+
+export async function confirm(title: string, content: string) {
+
+  return (foundry.applications.api.DialogV2 ?
+    foundry.applications.api.DialogV2.confirm({
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      window: ({ title } as any),
+      content,
+      rejectClose: false
+    }) :
+    Dialog.confirm({
+      title,
+      content,
+      defaultYes: false,
+      rejectClose: false
+    })
+  )
 }
 
 
@@ -602,3 +375,4 @@ export async function selectEffectDialog(): Promise<string | undefined> {
   })
   return selection === "cancel" ? undefined : selection ?? undefined;
 }
+

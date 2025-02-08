@@ -33,6 +33,7 @@
     "EDITDIALOG": {
       "ACTOR": "Actor",
       "ADDTRIGGER": "Add Trigger",
+      "DELETETRIGGER": "Delete Trigger",
       "ALPHA": "Opacity",
       "ANGLE": "Rotation",
       "ANGLEHINT": "(In degrees)",
@@ -137,7 +138,7 @@
       "TEXT": "Text",
       "TITLE": "Edit {name}",
       "TRIGGERLABELS": {
-        "MACRO": "Execute Macro: {macro}"
+        "MACRO": "Macro: {macro}"
       },
       "TRIGGERS": "Triggers",
       "TRIGGERSENABLED": "Enable triggers",

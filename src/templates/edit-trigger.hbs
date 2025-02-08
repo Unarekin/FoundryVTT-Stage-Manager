@@ -1,9 +1,9 @@
-<section data-role="add-trigger">
-  <input type="hidden" name="id" id="id" value="{{trigger.id}}">
-  <input type="hidden" name="version" id="version" value="1.0.0">
+<section data-role="edit-trigger">
+  <input type="hidden" name="trigger.id" id="trigger.id" value="{{trigger.id}}">
+  <input type="hidden" name="trigger.version" id="trigger.version" value="1.0.0">
   <div class="form-group">
     <label for="event">{{localize "STAGEMANAGER.TRIGGERS.EVENT"}}</label>
-    <select name="event" id="event" required value="{{trigger.event}}">
+    <select name="trigger.event" id="trigger.event" required value="{{trigger.event}}">
       <option value=""></option>
       {{#group triggerEventSelect by="categoryLabel"}}
         {{#if value}}<optgroup label="{{localize value}}">{{/if}}
@@ -14,20 +14,22 @@
       {{/group}}
     </select>
   </div>
-  <br>
+
   <section data-role="event-configs">
     {{> "modules/stage-manager/templates/events/actor.hbs" trigger=trigger}}
   </section>
-  <br>
+
   <div class="form-group">
-    <label for="action">{{localize "STAGEMANAGER.TRIGGERS.ACTION"}}</label>
-    <select id="action" name="action" required value="{{trigger.type}}">
+    <label for="trigger.action">{{localize "STAGEMANAGER.TRIGGERS.ACTION"}}</label>
+    <select id="trigger.action" name="trigger.action" required value="{{trigger.type}}" >
       <option value=""></option>
       {{selectOptions triggerActionSelect localize=true selected=trigger.action}}
     </select>
   </div>
-  <br>
+
   <section data-role="action-configs">
     {{> "modules/stage-manager/templates/triggers/macro.hbs" trigger=trigger}}
   </section>
+
+  <br>
 </section>

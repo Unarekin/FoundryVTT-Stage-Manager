@@ -1,7 +1,7 @@
 <section data-category="actor" style="display:none">
   <div class="form-group">
-    <label for="actor">{{localize "DOCUMENT.Actor"}}</label>
-    <select name="actor" id="actor">
+    <label for="trigger.actor">{{localize "DOCUMENT.Actor"}}</label>
+    <select name="trigger.actor" id="trigger.actor">
       <option value=""></option>
       {{#group actors by="pack"}}
         {{#if value}}<optgroup label="{{value}}">{{/if}}

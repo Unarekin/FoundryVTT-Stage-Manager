@@ -1,15 +1,15 @@
 import type { AnyObject, DeepPartial } from "Foundry-VTT/src/types/utils.d.mts";
 import { StageObject } from "../stageobjects";
 import { StageObjectApplicationContext, StageObjectApplicationOptions, StageObjectApplicationConfiguration, Tab } from "./types";
-import { SerializedEffect, SerializedStageObject, SerializedTrigger } from "../types";
+import { SerializedEffect, SerializedStageObject, SerializedTrigger, TriggerEventSignatures } from '../types';
 import { StageManager } from "../StageManager";
 import ApplicationV2 from "Foundry-VTT/src/foundry/client-esm/applications/api/application.mjs";
 import HandlebarsApplicationMixin from "Foundry-VTT/src/foundry/client-esm/applications/api/handlebars-application.mjs";
 import { localize } from "../functions";
-import { addTriggerItem, editTriggerItem, getLayerContext, getScenesContext, getScopeContext, getTriggerActionType, getUsersContext, removeTriggerItem, selectEffectDialog } from "./functions";
-import { InvalidTriggerError } from "../errors";
+import { getLayerContext, getScenesContext, getScopeContext, getUsersContext, selectEffectDialog } from "./functions";
 import { log, logError } from "../logging";
 import { defaultEffect, deserializeEffect, getEffectHandler, getEffectTemplate } from "../lib/effects";
+import { addTrigger, editTrigger, getTriggerActionType, parseTriggerFormData, deleteTrigger, setEventListeners as setTriggerEventListeners, setTriggerOption } from "./triggerFunctions";
 
 
 
@@ -78,9 +78,13 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
       // eslint-disable-next-line @typescript-eslint/unbound-method
       addTrigger: StageObjectApplication.AddTrigger,
       // eslint-disable-next-line @typescript-eslint/unbound-method
-      editTrigger: StageObjectApplication.EditTrigger,
+      selectTrigger: StageObjectApplication.SelectTrigger,
       // eslint-disable-next-line @typescript-eslint/unbound-method
-      removeTrigger: StageObjectApplication.RemoveTrigger,
+      deleteTrigger: StageObjectApplication.DeleteTrigger,
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      addTriggerArgument: StageObjectApplication.AddTriggerArgument,
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      removeTriggerArgument: StageObjectApplication.RemoveTriggerArgument,
       // eslint-disable-next-line @typescript-eslint/unbound-method
       addEffect: StageObjectApplication.AddEffect,
       // eslint-disable-next-line @typescript-eslint/unbound-method
@@ -95,6 +99,27 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
   }
 
   protected selectedEffectId = "";
+
+  public static async DeleteTrigger(this: StageObjectApplication) {
+    await deleteTrigger(this.element);
+    this.triggerFormChange();
+  }
+
+  public static RemoveTriggerArgument(this: StageObjectApplication, e: PointerEvent, elem: HTMLElement) {
+    const row = elem.closest(`[data-role="custom-argument"]`);
+    if (row instanceof HTMLElement) row.remove();
+  }
+
+  public static async AddTriggerArgument(this: StageObjectApplication) {
+    const container = this.element.querySelector(`[data-role="customArguments"]`);
+    if (!(container instanceof HTMLElement)) return;
+
+    // Count arguments
+    const count = container.querySelectorAll(`[data-role="custom-argument"]`).length;
+
+    const content = await renderTemplate(`modules/${__MODULE_ID__}/templates/editObject/customArgument.hbs`, { count });
+    container.innerHTML += content;
+  }
 
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -189,24 +214,21 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
     this.triggerFormChange();
   }
 
-  public static RemoveTrigger(this: StageObjectApplication, e: PointerEvent, element: HTMLElement) {
-    const id = element.dataset.id ?? "";
-    if (id)
-      void removeTriggerItem(this.element, id);
-    else
-      throw new InvalidTriggerError(id);
+
+  public static async AddTrigger(this: StageObjectApplication) {
+    try {
+      await addTrigger(this.element);
+    } catch (err) {
+      logError(err as Error);
+    }
   }
 
-  public static AddTrigger(this: StageObjectApplication) {
-    void addTriggerItem(this.element);
-  }
-
-  public static EditTrigger(this: StageObjectApplication, e: PointerEvent, element: HTMLElement) {
-    const id = element.dataset.id ?? "";
-    if (id)
-      void editTriggerItem(this.element, id);
-    else
-      throw new InvalidTriggerError(id);
+  public static async SelectTrigger(this: StageObjectApplication) {
+    try {
+      await editTrigger(this.element);
+    } catch (err) {
+      logError(err as Error);
+    }
   }
 
   protected toLeft(): this {
@@ -365,6 +387,39 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     delete (parsed as any).effectsList;
 
+    // Triggers
+    const triggerForm = parseTriggerFormData(parsed as Record<string, unknown>);
+    if (triggerForm) {
+      parsed.triggers = {
+        [triggerForm.event]: [triggerForm]
+      }
+      setTriggerOption(this.element, triggerForm);
+    } else {
+      parsed.triggers = {};
+    }
+
+    // Parse trigger list
+    const triggers = Array.from(this.element.querySelectorAll(`select[name="triggerList"] option`).values()) as HTMLOptionElement[];
+    for (const trigger of triggers) {
+      const event = trigger.dataset.event as keyof TriggerEventSignatures;
+      if (!event) continue;
+      const serialized = trigger.dataset.serialized;
+      if (!serialized) continue;
+      const deserialized = JSON.parse(serialized) as SerializedTrigger;
+
+      if (Array.isArray(parsed.triggers[event]) && parsed.triggers[event].findIndex(item => item.id === deserialized.id) === -1) parsed.triggers[event].push(deserialized);
+      else parsed.triggers[event] = [deserialized];
+    }
+
+
+
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    delete (parsed as any).trigger;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    delete (parsed as any).triggerList;
+
+    log("Parsed:", parsed);
     return parsed;
     // } finally {
     //   console.groupEnd();
@@ -473,6 +528,11 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected _onRender(context: StageObjectApplicationContext, options: StageObjectApplicationOptions): void {
+    // Set edit trigger event listeners
+    setTriggerEventListeners(this.element);
+    const triggers = Object.values(this.stageObject.triggers).flat();
+    for (const trigger of triggers)
+      setTriggerOption(this.element, trigger);
 
     // Create ghost
     this.stageObject.synchronize = false;
@@ -486,7 +546,11 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     ColorPicker.install();
+
   }
+
+
+
 
   protected setScopeOwners() {
     const select = this.element.querySelector(`select[name="scope"]`);

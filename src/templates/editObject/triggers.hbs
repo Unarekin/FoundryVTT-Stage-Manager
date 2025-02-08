@@ -1,20 +1,41 @@
 <section class="tab {{tab.cssClass}}" data-group="primary" data-tab="triggers">
   {{#with stageObject}}
     <div class="form-group">
-      <label for="triggersEnabled">{{localize "STAGEMANAGER.EDITDIALOG.TRIGGERSENABLED"}}</label>
-      <input type="checkbox" {{checked triggersEnabled}} name="triggersEnabled" id="triggersEnabled">
+      <label for="triggersEnabled">{{localize
+          "STAGEMANAGER.EDITDIALOG.TRIGGERSENABLED"
+        }}</label>
+      <input
+        type="checkbox"
+        {{checked triggersEnabled}}
+        name="triggersEnabled"
+        id="triggersEnabled"
+      />
     </div>
-    
-    <button type="button" data-action="addTrigger" class="add-trigger">{{localize "STAGEMANAGER.EDITDIALOG.ADDTRIGGER"}}</button>
-    <table data-role="trigger-list">
-      <tr>
-        <th>{{localize "STAGEMANAGER.EDITDIALOG.TRIGGERS"}}</th>
-      </tr>
-      {{#each ../triggers}}
-        <tr>
-          <td>{{> "modules/stage-manager/templates/editObject/trigger-item.hbs" this}}</td>
-        </tr>
-      {{/each}}
-    </table>
+
+    <div class="effects-body">
+      <div data-role="trigger-list">
+        <select
+          name="triggerList"
+          id="triggerList"
+          style="height:100%"
+          size="10"
+          class="stage-manager multiselect"
+          data-action="selectTrigger"
+        >
+
+        </select>
+      </div>
+      <div data-role="trigger-config"></div>
+      <div>
+        <button type="button" data-action="addTrigger">{{localize
+            "STAGEMANAGER.EDITDIALOG.ADDTRIGGER"
+          }}</button>
+      </div>
+      <div>
+        <button type="button" data-action="deleteTrigger" disabled>{{localize
+            "STAGEMANAGER.EDITDIALOG.DELETETRIGGER"
+          }}</button>
+      </div>
+    </div>
   {{/with}}
 </section>

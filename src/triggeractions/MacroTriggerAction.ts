@@ -1,6 +1,6 @@
 import { coerceJSON, coerceMacro } from '../coercion';
 import { InvalidMacroError, MacroPermDeniedError } from '../errors';
-import { SerializedMacroTrigger, SerializedTrigger } from '../types';
+import { SerializedMacroTrigger, SerializedTrigger, TriggerEventSignatures } from '../types';
 import { TriggerAction } from './TriggerAction';
 
 export class MacroTriggerAction extends TriggerAction {
@@ -61,28 +61,24 @@ export class MacroTriggerAction extends TriggerAction {
   public static getDialogLabel(item: SerializedMacroTrigger): string {
     const macro = fromUuidSync(item.macro) as Macro;
     if (!(macro)) throw new InvalidMacroError(item.macro);
-
     return game.i18n?.format(`STAGEMANAGER.EDITDIALOG.TRIGGERLABELS.MACRO`, { macro: macro.name }) ?? "";
   }
 
-  public static fromForm(form: HTMLFormElement): SerializedMacroTrigger {
-
-    const formData = new FormDataExtended(form);
-    const data = foundry.utils.expandObject(formData.object) as Record<string, string>;
-
-    const serialized = {
-      ...data,
-      id: data.id ?? foundry.utils.randomID(),
-      label: data.label ?? "",
+  public static fromFormData(data: Record<string, unknown>): SerializedMacroTrigger {
+    return {
+      id: data.id as string ?? foundry.utils.randomID(),
+      label: data.label as string ?? "",
+      version: data.version as string ?? "1.0.0",
       action: "macro",
-      arguments: data.arg ? Object.values<{ name: string, value: string }>(data.arg as unknown as Record<string, { name: string, value: string }>) : [],
-      macro: data.macro ?? "",
-      event: data.event ?? "",
-    }
-    return serialized;
+      macro: data.macro as string ?? "",
+      event: data.event as TriggerEventSignatures ?? "",
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      arguments: data.arg ? Object.values(data.arg) : [],
+      ...(data.actor ? { actor: data.actor as string } : {})
+    };
   }
 
-  // public static prepareContext(item: SerializedTrigger): Record<string, any> { throw new NotImplementedError(); }
+
   public static prepareContext(trigger?: SerializedMacroTrigger): Record<string, any> {
     return {
       macros: getMacros(trigger?.macro)

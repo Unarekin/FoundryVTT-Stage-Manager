@@ -1,0 +1,380 @@
+[
+  {
+    "value": "hoverIn",
+    "label": "STAGEMANAGER.TRIGGERS.EVENTS.HOVERIN",
+    "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MOUSE",
+    "category": "mouse",
+    "addlArgs": [
+      {
+        "name": "user",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER"
+      },
+      {
+        "name": "pos",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.POS"
+      },
+      {
+        "name": "modKeys",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.MODKEYS"
+      }
+    ]
+  },
+  {
+    "value": "hoverOut",
+    "label": "STAGEMANAGER.TRIGGERS.EVENTS.HOVEROUT",
+    "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MOUSE",
+    "category": "mouse",
+    "addlArgs": [
+      {
+        "name": "user",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER"
+      },
+      {
+        "name": "pos",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.POS"
+      },
+      {
+        "name": "modKeys",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.MODKEYS"
+      }
+    ]
+  },
+  {
+    "value": "click",
+    "label": "STAGEMANAGER.TRIGGERS.EVENTS.CLICK",
+    "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MOUSE",
+    "category": "mouse",
+    "addlArgs": [
+      {
+        "name": "user",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER"
+      },
+      {
+        "name": "pos",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.POS"
+      },
+      {
+        "name": "modKeys",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.MODKEYS"
+      }
+    ]
+  },
+  {
+    "value": "doubleClick",
+    "label": "STAGEMANAGER.TRIGGERS.EVENTS.DOUBLECLICK",
+    "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MOUSE",
+    "category": "mouse",
+    "addlArgs": [
+      {
+        "name": "user",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER"
+      },
+      {
+        "name": "pos",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.POS"
+      },
+      {
+        "name": "modKeys",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.MODKEYS"
+      }
+    ]
+  },
+  {
+    "value": "rightClick",
+    "label": "STAGEMANAGER.TRIGGERS.EVENTS.RIGHTCLICK",
+    "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MOUSE",
+    "category": "mouse",
+    "addlArgs": [
+      {
+        "name": "user",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER"
+      },
+      {
+        "name": "pos",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.POS"
+      },
+      {
+        "name": "modKeys",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.MODKEYS"
+      }
+    ]
+  },
+  {
+    "value": "combatStart",
+    "label": "STAGEMANAGER.TRIGGERS.EVENTS.COMBATSTART",
+    "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.COMBAT",
+    "category": "combat",
+    "addlArgs": [
+      {
+        "name": "combat",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.COMBAT"
+      }
+    ]
+  },
+  {
+    "value": "combatEnd",
+    "label": "STAGEMANAGER.TRIGGERS.EVENTS.COMBATEND",
+    "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.COMBAT",
+    "category": "combat",
+    "addlArgs": [
+      {
+        "name": "combat",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.COMBAT"
+      }
+    ]
+  },
+  {
+    "value": "combatTurnStart",
+    "label": "STAGEMANAGER.TRIGGERS.EVENTS.COMBATTURNSTART",
+    "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.COMBAT",
+    "category": "combat",
+    "addlArgs": [
+      {
+        "name": "combat",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.COMBAT"
+      },
+      {
+        "name": "combatant",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.COMBATANT"
+      },
+      {
+        "name": "token",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.TOKEN"
+      },
+      {
+        "name": "actor",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR"
+      }
+    ]
+  },
+  {
+    "value": "combatTurnEnd",
+    "label": "STAGEMANAGER.TRIGGERS.EVENTS.COMBATTURNEND",
+    "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.COMBAT",
+    "category": "combat",
+    "addlArgs": [
+      {
+        "name": "combat",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.COMBAT"
+      },
+      {
+        "name": "combatant",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.COMBATANT"
+      },
+      {
+        "name": "token",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.TOKEN"
+      },
+      {
+        "name": "actor",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR"
+      }
+    ]
+  },
+  {
+    "value": "sceneChange",
+    "label": "STAGEMANAGER.TRIGGERS.EVENTS.SCENECHANGE",
+    "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
+    "category": "misc",
+    "addlArgs": [
+      {
+        "name": "scene",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.SCENE"
+      }
+    ]
+  },
+  {
+    "value": "pause",
+    "label": "STAGEMANAGER.TRIGGERS.EVENTS.PAUSE",
+    "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
+    "category": "misc",
+    "addlArgs": []
+  },
+  {
+    "value": "unpause",
+    "label": "STAGEMANAGER.TRIGGERS.EVENTS.UNPAUSE",
+    "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
+    "category": "misc",
+    "addlArgs": []
+  },
+  {
+    "value": "userConnected",
+    "label": "STAGEMANAGER.TRIGGERS.EVENTS.USERCONNECTED",
+    "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
+    "category": "misc",
+    "addlArgs": [
+      {
+        "name": "user",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER"
+      }
+    ]
+  },
+  {
+    "value": "userDisconnected",
+    "label": "STAGEMANAGER.TRIGGERS.EVENTS.USERDISCONNECTED",
+    "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
+    "category": "misc",
+    "addlArgs": [
+      {
+        "name": "user",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER"
+      }
+    ]
+  },
+  {
+    "value": "addActiveEffect",
+    "label": "STAGEMANAGER.TRIGGERS.EVENTS.ADDACTIVEEFFECT",
+    "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.ACTOR",
+    "category": "actor",
+    "addlArgs": [
+      {
+        "name": "actor",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR"
+      },
+      {
+        "name": "activeEffect",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTIVEEFFECT"
+      }
+    ]
+  },
+  {
+    "value": "removeActiveEffect",
+    "label": "STAGEMANAGER.TRIGGERS.EVENTS.REMOVEACTIVEEFFECT",
+    "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.ACTOR",
+    "category": "actor",
+    "addlArgs": [
+      {
+        "name": "actor",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR"
+      },
+      {
+        "name": "activeEffect",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTIVEEFFECT"
+      }
+    ]
+  },
+  {
+    "value": "addStatusEffect",
+    "label": "STAGEMANAGER.TRIGGERS.EVENTS.ADDSTATUSEFFECT",
+    "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.ACTOR",
+    "category": "actor",
+    "addlArgs": [
+      {
+        "name": "actor",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR"
+      },
+      {
+        "name": "activeEffect",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTIVEEFFECT"
+      },
+      {
+        "name": "statusEffect",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.STATUSEFFECT"
+      }
+    ]
+  },
+  {
+    "value": "selectToken",
+    "label": "STAGEMANAGER.TRIGGERS.EVENTS.SELECTTOKEN",
+    "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.TOKEN",
+    "category": "token",
+    "addlArgs": [
+      {
+        "name": "user",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER"
+      },
+      {
+        "name": "token",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.TOKEN"
+      },
+      {
+        "name": "actor",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR"
+      }
+    ]
+  },
+  {
+    "value": "deselectToken",
+    "label": "STAGEMANAGER.TRIGGERS.EVENTS.DESELECTTOKEN",
+    "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.TOKEN",
+    "category": "token",
+    "addlArgs": [
+      {
+        "name": "user",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER"
+      },
+      {
+        "name": "token",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.TOKEN"
+      },
+      {
+        "name": "actor",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR"
+      }
+    ]
+  },
+  {
+    "value": "targetToken",
+    "label": "STAGEMANAGER.TRIGGERS.EVENTS.TARGETTOKEN",
+    "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.TOKEN",
+    "category": "token",
+    "addlArgs": [
+      {
+        "name": "user",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER"
+      },
+      {
+        "name": "token",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.TOKEN"
+      },
+      {
+        "name": "actor",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR"
+      }
+    ]
+  },
+  {
+    "value": "untargetToken",
+    "label": "STAGEMANAGER.TRIGGERS.EVENTS.UNTARGETTOKEN",
+    "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.TOKEN",
+    "category": "token",
+    "addlArgs": [
+      {
+        "name": "user",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.USER"
+      },
+      {
+        "name": "token",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.TOKEN"
+      },
+      {
+        "name": "actor",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR"
+      }
+    ]
+  },
+  {
+    "value": "worldTimeChange",
+    "label": "STAGEMANAGER.TRIGGERS.EVENTS.WORLDTIMECHANGE",
+    "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
+    "category": "misc",
+    "addlArgs": [
+      {
+        "name": "time",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.TIME"
+      }
+    ]
+  },
+  {
+    "value": "actorChange",
+    "label": "STAGEMANAGER.TRIGGERS.EVENTS.ACTORCHANGE",
+    "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.ACTOR",
+    "category": "actor",
+    "addlArgs": [
+      {
+        "name": "actor",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR"
+      }
+    ]
+  }
+]
