@@ -124,7 +124,8 @@ async function addText() {
     const layer = TOOL_LAYERS[game?.activeTool ?? ""];
     if (!layer) return;
 
-    const text = await inputPrompt("STAGEMANAGER.ADDTEXT.CONTENT", "STAGEMANAGER.ADDTEXT.TITLE");
+    const content = await renderTemplate(`modules/${__MODULE_ID__}/templates/textInput.hbs`, {})
+    const text = await inputPrompt(content, "STAGEMANAGER.ADDTEXT.TITLE");
     if (!text) return;
 
     const tempObj = new PIXI.HTMLText(text);

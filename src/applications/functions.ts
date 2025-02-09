@@ -313,10 +313,11 @@ export function getEffectsContext(obj: StageObject): Record<string, string> {
 
 export async function inputPrompt(content: string, title?: string): Promise<string | undefined> {
   if (foundry.applications.api.DialogV2) {
+
     const input = await foundry.applications.api.DialogV2.wait({
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       window: ({ title: game.i18n?.localize(title ?? "") } as any),
-      content: `<p>${game.i18n?.localize(content)}</p><input type="text" name="text" id="text">`,
+      content: `${game.i18n?.localize(content)}`,
       rejectClose: false,
       buttons: [
         {
@@ -324,9 +325,10 @@ export async function inputPrompt(content: string, title?: string): Promise<stri
           action: "confirm",
           default: true,
           callback: (e, button, dialog) => {
-            const input = dialog.querySelector("input#text");
-            if (!(input instanceof HTMLInputElement)) return Promise.resolve(undefined);
-            else return Promise.resolve(input.value);
+            const input = dialog.querySelector("#text");
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            if (typeof (input as any)?.value === "string") return Promise.resolve((input as any).value as string);
+            else return Promise.resolve(undefined);
           }
         },
         {
@@ -335,7 +337,7 @@ export async function inputPrompt(content: string, title?: string): Promise<stri
         }
       ]
     });
-    if (input === "cancel" || !input) return undefined;
+    if (input === "cancel" || !input || input === "confirm") return undefined;
     return input;
   } else {
     //empty
