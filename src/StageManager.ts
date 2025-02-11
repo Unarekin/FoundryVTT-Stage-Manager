@@ -89,7 +89,6 @@ export class StageManager {
       this.backgroundCanvasGroup,
       this.foregroundCanvasGroup,
       this.primaryCanvasGroup,
-      this.textCanvasGroup,
       this.uiCanvasGroup
     ].find(item => item.layer === layer);
   }
@@ -99,8 +98,6 @@ export class StageManager {
   public static get foregroundCanvasGroup() { return fgCanvasGroup; }
 
   public static get primaryCanvasGroup() { return primaryCanvasGroup; }
-
-  public static get textCanvasGroup() { return textCanvasGroup; }
 
   public static get uiCanvasGroup() { return uiCanvasGroup; }
 
@@ -196,7 +193,7 @@ export class StageManager {
     }
   }
 
-  public static addText(text: string, style?: PIXI.HTMLTextStyle, x?: number, y?: number, name?: string, layer: StageLayer = "text"): TextStageObject | undefined {
+  public static addText(text: string, style?: PIXI.HTMLTextStyle, x?: number, y?: number, name?: string, layer: StageLayer = "primary"): TextStageObject | undefined {
     try {
       if (!StageManager.canAddStageObjects(game.user?.id ?? "")) throw new PermissionDeniedError();
       const obj = new TextStageObject(text, style);
@@ -506,7 +503,6 @@ export class StageManager {
       bgCanvasGroup = new ScreenSpaceCanvasGroup("StageManagerBackgroundCanvasGroup", "background");
       primaryCanvasGroup = new ScreenSpaceCanvasGroup("StageManagerPrimaryCanvasGroup", "primary");
       fgCanvasGroup = new ScreenSpaceCanvasGroup("StageManagerForegroundCanvasGroup", "foreground");
-      textCanvasGroup = new ScreenSpaceCanvasGroup("StageManagerTextCanvasGroup", "text");
       uiCanvasGroup = new ScreenSpaceCanvasGroup("StageManagerUICanvasGroup", "ui");
 
 
@@ -528,14 +524,12 @@ export class StageManager {
       }
 
       canvas.stage.addChild(fgCanvasGroup);
-      canvas.stage.addChild(textCanvasGroup);
       canvas.stage.addChild(uiCanvasGroup);
 
       const layers = {
         background: bgCanvasGroup,
         primary: primaryCanvasGroup,
         foreground: fgCanvasGroup,
-        text: textCanvasGroup,
         ui: uiCanvasGroup,
 
         bg: bgCanvasGroup,
@@ -658,8 +652,6 @@ export class StageManager {
         case "primary":
           StageManager.primaryCanvasGroup.addChild(stageObject.displayObject);
           break;
-        case "text":
-          StageManager.textCanvasGroup.addChild(stageObject.displayObject);
       }
     }
   }
@@ -684,7 +676,6 @@ function sizeObjectInterfaceContainers() {
 let primaryCanvasGroup: ScreenSpaceCanvasGroup;
 let bgCanvasGroup: ScreenSpaceCanvasGroup;
 let fgCanvasGroup: ScreenSpaceCanvasGroup;
-let textCanvasGroup: ScreenSpaceCanvasGroup;
 let uiCanvasGroup: ScreenSpaceCanvasGroup;
 const stageObjects = new StageObjects();
 

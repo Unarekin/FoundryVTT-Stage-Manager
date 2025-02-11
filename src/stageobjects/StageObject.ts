@@ -1167,8 +1167,6 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
         return StageManager.foregroundCanvasGroup;
       case "background":
         return StageManager.backgroundCanvasGroup;
-      case "text":
-        return StageManager.textCanvasGroup;
       case "ui":
         return StageManager.uiCanvasGroup;
     }

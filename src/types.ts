@@ -2,7 +2,7 @@ import { SerializedAsset } from "./lib/textureSerialization";
 import { StageObject } from "./stageobjects";
 
 // export type StageLayer = "primary" | "foreground" | "background" | "text" | "ui";
-export const StageLayers = ["primary", "foreground", "background", "text", "ui"] as const;
+export const StageLayers = ["primary", "foreground", "background", "ui"] as const;
 export type StageLayer = typeof StageLayers[number];
 
 export const Scopes = ["scene", "global", "user", "temp"] as const;

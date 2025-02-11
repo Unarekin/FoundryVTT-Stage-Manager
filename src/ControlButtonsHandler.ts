@@ -63,15 +63,6 @@ export class ControlButtonsHandler {
         }
       },
       {
-        name: "sm-select-text",
-        title: "STAGEMANAGER.SCENECONTROLS.SELECTTEXT",
-        icon: "sm-icon control select-text",
-        visible: true,
-        onClick: () => {
-          StageManager.DeselectAll();
-        }
-      },
-      {
         name: "add-from-image",
         title: "STAGEMANAGER.SCENECONTROLS.IMAGE",
         icon: "fas fa-image",
