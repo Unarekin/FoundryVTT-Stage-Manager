@@ -128,7 +128,7 @@ async function addText() {
     const text = await inputPrompt(content, "STAGEMANAGER.ADDTEXT.TITLE");
     if (!text) return;
 
-    const tempObj = new PIXI.HTMLText(text);
+    const tempObj = new PIXI.HTMLText(TextStageObject.prepareText(text));
     tempObj.anchor.x = .5;
     tempObj.anchor.y = .5;
 

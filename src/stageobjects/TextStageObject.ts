@@ -6,11 +6,11 @@ export class TextStageObject extends StageObject<PIXI.HTMLText> {
   public static readonly type: string = "text";
   public readonly type: string = "text";
 
-  public get text() { return this.displayObject.text; }
+  public get text() { return postpareText(this.displayObject.text); }
   public set text(val) {
     if (val !== this.text) {
       this.dirty = true;
-      this.displayObject.text = val;
+      this.displayObject.text = prepareText(val);
     }
   }
 
@@ -27,23 +27,23 @@ export class TextStageObject extends StageObject<PIXI.HTMLText> {
 
   public get width() { return this.displayObject.width; }
   public set width(val) {
-    if (val !== this.width) {
-      this.dirty = true;
-      this.displayObject.width = val;
-    }
+    // if (val !== this.width) {
+    //   this.dirty = true;
+    //   this.displayObject.width = val;
+    // }
   }
 
   public get height() { return this.displayObject.height; }
   public set height(val) {
-    if (val !== this.height) {
-      this.dirty = true;
-      this.displayObject.height = val;
-    }
+    // if (val !== this.height) {
+    //   this.dirty = true;
+    //   this.displayObject.height = val;
+    // }
   }
 
   public createDragGhost(): HTMLText {
     const style = this.displayObject.style.clone();
-    const obj = new PIXI.HTMLText(this.text, style);
+    const obj = new PIXI.HTMLText(prepareText(this.text), style);
     obj.alpha = 0.5;
     obj.width = this.width;
     obj.height = this.height;
@@ -123,8 +123,9 @@ export class TextStageObject extends StageObject<PIXI.HTMLText> {
 
   public deserialize(serialized: SerializedTextStageObject) {
     super.deserialize(serialized);
-    this.text = serialized.text;
+    this.text = prepareText(serialized.text);
     this.style = serialized.style as unknown as PIXI.HTMLTextStyle;
+    this.scale.x = this.scale.y = 1;
   }
 
   public static deserialize(serialized: SerializedTextStageObject) {
@@ -133,12 +134,22 @@ export class TextStageObject extends StageObject<PIXI.HTMLText> {
     return obj;
   }
 
+  public static prepareText(text: string): string { return prepareText(text); }
+  public static postpareText(text: string): string { return postpareText(text); }
 
   constructor(text: string, style?: PIXI.HTMLTextStyle) {
-    const obj = new PIXI.HTMLText(text, style);
+    const obj = new PIXI.HTMLText(prepareText(text), style);
     super(obj);
-    this.resizable = true;
+    this.resizable = false;
     this.anchor.x = .5
     this.anchor.y = .5
   }
+}
+
+function prepareText(text: string): string {
+  return text.replaceAll("\n", "<br>");
+}
+
+function postpareText(text: string): string {
+  return text.replaceAll("<br>", "\n").replaceAll("<br/>", "\n");
 }
