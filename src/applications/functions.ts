@@ -353,7 +353,8 @@ export async function selectEffectDialog(): Promise<string | undefined> {
       { value: "blur", label: "STAGEMANAGER.EDITDIALOG.EFFECTS.BLUR" },
       { value: "pixelate", label: "STAGEMANAGER.EDITDIALOG.EFFECTS.PIXELATE" },
       { value: "glow", label: "STAGEMANAGER.EDITDIALOG.EFFECTS.GLOW" },
-      { value: "bevel", label: "STAGEMANAGER.EDITDIALOG.EFFECTS.BEVEL" }
+      { value: "bevel", label: "STAGEMANAGER.EDITDIALOG.EFFECTS.BEVEL" },
+      { value: "chromakey", label: "STAGEMANAGER.EDITDIALOG.EFFECTS.CHROMAKEY" }
     ].sort((a, b) => localize(a.label).localeCompare(localize(b.label)))
   });
   const selection = await new Promise<string | undefined>(resolve => {

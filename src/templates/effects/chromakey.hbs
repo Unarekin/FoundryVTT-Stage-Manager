@@ -1,0 +1,16 @@
+<sction>
+  {{log this}}
+  <input type="hidden" name="effect.id" id="effect.id" value="{{id}}">
+  <input type="hidden" name="effect.type" id="effect.type" value="{{type}}">
+  <input type="hidden" name="effect.serialized" id="effect.serialized" value="{{serialized}}">
+  <div class="center">{{localize "STAGEMANAGER.EDITDIALOG.EFFECTS.CHROMAKEY"}}</div>
+
+  <div class="form-group">
+    <label for="effect.keyColor">{{localize "STAGEMANAGER.EDITDIALOG.EFFECTS.CONFIG.CHROMAKEY.KEYCOLOR"}}</label>
+    <input type="text" name="effect.keyColor" id="effect.keyColor" value="{{keyColor}}" data-color-picker="{alphaChannel: true}">
+  </div>
+
+  <br>
+  {{> "modules/stage-manager/templates/effects/background-select.hbs" this}}
+  
+</sction>

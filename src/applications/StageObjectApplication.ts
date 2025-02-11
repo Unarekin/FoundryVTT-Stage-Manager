@@ -26,6 +26,9 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
     basics: {
       template: `modules/${__MODULE_ID__}/templates/editObject/basics.hbs`
     },
+    effects: {
+      template: `modules/${__MODULE_ID__}/templates/editObject/effects.hbs`
+    },
     triggers: {
       template: `modules/${__MODULE_ID__}/templates/editObject/triggers.hbs`
     },
@@ -90,7 +93,7 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
       // eslint-disable-next-line @typescript-eslint/unbound-method
       selectEffect: StageObjectApplication.SelectEffect,
       // eslint-disable-next-line @typescript-eslint/unbound-method
-      deleteEffect: StageObjectApplication.DeleteEffect
+      deleteEffect: StageObjectApplication.DeleteEffect,
     }
   }
 
@@ -163,10 +166,21 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
       if (!template) return;
       renderTemplate(`modules/${__MODULE_ID__}/templates/effects/${template}`, {
         ...deserialized,
-        serialized: option.dataset.serialized
+        serialized: option.dataset.serialized,
+        bgTypeSelect: {
+          "image": "STAGEMANAGER.EDITDIALOG.BGTYPES.IMAGE",
+          "color": "STAGEMANAGER.EDITDIALOG.BGTYPES.COLOR"
+        }
       })
         .then(content => {
           section.innerHTML = content;
+          this.setBgSelectorConfig();
+          //effect.backgroundType
+          const bgSelector = section.querySelector(`[name="effect.backgroundType"]`);
+          if (bgSelector instanceof HTMLSelectElement) {
+            bgSelector.addEventListener("change", () => { this.setBgSelectorConfig(); })
+          }
+
           // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
           ColorPicker.install();
         })
@@ -178,6 +192,19 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
     } else {
       const deleteButton = this.element.querySelector(`button[data-action="deleteEffect"]`);
       if (deleteButton instanceof HTMLButtonElement) deleteButton.removeAttribute("disabled");
+    }
+  }
+
+  protected setBgSelectorConfig() {
+    const selector = this.element.querySelector(`[name="effect.backgroundType"]`);
+    const configs = this.element.querySelectorAll(`[data-background-type]`);
+    for (const config of configs)
+      (config as HTMLElement).style.display = "none";
+
+    if (selector instanceof HTMLSelectElement) {
+      const config = this.element.querySelector(`[data-background-type="${selector.value}"]`);
+      if (config instanceof HTMLElement)
+        config.style.display = "block";
     }
   }
 
@@ -499,6 +526,7 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
     context.buttons = [
       { type: "submit", icon: "fas fa-save", label: "SETTINGS.Save" }
     ]
+
     return Promise.resolve(context);
   }
 
@@ -506,7 +534,6 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
 
     const form = this.element instanceof HTMLFormElement ? new FormDataExtended(this.element) : new FormDataExtended($(this.element).find("form")[0]);
     const data = this.parseFormData(form.object);
-    log("Changed:", data);
 
     this.stageObject.deserialize(data);
   }

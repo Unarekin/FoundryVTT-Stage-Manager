@@ -11,6 +11,7 @@ import { StageManagerControlsLayer } from "../ControlButtonsHandler";
 import { log, logError } from "../logging";
 import { getTriggerActionType } from "../applications/functions";
 import { deserializeEffect, serializeEffect } from '../lib/effects';
+import { CustomFilter } from "../effects/CustomFilter";
 
 
 const TriggerActions = Object.fromEntries(Object.values(tempTriggers).map(val => [val.type, val]));
@@ -541,6 +542,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   public set height(height) {
     if (height !== this.height) {
       this.dirty = true;
+      this.updateUniforms();
       // this.updateScaledDimensions();
       this.updatePinLocations();
     }
@@ -676,6 +678,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   public set width(width) {
     if (this.width !== width) {
       this.dirty = true;
+      this.updateUniforms();
       // this.updateScaledDimensions();
       this.updatePinLocations();
     }
@@ -818,6 +821,14 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   // #endregion Public Static Methods (1)
 
   // #region Public Methods (6)
+
+  protected updateUniforms() {
+    for (const effect of this.effects) {
+      if (effect instanceof CustomFilter) {
+        effect.setBgScale(this.width, this.height);
+      }
+    }
+  }
 
   public deserialize(serialized: SerializedStageObject) {
     // log("Deserializing:", serialized);

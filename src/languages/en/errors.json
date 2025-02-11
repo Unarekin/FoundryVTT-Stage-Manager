@@ -16,7 +16,8 @@
       "NOTRIGGERLIST": "Unable to find trigger list to insert trigger.",
       "NOTRIGGERELEMENT": "Unable to find trigger element for trigger {id}",
       "UNKNOWNDOCUMENTTYPE": "Unknown document type: {document}",
-      "NOPORTRAIT": "No portrait to display"
+      "NOPORTRAIT": "No portrait to display",
+      "INVALIDTEXTURE": "Invalid texture provided."
     }
   }
 }

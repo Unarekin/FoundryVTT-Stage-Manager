@@ -51,16 +51,28 @@
         "TITLE": "Delete {type}"
       },
       "EDIT": "Edit {name}",
+      "BGTYPES": {
+        "IMAGE": "Image",
+        "COLOR": "Color"
+      },
       "EFFECTS": {
         "ADD": "Add Effect",
         "BEVEL": "Bevel",
         "BLUR": "Blur",
+        "CHROMAKEY": "Chroma Key",
         "CONFIG": {
+          "BGCOLOR": "Background Color",
+          "BGIMAGE": "Background Image",
+          "BGTYPE": "Background Type",
+          "BACKGROUND": "Background",
           "BEVEL": {
             "LIGHTCOLOR": "Light Color",
             "ROTATION": "Rotation",
             "SHADOWCOLOR": "Shadow Color",
             "THICKNESS": "Thickness"
+          },
+          "CHROMAKEY": {
+            "KEYCOLOR": "Key Color"
           },
           "BLUR": {
             "QUALITY": "Quality",

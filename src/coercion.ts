@@ -121,3 +121,41 @@ export function coerceJSON(val: string): any {
     return;
   }
 }
+
+export function coerceColor(source: unknown): PIXI.Color | undefined {
+  try {
+    return new PIXI.Color(source as PIXI.ColorSource);
+  } catch { /* empty */ }
+}
+
+
+export function coerceTexture(source: unknown): PIXI.Texture | undefined {
+  const color = coerceColor(source);
+  if (color) return createColorTexture(color);
+
+
+  // Attempt to get a texture directly
+  try {
+    return PIXI.Texture.from(source as PIXI.TextureSource);
+  } catch { /* empty */ }
+}
+
+
+/**
+ * Generates a 1x1 {@link PIXI.Texture} with a given color
+ * @param {PIXI.Color} color {@link PIXI.Color}
+ * @returns 
+ */
+export function createColorTexture(color: PIXI.ColorSource): PIXI.Texture {
+  const canvas = document.createElement("canvas");
+  canvas.width = 1;
+  canvas.height = 1;
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Cannot create canvas context");
+
+  const actualColor = new PIXI.Color(color);
+  ctx.fillStyle = actualColor.toHexa();
+  ctx.fillRect(0, 0, 1, 1);
+  return PIXI.Texture.from(canvas);
+}

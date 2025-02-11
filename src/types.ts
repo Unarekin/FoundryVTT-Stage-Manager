@@ -1,3 +1,4 @@
+import { SerializedAsset } from "./lib/textureSerialization";
 import { StageObject } from "./stageobjects";
 
 // export type StageLayer = "primary" | "foreground" | "background" | "text" | "ui";
@@ -75,7 +76,7 @@ export const StageLayers = ["primary", "foreground", "background", "text", "ui"]
 export type StageLayer = typeof StageLayers[number];
 */
 
-export const EffectTypes = ["outline", "dropshadow", "blur", "pixelate", "glow", "bevel"] as const;
+export const EffectTypes = ["outline", "dropshadow", "blur", "pixelate", "glow", "bevel", "chromakey"] as const;
 export type EffectType = typeof EffectTypes[number];
 
 export interface SerializedEffect {
@@ -126,6 +127,17 @@ export interface SerializedBevelEffect extends SerializedEffect {
   lightColor: string;
   shadowColor: string;
 }
+
+export interface SerializedChromaKeyEffect extends SerializedEffect {
+  type: "chromakey";
+  keyColor: string;
+  range: [number, number];
+  backgroundType: "image" | "color";
+  backgroundImage?: SerializedAsset;
+  backgroundColor?: string;
+}
+
+
 
 export interface SynchronizationMessage {
   timestamp: number;
