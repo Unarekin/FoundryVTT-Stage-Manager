@@ -1,5 +1,4 @@
 export * from "./ActorStageObject";
-export * from "./CompoundStageObject";
 export * from "./ImageStageObject";
 export * from "./PanelStageObject";
 export * from "./StageObject";
