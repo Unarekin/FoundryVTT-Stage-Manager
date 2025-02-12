@@ -1,5 +1,5 @@
 import { ScreenSpaceCanvasGroup } from './ScreenSpaceCanvasGroup';
-import { ActorStageObject, DialogStageObject, ImageStageObject, PanelStageObject, StageObject, TextStageObject } from './stageobjects';
+import { ActorStageObject, ImageStageObject, PanelStageObject, StageObject, TextStageObject } from './stageobjects';
 import { PartialWithRequired, SerializedStageObject, StageLayer } from './types';
 import { coerceStageObject, coerceUser } from './coercion';
 import { StageObjects } from './StageObjectCollection';
@@ -8,15 +8,14 @@ import * as stageObjectTypes from "./stageobjects";
 import { addSceneObject, addUserObject, getGlobalObjects, getSceneObjects, getSetting, getUserObjects, removeSceneObject, removeUserObject, setGlobalObjects, setSceneObjects, setSetting, setUserObjects } from './Settings';
 import { CUSTOM_HOOKS } from './hooks';
 import { log, logError, logInfo } from './logging';
-import { ActorStageObjectApplication, DialogStageObjectApplication, ImageStageObjectApplication, PanelStageObjectApplication, StageObjectApplication, TextStageObjectApplication } from './applications';
+import { ActorStageObjectApplication, ImageStageObjectApplication, PanelStageObjectApplication, StageObjectApplication, TextStageObjectApplication } from './applications';
 import { SynchronizationManager } from './SynchronizationManager';
 
 const ApplicationHash: Record<string, typeof StageObjectApplication> = {
   "image": ImageStageObjectApplication as typeof StageObjectApplication,
   "actor": ActorStageObjectApplication as unknown as typeof StageObjectApplication,
   "text": TextStageObjectApplication as unknown as typeof StageObjectApplication,
-  "panel": PanelStageObjectApplication as unknown as typeof StageObjectApplication,
-  dialog: DialogStageObjectApplication as unknown as typeof StageObjectApplication
+  "panel": PanelStageObjectApplication as unknown as typeof StageObjectApplication
 }
 
 const OpenApplications = new WeakMap<StageObject, StageObjectApplication>();
@@ -155,24 +154,6 @@ export class StageManager {
     }
   }
 
-  public static addDialog(text: string, background: string, vertical: number, horizontal: number, style?: PIXI.HTMLTextStyle, layer?: StageLayer): DialogStageObject | undefined
-  public static addDialog(text: string, background: string, left: number, right: number, top: number, bottom: number, style?: PIXI.HTMLTextStyle, layer?: StageLayer): DialogStageObject | undefined
-  public static addDialog(text: string, background: string, ...args: (number | PIXI.HTMLTextStyle | StageLayer)[]): DialogStageObject | undefined {
-    try {
-      const left = args[0] as number;
-      const right = (args.length >= 4 ? args[1] : args[0]) as number;
-      const top = (args.length >= 4 ? args[2] : args[1]) as number;
-      const bottom = (args.length >= 4 ? args[3] : args[1]) as number;
-      const style = (args[args.length - 1] instanceof PIXI.HTMLTextStyle ? args[args.length - 1] : args[args.length - 2] instanceof PIXI.HTMLTextStyle ? args[args.length - 2] : PIXI.HTMLTextStyle.defaultStyle) as PIXI.HTMLTextStyle;
-      const layer = typeof args[args.length - 1] === "string" ? args[args.length - 1] as StageLayer : "primary"
-
-      const obj = new DialogStageObject(text, background, left, right, top, bottom, style);
-      StageManager.addStageObject(obj, layer);
-      return obj;
-    } catch (err) {
-      logError(err as Error);
-    }
-  }
 
   public static addPanel(path: string, left: number, right: number, top: number, bottom: number, layer?: StageLayer): PanelStageObject | undefined
   public static addPanel(path: string, horizontal: number, vertical: number, layer?: StageLayer): PanelStageObject | undefined
