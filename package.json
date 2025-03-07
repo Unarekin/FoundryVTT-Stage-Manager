@@ -17,6 +17,7 @@
     "@pixi/events": "7.4.2",
     "@pixi/gif": "^3.0.1",
     "@types/Foundry-VTT": "https://github.com/League-of-Foundry-Developers/foundry-vtt-types.git",
+    "@types/Sequencer": "https://github.com/fantasycalendar/FoundryVTT-Sequencer.git",
     "@types/eslint__js": "^8.42.3",
     "@types/handlebars": "^4.1.0",
     "@types/node": "^22.7.5",

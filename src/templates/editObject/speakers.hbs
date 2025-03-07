@@ -1,0 +1,46 @@
+<section class="tab {{tab.cssClass}}" data-group="primary" data-tab="speakers">
+  {{#with stageObject}}
+    <div class="form-group submenu">
+      <label for="autoPosition">{{localize
+          "STAGEMANAGER.EDITDIALOG.SPEAKERS.AUTOPOSITION"
+        }}</label>
+      <input
+        type="checkbox"
+        name="autoPosition"
+        id="autoPosition"
+        data-action="toggleAutoPosition"
+      />
+    </div>
+    <br />
+    <div class="effects-body">
+      <div data-role="speaker-list">
+        <select
+          name="speakerList"
+          id="speakerList"
+          style="height:100%;"
+          size="10"
+          class="stage-manager multiselect"
+          data-action="selectSpeaker"
+        >
+          {{#each speakers}}
+            <option
+              value="{{id}}"
+              data-serialized="{{json this}}"
+            >{{name}}</option>
+          {{/each}}
+        </select>
+      </div>
+      <div data-role="speaker-config"></div>
+      <div>
+        <button type="button" data-action="addSpeaker">{{localize
+            "STAGEMANAGER.EDITDIALOG.SPEAKERS.ADD"
+          }}</button>
+      </div>
+      <div>
+        <button type="button" data-action="deleteSpeaker" disabled>{{localize
+            "STAGEMANAGER.EDITDIALOG.SPEAKERS.DELETE"
+          }}</button>
+      </div>
+    </div>
+  {{/with}}
+</section>

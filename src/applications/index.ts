@@ -1,4 +1,5 @@
 export * from './ActorStageObjectApplication';
+export * from './DialogueStageObjectApplication';
 export * from './ImageStageObjectApplication';
 export * from "./PanelStageObjectApplication";
 export * from './StageObjectApplication';

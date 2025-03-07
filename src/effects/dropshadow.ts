@@ -1,7 +1,6 @@
 import { SerializedDropShadowEffect } from '../types';
 import { Effect } from "./types";
 import { parseForm } from "./functions";
-import { log } from '../logging';
 
 export const DropShadowEffect: Effect<SerializedDropShadowEffect> = {
   type: "dropshadow",
@@ -25,7 +24,6 @@ export const DropShadowEffect: Effect<SerializedDropShadowEffect> = {
       id: foundry.utils.randomID(),
       ...parsed
     }
-    log("fromForm:", value);
     return value;
   },
   serialize(filter: PIXI.Filter): SerializedDropShadowEffect {

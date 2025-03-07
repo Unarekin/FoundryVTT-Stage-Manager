@@ -1,7 +1,9 @@
 export * from './CannotDeserializeError';
 export * from './CanvasNotInitializedError';
 export * from './InvalidActorError';
+export * from './InvalidConversationActionType';
 export * from './InvalidMacroError';
+export * from './InvalidSpeakerType';
 export * from './InvalidStageObjectError';
 export * from './InvalidTextureError';
 export * from './InvalidTriggerError';
@@ -11,5 +13,6 @@ export * from './MacroPermDeniedError';
 export * from './NoPortraitError';
 export * from './NotImplementedError';
 export * from './PermissionDeniedError';
+export * from './SpeakerNotFoundError';
 export * from './UnknownDocumentTypeError';
 export * from './UnknownUserError';

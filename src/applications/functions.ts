@@ -249,6 +249,41 @@ export function getTriggerContext(trigger?: SerializedTrigger) {
   }
 }
 
+export function getActorHash() {
+  if (game.actors) {
+    return Object.fromEntries(
+      game.actors.contents
+        .sort((a: Actor, b: Actor) => a.name.localeCompare(b.name))
+        .map((actor: Actor) => [actor.uuid, actor.name])
+
+    )
+  } else {
+    return {}
+  }
+}
+
+export function styleFontDropdown(dropdown: HTMLSelectElement) {
+  for (const option of dropdown.options)
+    option.style.fontFamily = option.value;
+  dropdown.style.fontFamily = dropdown.value;
+  dropdown.addEventListener("change", () => {
+    dropdown.style.fontFamily = dropdown.value;
+  });
+}
+
+export function getActorContext() {
+  if (game.actors) {
+    return {
+      actorSelect: getActorHash()
+    }
+  } else {
+    return {
+      actorSelect: {}
+    }
+  }
+}
+
+
 export function getFontContext(stageObject: SerializedStageObject) {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unused-vars
   const fontSettings = (stageObject as any).font as FontSettings;
@@ -277,7 +312,7 @@ export function getUsersContext(obj: StageObject): { label: string, value: strin
   return game.users.map((user: User) => ({ label: user.name, value: user.uuid, selected: obj.scope === "user" && obj.scopeOwners.includes(user.uuid) }));
 }
 
-function getDocuments(documentName: string, selected?: string): SectionSpec[] {
+export function getDocuments(documentName: string, selected?: string): SectionSpec[] {
   if (!(game instanceof Game)) return [];
   const documents: SectionSpec[] = [];
 

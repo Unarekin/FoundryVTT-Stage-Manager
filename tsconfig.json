@@ -4,6 +4,7 @@
   "exclude": ["./node_modules"],
   "files": ["./src/module.ts"],
   "compilerOptions": {
+    "baseUrl": "./src",
     "outDir": "dist",
     "typeRoots": ["./@types", "./node_modules/@types"],
     "esModuleInterop": true,

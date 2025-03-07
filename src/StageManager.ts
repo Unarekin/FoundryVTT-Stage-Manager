@@ -1,5 +1,5 @@
 import { ScreenSpaceCanvasGroup } from './ScreenSpaceCanvasGroup';
-import { ActorStageObject, ImageStageObject, PanelStageObject, StageObject, TextStageObject } from './stageobjects';
+import { ActorStageObject, ImageStageObject, PanelStageObject, StageObject, TextStageObject, DialogueStageObject } from './stageobjects';
 import { PartialWithRequired, SerializedStageObject, StageLayer } from './types';
 import { coerceStageObject, coerceUser } from './coercion';
 import { StageObjects } from './StageObjectCollection';
@@ -7,15 +7,17 @@ import { CannotDeserializeError, CanvasNotInitializedError, InvalidStageObjectEr
 import * as stageObjectTypes from "./stageobjects";
 import { addSceneObject, addUserObject, getGlobalObjects, getSceneObjects, getSetting, getUserObjects, removeSceneObject, removeUserObject, setGlobalObjects, setSceneObjects, setSetting, setUserObjects } from './Settings';
 import { CUSTOM_HOOKS } from './hooks';
-import { log, logError, logInfo } from './logging';
-import { ActorStageObjectApplication, ImageStageObjectApplication, PanelStageObjectApplication, StageObjectApplication, TextStageObjectApplication } from './applications';
+import { log, logError } from './logging';
+import { ActorStageObjectApplication, ImageStageObjectApplication, DialogueStageObjectApplication, PanelStageObjectApplication, StageObjectApplication, TextStageObjectApplication } from './applications';
 import { SynchronizationManager } from './SynchronizationManager';
+import { Conversation } from "./conversation";
 
 const ApplicationHash: Record<string, typeof StageObjectApplication> = {
   "image": ImageStageObjectApplication as typeof StageObjectApplication,
   "actor": ActorStageObjectApplication as unknown as typeof StageObjectApplication,
   "text": TextStageObjectApplication as unknown as typeof StageObjectApplication,
-  "panel": PanelStageObjectApplication as unknown as typeof StageObjectApplication
+  "panel": PanelStageObjectApplication as unknown as typeof StageObjectApplication,
+  dialogue: DialogueStageObjectApplication as unknown as typeof StageObjectApplication
 }
 
 const OpenApplications = new WeakMap<StageObject, StageObjectApplication>();
@@ -128,6 +130,17 @@ export class StageManager {
       } else {
         obj.deserialize(stageObject);
       }
+    }
+  }
+
+  public static addDialogue(text: string, layer: StageLayer = "primary"): DialogueStageObject | undefined {
+    try {
+      if (!StageManager.canAddStageObjects(game.user?.id ?? "")) throw new PermissionDeniedError();
+      const obj = new DialogueStageObject(text);
+      StageManager.addStageObject(obj, layer);
+      return obj;
+    } catch (err) {
+      logError(err as Error);
     }
   }
 
@@ -286,6 +299,10 @@ export class StageManager {
     }
   }
 
+  public static Conversation(dialogue?: DialogueStageObject): Conversation {
+    return new Conversation(dialogue);
+  }
+
   public static async SetScopeOwners(object: StageObject, owners: string[]): Promise<void> {
     if (!(game.user instanceof User)) return;
 
@@ -360,11 +377,6 @@ export class StageManager {
       if (user instanceof User && user.canUserModify(game.user, "update")) {
         const objects = StageManager.StageObjects.filter(obj => obj.scope === "user" && (obj.scopeOwners.includes(game.user?.id ?? "") || obj.scopeOwners.includes(game.user?.uuid ?? "")));
         promises.push(setUserObjects(game.user, objects));
-        console.group("Persisting for user");
-        console.log("User:", game.user);
-        console.log("Stage objects:", StageManager.StageObjects.contents.map(obj => obj.serialize()));
-        console.log("User objects:", objects.map(obj => obj.serialize()));
-        console.groupEnd();
       }
 
       await Promise.all(promises);
@@ -495,10 +507,8 @@ export class StageManager {
 
       // Insert BT canvas group here, if it's available
       if (game?.modules?.get("battle-transitions")?.active) {
-        logInfo("Battle Transitions active, checking for canvas group...");
         for (const obj of canvas.stage.children) {
           if (obj.name === "BattleTransitions") {
-            logInfo("Found BattleTransitions canvas group, reordering.");
             canvas.stage.addChild(obj);
           }
         }

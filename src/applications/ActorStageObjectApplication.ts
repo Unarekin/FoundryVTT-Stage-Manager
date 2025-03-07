@@ -9,6 +9,7 @@ import HandlebarsApplicationMixin from 'Foundry-VTT/src/foundry/client-esm/appli
 import { InvalidActorError } from '../errors';
 import { getActorSettings } from '../Settings';
 import { logError } from '../logging';
+import { getActorContext } from './functions';
 
 export class ActorStageObjectApplication extends StageObjectApplication<ActorStageObject, SerializedActorStageObject> {
 
@@ -88,14 +89,7 @@ export class ActorStageObjectApplication extends StageObjectApplication<ActorSta
     const temp = await super._preparePartContext(partId, context, options) as ActorStageObjectApplicationContext;
 
     temp.actor = this.stageObject.actor.uuid;
-    if (game.actors) {
-      temp.actorSelect = Object.fromEntries(game.actors
-        .contents.sort((a: Actor, b: Actor) => a.name.localeCompare(b.name))
-        .map((actor: Actor) => [actor.uuid, actor.name])
-      );
-    } else {
-      temp.actorSelect = {};
-    }
+    foundry.utils.mergeObject(temp, getActorContext());
 
     return temp as typeof context;
   }

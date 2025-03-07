@@ -344,6 +344,17 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
     this.sizeInterfaceContainer();
   }
 
+  public textureLoaded(): Promise<void> {
+    return new Promise(resolve => {
+      if (this.texture.valid) {
+        resolve();
+      } else {
+        this.texture.baseTexture.once("loaded", () => { resolve(); });
+      }
+    })
+  }
+
+
   public serialize(): SerializedImageStageObject {
     return {
       ...super.serialize(),

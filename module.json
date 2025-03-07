@@ -50,7 +50,8 @@
   "scripts": [
     "greensock/dist/gsap.min.js",
     "vendor/pixi-gif.js",
-    "vendor/pixi-filters.js"
+    "vendor/pixi-filters.js",
+    "vendor/jquery.dragOptions.js"
   ],
   "styles": ["styles/module.css"],
   "languages": [

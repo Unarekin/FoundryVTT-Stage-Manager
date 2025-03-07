@@ -370,6 +370,8 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     this.#displayObject = this.proxyDisplayObject(_displayObject);
     this.#displayObject.interactive = true;
     this.#displayObject.eventMode = "dynamic";
+
+    this.effects = [];
     // // this.createRenderTexture();
     this.addDisplayObjectListeners();
 
@@ -422,6 +424,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     this._originalScreenHeight = window.innerHeight;
     this.dirty = false;
 
+    this.effects = [];
 
     KNOWN_OBJECTS[this.id] = this;
   }
@@ -494,6 +497,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       this.#displayObject.name = this.name ?? this.id;
       this.#displayObject.interactive = true;
       this.#displayObject.eventMode = "dynamic";
+      if (!Array.isArray(this.#displayObject.filters)) this.#displayObject.filters = [];
       // // this.createRenderTexture();
       this.addDisplayObjectListeners();
     }
@@ -665,7 +669,10 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     }
   }
 
-  public get effects() { return this.displayObject.filters; }
+  public get effects(): PIXI.Filter[] {
+    if (!Array.isArray(this.displayObject.filters)) this.displayObject.filters = [];
+    return this.displayObject.filters;
+  }
   public set effects(val) {
     if (!foundry.utils.objectsEqual({ test: val }, { test: this.effects })) {
       this.dirty = true;
@@ -823,15 +830,16 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   // #region Public Methods (6)
 
   protected updateUniforms() {
-    for (const effect of this.effects) {
-      if (effect instanceof CustomFilter) {
-        effect.setBgScale(this.width, this.height);
+    if (Array.isArray(this.effects)) {
+      for (const effect of this.effects) {
+        if (effect instanceof CustomFilter) {
+          effect.setBgScale(this.width, this.height);
+        }
       }
     }
   }
 
   public deserialize(serialized: SerializedStageObject) {
-    // log("Deserializing:", serialized);
 
 
     this.id = serialized.id;
@@ -839,8 +847,9 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     // void StageManager.setOwners(this.id, serialized.owners);
 
     this.restrictToVisualArea = serialized.restrictToVisualArea;
-    this.skew.x = serialized.skew.x;
-    this.skew.y = serialized.skew.y;
+
+    this.skew.x = serialized.skew?.x ?? 0;
+    this.skew.y = serialized.skew?.y ?? 0;
     this.angle = serialized.angle;
     this.locked = serialized.locked;
     this.zIndex = serialized.zIndex;
@@ -856,10 +865,11 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       else Hooks.once("canvasReady", () => { void StageManager.setOwners(this.id, serialized.owners) });
     }
 
-    this.x = serialized.bounds.x * this.actualBounds.width;
-    this.y = serialized.bounds.y * this.actualBounds.height;
-    this.width = serialized.bounds.width * this.actualBounds.width;
-    this.height = serialized.bounds.height * this.actualBounds.height;
+    this.x = serialized.bounds?.x * this.actualBounds.width;
+    this.y = serialized.bounds?.y * this.actualBounds.height;
+
+    if (serialized.bounds?.width) this.width = serialized.bounds.width * this.actualBounds.width;
+    if (serialized.bounds?.height) this.height = serialized.bounds.height * this.actualBounds.height;
 
     if (serialized.layer)
       this.setLayer(serialized.layer ?? "primary");
@@ -1097,8 +1107,8 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
   public get visible() { return this.displayObject.renderable; }
   public set visible(val) {
-    if (val !== this.displayObject.visible) {
-      this.displayObject.visible = val;
+    if (val !== this.displayObject.renderable) {
+      this.displayObject.renderable = val;
       this.dirty = true;
     }
   }
