@@ -282,6 +282,20 @@ export class DialogueStageObject extends StageObject<PIXI.Container> {
     return this.slotPosition(this.speakerSlot(speaker));
   }
 
+  public positionSpeakers(animate: true): Promise<this>
+  public positionSpeakers(animate: false): this
+  public positionSpeakers(animate = false): this | Promise<this> {
+    if (animate) {
+      return Promise.all(
+        this.speakers.map(speaker => this.positionSpeaker(speaker, true))
+      ).then(() => this);
+    } else {
+      for (const speaker of this.speakers)
+        this.positionSpeaker(speaker, false);
+      return this;
+    }
+  }
+
   public positionSpeaker(speaker: ImageStageObject): this
   public positionSpeaker(speaker: ImageStageObject, animate: true): Promise<this>
   public positionSpeaker(speaker: ImageStageObject, animate: false): this

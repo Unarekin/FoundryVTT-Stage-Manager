@@ -67,7 +67,7 @@ export function coerceSpeakerObject(arg: unknown): ImageStageObject | undefined 
 export function getSpeakerImage(arg: unknown): string | undefined {
   if (arg instanceof ImageStageObject) return arg.path;
   if (arg instanceof Actor) return arg.img!;
-  if (arg instanceof Token || arg instanceof TokenDocument) return arg.actor?.img ?? undefined as string | undefined;
+  if (arg instanceof Token || arg instanceof TokenDocument) return arg.actor?.img ?? undefined;
 
   if (arg instanceof URL) return arg.href;
 
