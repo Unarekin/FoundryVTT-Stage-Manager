@@ -30,6 +30,9 @@ export function coerceUser(arg: unknown): User | undefined {
  * @returns {StageObject | undefined}
  */
 export function coerceStageObject<t extends StageObject>(arg: unknown): t | undefined {
+  if (arg === undefined) return;
+  if (arg === null) return;
+
   if (arg instanceof StageObject) return arg as t;
   if (typeof arg === "string") {
     let obj = StageObject.find(arg);

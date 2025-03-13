@@ -4,6 +4,7 @@ import { SerializedStageObject, SerializedTrigger, StageLayer, TriggerEventSigna
 export type Tab = foundry.applications.api.ApplicationV2.Tab;
 
 export interface StageObjectApplicationContext extends AnyObject {
+  originalStageObject: SerializedStageObject;
   stageObject: SerializedStageObject;
   tabs?: Record<string, Tab>;
   tab?: Tab;
@@ -13,6 +14,11 @@ export interface StageObjectApplicationContext extends AnyObject {
 export interface ActorStageObjectApplicationContext extends StageObjectApplicationContext {
   actorSelect: Record<string, string>;
   actor: string;
+}
+
+export interface DialogueStageObjectApplicationContext extends StageObjectApplicationContext {
+  actorSelect: Record<string, string>;
+  fontSelect: Record<string, string>;
 }
 
 export interface StageObjectApplicationConfiguration extends foundry.applications.api.ApplicationV2.Configuration {
@@ -34,6 +40,9 @@ export interface ImageStageObjectApplicationOptions extends StageObjectApplicati
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ActorStageObjectApplicationOptions extends ImageStageObjectApplicationOptions { }
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface DialogueStageObjectApplicationOptions extends StageObjectApplicationOptions { }
 
 export interface StageObjectApplicationTab {
   icon?: string;

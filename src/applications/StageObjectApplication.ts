@@ -7,7 +7,7 @@ import ApplicationV2 from "Foundry-VTT/src/foundry/client-esm/applications/api/a
 import HandlebarsApplicationMixin from "Foundry-VTT/src/foundry/client-esm/applications/api/handlebars-application.mjs";
 import { localize } from "../functions";
 import { getLayerContext, getScenesContext, getScopeContext, getUsersContext, selectEffectDialog } from "./functions";
-import { log, logError } from "../logging";
+import { logError } from "../logging";
 import { defaultEffect, deserializeEffect, getEffectHandler, getEffectTemplate } from "../lib/effects";
 import { addTrigger, editTrigger, getTriggerActionType, parseTriggerFormData, deleteTrigger, setEventListeners as setTriggerEventListeners, setTriggerOption } from "./triggerFunctions";
 
@@ -19,7 +19,7 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
   StageObjectApplicationOptions>
 ) {
 
-  static PARTS = {
+  static PARTS: Record<string, unknown> = {
     tabs: {
       template: "templates/generic/tab-navigation.hbs"
     },
@@ -93,11 +93,11 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
       // eslint-disable-next-line @typescript-eslint/unbound-method
       selectEffect: StageObjectApplication.SelectEffect,
       // eslint-disable-next-line @typescript-eslint/unbound-method
-      deleteEffect: StageObjectApplication.DeleteEffect,
+      deleteEffect: StageObjectApplication.DeleteEffect
     }
   }
 
-  protected triggerFormChange() {
+  public triggerFormChange() {
     this._onChangeForm();
   }
 
@@ -349,6 +349,8 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
     const parsed = foundry.utils.expandObject(data) as v;
     // console.log("Initial parsing:", parsed);
 
+    if (!parsed.skew) parsed.skew = { x: 0, y: 0 };
+
 
     if (parsed.scope === "user") {
       parsed.scopeOwners = data["scopeOwners.users"] as string[] ?? [];
@@ -446,7 +448,6 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     delete (parsed as any).triggerList;
 
-    log("Parsed:", parsed);
     return parsed;
     // } finally {
     //   console.groupEnd();
@@ -541,7 +542,7 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
   protected prepareStageObject(): v {
     const bounds = this.originalObject.restrictToVisualArea ? StageManager.VisualBounds : StageManager.ScreenBounds;
     return {
-      ...this.originalObject,
+      ...(foundry.utils.deepClone(this.originalObject)),
       bounds: {
         x: this.originalObject.bounds.x * bounds.width,
         y: this.originalObject.bounds.y * bounds.height,
@@ -617,6 +618,7 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
     const context = {
       ...(await super._prepareContext(options)),
       stageObject: serialized,
+      originalStageObject: foundry.utils.deepClone(serialized),
       tabs: this._getTabs(),
       layerSelect: getLayerContext(),
       scopeSelect: getScopeContext(),
@@ -661,7 +663,16 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
   protected originalObject: v;
   protected wasSynced = false;
 
-  constructor(protected stageObject: t, options?: DeepPartial<StageObjectApplicationConfiguration>) {
+  protected prepareDragGhost(): PIXI.DisplayObject {
+    const ghost = this.stageObject.createDragGhost();
+    ghost.alpha = 0.5;
+    ghost.x = this.stageObject.x;
+    ghost.y = this.stageObject.y;
+
+    return ghost;
+  }
+
+  constructor(public stageObject: t, options?: DeepPartial<StageObjectApplicationConfiguration>) {
     super(options ?? {});
     this.tabGroups.primary = "basics";
     this.originalObject = stageObject.serialize() as v;
@@ -669,10 +680,7 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
 
     const layer = StageManager.layers[options?.layer ?? "primary"];
 
-    this.ghost = this.stageObject.createDragGhost();
-    this.ghost.alpha = 0.5;
-    this.ghost.x = this.stageObject.x;
-    this.ghost.y = this.stageObject.y;
+    this.ghost = this.prepareDragGhost();
 
     if (layer) {
       layer.addChild(stageObject.displayObject);

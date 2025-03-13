@@ -63,13 +63,20 @@ export interface SerializedPanelStageObject extends SerializedStageObject {
   src: string;
 }
 
-export interface SerializedDialogStageObject extends SerializedStageObject {
-  portrait: SerializedImageStageObject;
-  panel: SerializedPanelStageObject;
-  text: SerializedTextStageObject;
+export interface SerializedDialogueStageObject extends SerializedStageObject {
 
-  showPortrait: boolean;
+  text: SerializedTextStageObject;
+  panel: SerializedPanelStageObject;
+  speakers: SerializedSpeaker[];
+  label: SerializedTextStageObject;
+
+  speakerSlotWidth: number;
+  speakerSlotTop: PositionCoordinate;
+  maxSpeakerHeight: number;
+  maxSpeakerWidth: number;
 }
+
+export type SerializedSpeaker = SerializedImageStageObject | SerializedActorStageObject;
 
 /*
 export const StageLayers = ["primary", "foreground", "background", "text", "ui"] as const;
@@ -151,8 +158,7 @@ export type PartialWithRequired<t, k extends keyof t> = Partial<t> & Pick<Requir
 export const TOOL_LAYERS: Record<string, StageLayer> = {
   "sm-select-primary": "primary",
   "sm-select-foreground": "foreground",
-  "sm-select-background": "background",
-  "sm-select-text": "text"
+  "sm-select-background": "background"
 }
 
 export type StageObjectLike = string | StageObject | PIXI.DisplayObject;
@@ -228,4 +234,30 @@ export interface FontSettings {
   size: number | string;
   color: PIXI.ColorSource;
   dropShadow: boolean;
+}
+
+export const Easings = [
+  "none",
+  "power1.out", "power1.in", "power1.inOut",
+  "power2.in", "power2.out", "power2.inOut",
+  "power3.in", "power3.out", "power3.inOut",
+  "power4.in", "power4.out", "power4.inOut",
+  "back.in", "back.out", "back.inOut",
+  "bounce.in", "bounce.out", "bounce.inOut",
+  "circ.in", "circ.out", "circ.inOut",
+  "elastic.in", "elastic.out", "elastic.inOut",
+  "expo.in", "expo.out", "expo.inOut",
+  "sine.in", "sine.out", "sine.inOut",
+  // "steps", "rough", "slow", "expoScale"
+  // These easings need arguments, to be implemented later
+] as const;
+
+export type Easing = typeof Easings[number];
+
+export type PositionCoordinate = number | string;
+
+export interface SpeakerPosition {
+  x: PositionCoordinate;
+  y: PositionCoordinate;
+  z: PositionCoordinate;
 }

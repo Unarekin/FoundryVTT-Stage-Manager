@@ -30,139 +30,6 @@
       "MESSAGE": "Are you sure you want to remove {name}?\nThis cannot be undone.",
       "TITLE": "Remove Trigger"
     },
-    "EDITDIALOG": {
-      "ACTOR": "Actor",
-      "ADDTRIGGER": "Add Trigger",
-      "DELETETRIGGER": "Delete Trigger",
-      "ALPHA": "Opacity",
-      "ANGLE": "Rotation",
-      "ANGLEHINT": "(In degrees)",
-      "BORDERS": {
-        "BOTTOM": "Bottom",
-        "LEFT": "Left",
-        "RIGHT": "Right",
-        "TITLE": "Border Sizes",
-        "TOP": "Top"
-      },
-      "CLICKTHROUGH": "Ignore Mouse Events",
-      "DELETE": "Delete {name}",
-      "DELETEEFFECT": {
-        "MESSAGE": "Are you sure you wish to delete this effect?\nThis cannot be undone.",
-        "TITLE": "Delete {type}"
-      },
-      "EDIT": "Edit {name}",
-      "BGTYPES": {
-        "IMAGE": "Image",
-        "COLOR": "Color"
-      },
-      "EFFECTS": {
-        "ADD": "Add Effect",
-        "BEVEL": "Bevel",
-        "BLUR": "Blur",
-        "CHROMAKEY": "Chroma Key",
-        "CONFIG": {
-          "BGCOLOR": "Background Color",
-          "BGIMAGE": "Background Image",
-          "BGTYPE": "Background Type",
-          "BACKGROUND": "Background",
-          "BEVEL": {
-            "LIGHTCOLOR": "Light Color",
-            "ROTATION": "Rotation",
-            "SHADOWCOLOR": "Shadow Color",
-            "THICKNESS": "Thickness"
-          },
-          "CHROMAKEY": {
-            "KEYCOLOR": "Key Color"
-          },
-          "BLUR": {
-            "QUALITY": "Quality",
-            "STRENGTH": "Strength"
-          },
-          "DROPSHADOW": {
-            "BLUR": "Blur",
-            "COLOR": "Color",
-            "OFFSET": "Offset",
-            "QUALITY": "Quality",
-            "SHADOWONLY": "Shadow Only",
-            "X": "x",
-            "Y": "y"
-          },
-          "GLOW": {
-            "COLOR": "Color",
-            "GLOWONLY": "Draw Glow Only",
-            "INNERSTRENGTH": "Inner Strength",
-            "OUTERSTRENGTH": "Outer Strength",
-            "QUALITY": "Quality"
-          },
-          "OUTLINE": {
-            "COLOR": "Color",
-            "OUTLINEONLY": "Outline Only",
-            "QUALITY": "Quality",
-            "THICKNESS": "Thickness"
-          },
-          "PIXELATE": {
-            "SIZE": "Size"
-          }
-        },
-        "DELETE": "Delete Effect",
-        "DROPSHADOW": "Drop Shadow",
-        "ENABLE": "Enable Effects",
-        "GLOW": "Glow",
-        "OUTLINE": "Outline",
-        "PIXELATE": "Pixelate"
-      },
-      "FONT": {
-        "COLOR": "Color",
-        "DROPSHADOW": "Drop Shadow",
-        "DROPSHADOWALPHA": "Drop Shadow Alpha",
-        "DROPSHADOWANGLE": "Drop Shadow Angle",
-        "DROPSHADOWBLUR": "Drop Shadow Blur",
-        "DROPSHADOWCOLOR": "Drop Shadow Color",
-        "DROPSHADOWDISTANCE": "Drop Shadow Distance",
-        "FAMILY": "Font",
-        "SIZE": "Size"
-      },
-      "HEIGHT": "Height",
-      "LAYER": "Layer",
-      "LOCATION": "Screen Location",
-      "LOCATIONPRESET": "Screen location presets",
-      "LOCATIONPRESETS": {
-        "BOTTOM": "Bottom",
-        "BOTTOMLEFT": "Bottom left",
-        "BOTTOMRIGHT": "Bottom right",
-        "CENTER": "Center",
-        "LEFT": "Left",
-        "RIGHT": "Right",
-        "TOP": "Top",
-        "TOPLEFT": "Top left",
-        "TOPRIGHT": "Top right"
-      },
-      "NAME": "Name",
-      "OWNERS": "Owner(s)",
-      "POSX": "X",
-      "POSY": "Y",
-      "SCENES": "Scenes",
-      "SCOPE": "Object scope",
-      "SHOWPORTRAIT": "Show Portrait",
-      "SIZE": "Size",
-      "SKEW": "Skew",
-      "SRC": "Image source",
-      "TEXT": "Text",
-      "TITLE": "Edit {name}",
-      "TRIGGERLABELS": {
-        "MACRO": "Macro: {macro}"
-      },
-      "TRIGGERS": "Triggers",
-      "TRIGGERSENABLED": "Enable triggers",
-      "USERS": "Users",
-      "VISIBLE": "Visible",
-      "VISUALBOUNDS": "Relative to Visual Bounds",
-      "VISUALBOUNDSHIDE": "Hide Visual Bounds",
-      "VISUALBOUNDSHINT": "The 'visual bounds' is an area of the screen calculated to ensure that elements placed will not be covered by Foundry's standard UI.",
-      "VISUALBOUNDSSHOW": "Show Visual Bounds",
-      "WIDTH": "Width",
-      "ZINDEX": "Sort Index"
-    },
     "TABS": {
       "ACTOR": "Actor",
       "BASICS": "Basics",
@@ -170,6 +37,7 @@
       "FONT": "Font Style",
       "IMAGE": "Image",
       "PANEL": "Panel",
+      "SPEAKERS": "Speakers",
       "TEXT": "Text",
       "TRIGGERS": "Triggers",
       "VIDEO": "Video"

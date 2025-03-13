@@ -6,6 +6,7 @@ declare const __MODULE_VERSION__: string;
 declare module '*.scss';
 
 declare const TweenMax: any;
+declare const gsap: any;
 declare const libWrapper: any;
 
 declare const socketlib: any;
