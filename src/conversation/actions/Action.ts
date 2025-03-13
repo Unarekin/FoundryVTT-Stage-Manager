@@ -1,59 +1,44 @@
-import { NotImplementedError } from "errors";
+import { ActionType, SerializedAction } from "./types";
 import { Conversation } from "../Conversation";
-import { ActionType, SerializedAction } from './types';
+import { NotImplementedError } from "../../errors";
 
 export abstract class Action<t extends SerializedAction = SerializedAction> {
-  public static type = "";
-  public abstract readonly type: string;
 
-  public static version = "";
-  public abstract readonly version: string;
+  public static readonly type: ActionType = "" as ActionType;
+  public static readonly version = "1.0.0";
 
-  public static default: SerializedAction = {
+  public readonly type = Action.type;
+  public readonly version = Action.version;
+
+  public static readonly default: SerializedAction = {
     id: "",
-    type: "" as ActionType,
     version: "",
-    label: ""
-  };
+    label: "",
+    type: "" as ActionType
+  }
 
-  private _id: string = foundry.utils.randomID();
-  public get id() { return this._id; }
-  protected set id(id) { this._id = id; }
+  public id = foundry.utils.randomID();
 
-  private _label = "";
-  public get label() { return this._label; }
-  protected set label(val) { this._label = val; }
-
-  public abstract readonly default: SerializedAction;
+  public label = "";
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public validate(conversation: Conversation): boolean | Error | Promise<boolean | Error> { return true; }
+  public validate(conversation: Conversation): boolean | Promise<boolean> { return true; }
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public prepare(conversation: Conversation): void | Error | Promise<Error | void> { return; }
+  public prepare(conversation: Conversation): void | Promise<void> { /* empty */ }
+  public abstract execute(conversation: Conversation): Promise<void> | void;
 
   public serialize(): t {
     return {
       id: this.id,
-      type: this.type,
       version: this.version,
+      type: this.type,
       label: this.label
-    } as t;
+    } as t
   }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public static deserialize(serialized: SerializedAction, conversation: Conversation): Action { throw new NotImplementedError(); }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public deserialize(serialized: t, conversation: Conversation) {
+  public deserialize(serialized: t) {
     this.id = serialized.id;
     this.label = serialized.label;
   }
-
-  public abstract execute(conversation: Conversation): void | Promise<void>;
-
-  public conversation() { return this._conversation; }
-
-  constructor(private _conversation: Conversation) {
-
-  }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public static deserialize(serialized: SerializedAction): Action<SerializedAction> { throw new NotImplementedError(); }
 }

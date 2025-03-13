@@ -343,7 +343,7 @@ export function getEffectsContext(obj: StageObject): Record<string, string> {
 
 
   const serialized = obj.effects.map(effect => serializeEffect(effect)).filter(item => !!item);
-  return Object.fromEntries(serialized.map(item => [item.id, `STAGEMANAGER.EDITDIALOG.EFFECTS.${item.label}`]));
+  return Object.fromEntries(serialized.map(item => [item.id, `STAGEMANAGER.EDITDIALOG.EFFECTS.${item.type.toUpperCase()}`]));
 }
 
 export async function inputPrompt(content: string, title?: string): Promise<string | undefined> {

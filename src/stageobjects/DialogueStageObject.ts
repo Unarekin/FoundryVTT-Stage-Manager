@@ -9,22 +9,35 @@ import { PanelStageObject } from './PanelStageObject';
 import { StageObject } from "./StageObject";
 import { TextStageObject } from "./TextStageObject";
 import { Conversation } from '../conversation';
+import { parsePositionCoordinates, textureCenterOfMass } from "functions";
+
+const POSITION_EASE = "elastic.inOut(1,1)";
 
 export class DialogueStageObject extends StageObject<PIXI.Container> {
   public readonly type = "dialogue";
   public static type = "dialogue";
 
-  #maxSpeakerWidth = 400;
-  #maxSpeakerHeight = 400;
-  #speakerSlotTop: PositionCoordinate = "-height + panelHeight";
-  #speakerSlotWidth = 250;
+  #useCenterOfMass = true;
+  #maxSpeakerWidth = 512;
+  #maxSpeakerHeight = 1024;
+  // #speakerSlotTop: PositionCoordinate = "-height + panelHeight";
+  #speakerSlotTop: PositionCoordinate = "-height";
+  #speakerSlotWidth = this.#maxSpeakerWidth / 2;
+
+  public get useCenterOfMass() { return this.#useCenterOfMass; }
+  public set useCenterOfMass(val) {
+    if (val !== this.#useCenterOfMass) {
+      this.#useCenterOfMass = val;
+      this.positionSpeakers(false);
+      this.dirty = true;
+    }
+  }
 
   public get maxSpeakerWidth() { return this.#maxSpeakerWidth; }
   public set maxSpeakerWidth(width) {
     if (width !== this.maxSpeakerWidth) {
       this.#maxSpeakerWidth = width;
-      // TODO Reposition/size speakers
-
+      this.positionSpeakers(false);
       this.dirty = true;
     }
   }
@@ -33,8 +46,7 @@ export class DialogueStageObject extends StageObject<PIXI.Container> {
   public set maxSpeakerHeight(height) {
     if (height !== this.maxSpeakerHeight) {
       this.#maxSpeakerHeight = height;
-      // TODO Reposition/size speakers
-
+      this.positionSpeakers(false);
       this.dirty = true;
     }
   }
@@ -43,7 +55,7 @@ export class DialogueStageObject extends StageObject<PIXI.Container> {
   public set speakerSlotTop(top) {
     if (top !== this.speakerSlotTop) {
       this.#speakerSlotTop = top;
-      // TODO Reposition/size speakers
+      this.positionSpeakers(false);
       this.dirty = true;
     }
   }
@@ -52,8 +64,7 @@ export class DialogueStageObject extends StageObject<PIXI.Container> {
   public set speakerSlotWidth(width) {
     if (width !== this.speakerSlotWidth) {
       this.#speakerSlotWidth = width;
-      // TODO Reposition/size speakers
-
+      this.positionSpeakers(false);
       this.dirty = true;
     }
   }
@@ -259,17 +270,31 @@ export class DialogueStageObject extends StageObject<PIXI.Container> {
     if (!this.speakers.includes(obj)) {
       this.speakers.push(obj);
       this.displayObject.addChild(obj.displayObject);
-      this.positionSpeaker(obj, false);
+
+      if (obj.texture.valid) {
+        this.positionSpeaker(obj, false);
+      } else {
+        obj.texture.baseTexture.once("loaded", () => { this.positionSpeaker(obj, false); });
+      }
     }
     return this;
   }
 
   public slotPosition(slot: number): { x: PositionCoordinate, y: PositionCoordinate, z: PositionCoordinate } {
-    return {
-      x: 250 * slot,
-      y: -this.maxSpeakerHeight + this.panel.height,
+    const base = {
+      x: slot * this.speakerSlotWidth,
+      y: this.speakerSlotTop,
       z: (-10 * slot) - 10
     }
+
+    const prevSpeaker = this.speakers[slot - 1];
+    if (this.useCenterOfMass && prevSpeaker) {
+      const center = textureCenterOfMass(prevSpeaker.texture);
+      if (center)
+        base.x = prevSpeaker.x + center.x;
+    }
+
+    return base;
   }
 
   public speakerSlot(speaker: ImageStageObject): number {
@@ -299,8 +324,42 @@ export class DialogueStageObject extends StageObject<PIXI.Container> {
   public positionSpeaker(speaker: ImageStageObject): this
   public positionSpeaker(speaker: ImageStageObject, animate: true): Promise<this>
   public positionSpeaker(speaker: ImageStageObject, animate: false): this
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public positionSpeaker(speaker: ImageStageObject, animate = false): this | Promise<this> {
+    if (speaker.destroyed) return this;
+    const slot = this.speakerSlotPosition(speaker);
+
+    let width = speaker.baseWidth;
+    let height = speaker.baseHeight;
+
+    if (width > this.maxSpeakerWidth) {
+      height *= this.maxSpeakerWidth / width;
+      width = this.#maxSpeakerWidth;
+    }
+
+    if (height > this.maxSpeakerHeight) {
+      width *= this.maxSpeakerHeight / height;
+      height = this.maxSpeakerHeight;
+    }
+
+    speaker.width = width;
+    speaker.height = height;
+
+    const parsedCoordinates = parsePositionCoordinates(slot, speaker, { panelHeight: this.panel.height });
+
+    if (animate) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+      return (gsap.to(speaker, {
+        x: parsedCoordinates.x,
+        y: parsedCoordinates.y,
+        zIndex: parsedCoordinates.z,
+        duration: .5,
+        ease: POSITION_EASE
+      }) as Promise<void>).then(() => this);
+    } else {
+      speaker.x = parsedCoordinates.x;
+      speaker.y = parsedCoordinates.y;
+      speaker.zIndex = parsedCoordinates.z;
+    }
 
     return this;
   }
@@ -414,8 +473,8 @@ export class DialogueStageObject extends StageObject<PIXI.Container> {
     this._textObject.anchor.y = 0;
     this._textObject.y = this.panel.borders.top + 5;
     this._textObject.x = this.panel.borders.left + 5;
-    const uiLeft = document.getElementById("ui-left");
-    if (uiLeft instanceof HTMLElement) this._textObject.x = uiLeft.clientWidth / 2;
+    // const uiLeft = document.getElementById("ui-left");
+    // if (uiLeft instanceof HTMLElement) this._textObject.x = uiLeft.clientWidth / 2;
 
 
     this._labelObject.anchor.x = this._labelObject.anchor.y = 0;

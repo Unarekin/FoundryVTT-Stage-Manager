@@ -1,9 +1,10 @@
-import { InvalidSpeakerTypeError } from "../../errors";
-import { ImageStageObject } from "../../stageobjects";
-import { Conversation } from "../Conversation";
-import { coerceSpeakerObject, getSpeakerImage, isValidSpeaker } from "../functions";
 import { Action } from "./Action";
-import { SerializedAddSpeakerAction, SpeakerAnimation } from "./types";
+import { Conversation } from "../Conversation";
+import { SerializedAddSpeakerAction } from "./types";
+import { coerceSpeakerObject, isValidSpeaker } from "../functions";
+import { InvalidSpeakerTypeError, InvalidStageObjectError } from "errors";
+import { Speaker } from "../Speaker";
+import { DialogueStageObject, ImageStageObject } from "stageobjects";
 
 export class AddSpeakerAction extends Action<SerializedAddSpeakerAction> {
   public static readonly type = "addSpeaker";
@@ -14,72 +15,58 @@ export class AddSpeakerAction extends Action<SerializedAddSpeakerAction> {
 
   public static readonly default: SerializedAddSpeakerAction = {
     id: "",
-    speaker: "",
     label: "",
-    animation: "none",
-    duration: 500,
+    type: AddSpeakerAction.type,
     version: AddSpeakerAction.version,
-    type: AddSpeakerAction.type
+    speaker: ""
   };
 
   public readonly default = AddSpeakerAction.default;
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public validate(conversation: Conversation): boolean {
+    return isValidSpeaker(this.speaker);
+  }
 
-  public speaker = this.default.speaker;
-  public duration = this.default.duration;
-  public animation = this.default.animation;
+  public async prepare(conversation: Conversation): Promise<void> {
+    // Manifest the object
+    const speaker = conversation.speakers.find(speaker => speaker.id === this.speaker);
+    if (!(speaker instanceof Speaker)) throw new InvalidSpeakerTypeError(this.speaker);
+    speaker.object = coerceSpeakerObject(speaker.speaker);
+    if (!(speaker.object instanceof ImageStageObject)) throw new InvalidSpeakerTypeError(this.speaker);
+    if (!speaker.object.texture.valid) {
+      await speaker.object.textureLoaded();
+    }
+  }
 
-  public static deserialize(serialized: SerializedAddSpeakerAction, conversation: Conversation): AddSpeakerAction {
-    const obj = new AddSpeakerAction(conversation, serialized.speaker);
-    obj.deserialize(serialized, conversation);
+  public execute(conversation: Conversation) {
+    if (!(conversation.dialogue instanceof DialogueStageObject)) throw new InvalidStageObjectError(conversation.dialogue);
+    const speaker = conversation.speakers.find(speaker => speaker.id === this.speaker);
+    if (!speaker) throw new InvalidSpeakerTypeError(this.speaker);
+    if (!(speaker.object instanceof ImageStageObject)) throw new InvalidStageObjectError(speaker.object);
+
+    conversation.dialogue.addSpeaker(speaker.object);
+  }
+
+  public serialize(): SerializedAddSpeakerAction {
+    return {
+      ...super.serialize(),
+      speaker: this.speaker
+    }
+  }
+
+  public deserialize(serialized: SerializedAddSpeakerAction) {
+    super.deserialize(serialized);
+    this.speaker = serialized.speaker;
+  }
+
+  public static deserialize(serialized: SerializedAddSpeakerAction): AddSpeakerAction {
+    const obj = new AddSpeakerAction(serialized.speaker);
+    obj.deserialize(serialized);
     return obj;
   }
 
-  public deserialize(serialized: SerializedAddSpeakerAction, conversation: Conversation) {
-    super.deserialize(serialized, conversation);
-    this.speaker = serialized.speaker;
-    this.duration = serialized.duration;
-    this.animation = serialized.animation;
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public validate(conversation: Conversation): boolean | Error {
-    if (isValidSpeaker(this.speaker)) return true;
-    else return new InvalidSpeakerTypeError(this.speaker);
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public async prepare(conversation: Conversation): Promise<Error | void> {
-    // Preload texture
-    const img = getSpeakerImage(this.speaker);
-    if (!img) return new InvalidSpeakerTypeError(img);
-
-    const texture = PIXI.Texture.from(img);
-    if (!texture.valid) {
-      return new Promise(resolve => {
-        texture.baseTexture.once("loaded", () => { resolve(); });
-      });
-    }
-  }
-
-  public async execute(conversation: Conversation): Promise<void> {
-    const speaker = coerceSpeakerObject(this.speaker);
-    if (!(speaker instanceof ImageStageObject)) throw new InvalidSpeakerTypeError(this.speaker);
-
-    conversation.object.addSpeaker(speaker);
-
-    if (this.duration) {
-
-    } else {
-
-    }
-
-  }
-
-  constructor(conversation: Conversation, speaker: string, animation?: SpeakerAnimation, duration = 500) {
-    super(conversation);
-    this.speaker = speaker;
-    if (animation) this.animation = animation;
-    if (typeof duration === "number") this.duration = duration;
+  constructor(public speaker: string) {
+    super();
   }
 }

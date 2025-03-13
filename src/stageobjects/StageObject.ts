@@ -900,7 +900,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   public destroy() {
     if (!this.destroyed) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-      TweenMax.killTweensOf(this.displayObject);
+      gsap.killTweensOf(this.displayObject);
 
       delete KNOWN_OBJECTS[this.id];
 

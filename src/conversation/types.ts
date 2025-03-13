@@ -1,22 +1,16 @@
-import { SerializedActorStageObject, SerializedImageStageObject } from "../types";
-import { SerializedAction } from "./actions/types";
+import { SerializedAction } from './actions/types';
 
-export const SpeakerTypes = [
-  "actor",
-  "image"
-] as const;
-export type SpeakerType = typeof SpeakerTypes[number];
 
 
 export interface SerializedConversation {
   id: string;
   version: string;
+  actions: SerializedAction[];
   speakers: SerializedSpeaker[];
-  queue: SerializedAction[];
 }
 
 export interface SerializedSpeaker {
+  id: string;
   version: string;
-  type: SpeakerType;
-  object: SerializedImageStageObject | SerializedActorStageObject;
+  speaker: string;
 }
