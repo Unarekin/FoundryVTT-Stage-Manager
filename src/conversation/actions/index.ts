@@ -3,6 +3,7 @@ export * from './AddSpeaker';
 export * from './ConversationAlpha';
 export * from './ConversationStyle';
 export * from './Label';
+export * from './Macro';
 export * from './Parallel';
 export * from './RemoveSpeaker';
 export * from './SpeakerAlpha';

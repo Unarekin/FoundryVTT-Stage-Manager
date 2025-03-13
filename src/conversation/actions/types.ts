@@ -18,7 +18,8 @@ export const ActionTypes = [
   "labelStyle",
   "speakerScale",
   "speakerStyle",
-  "conversationStyle"
+  "conversationStyle",
+  "macro"
 ] as const;
 export type ActionType = typeof ActionTypes[number];
 
@@ -120,4 +121,8 @@ export interface SerializedSpeakerStyleAction extends SerializedSpeakerAction {
 export interface SerializedConversationStyleAction extends SerializedAction {
   textStyle: Record<string, unknown>;
   labelStyle: Record<string, unknown>;
+}
+
+export interface SerializedMacroAction extends SerializedAction {
+  macro: string;
 }

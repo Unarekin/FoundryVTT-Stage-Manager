@@ -1,14 +1,15 @@
 import { DialogueStageObject, ImageStageObject } from "../stageobjects";
 import { Speaker } from "./Speaker";
-import { Action, AddSpeakerAction, ConversationAlphaAction, ConversationStyleAction, LabelAction, ParallelAction, SerializedAction, SpeakerPositionAction, TextAction, WaitAction } from "./actions";
+import { Action, AddSpeakerAction, ConversationAlphaAction, ConversationStyleAction, LabelAction, MacroAction, ParallelAction, SerializedAction, SpeakerPositionAction, TextAction, WaitAction } from "./actions";
 import { SerializedConversation } from "./types";
 import { deserializeAction, isValidSpeaker } from './functions';
-import { InvalidSpeakerTypeError } from "errors";
+import { InvalidMacroError, InvalidSpeakerTypeError } from "errors";
 import { StageManager } from "StageManager";
 import { logError } from "logging";
 import { textureCenterOfMass } from "functions";
 import { Easing, PositionCoordinate } from "types";
 import { SpeakerSet } from "./SpeakerSet";
+import { coerceMacro } from "coercion";
 
 export class Conversation {
   #dialogue: DialogueStageObject | undefined = undefined;
@@ -199,6 +200,16 @@ export class Conversation {
     action.duration = duration;
     action.easing = easing;
     this.queue.push(action);
+    return this;
+  }
+
+  public macro(macro: Macro): this
+  public macro(macro: string): this
+  public macro(arg: unknown): this {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    const macro = coerceMacro(arg as any);
+    if (!(macro instanceof Macro)) throw new InvalidMacroError(arg);
+    this.queue.push(new MacroAction(macro.uuid));
     return this;
   }
 

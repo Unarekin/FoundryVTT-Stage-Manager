@@ -2,8 +2,10 @@ import { ImageStageObject } from "stageobjects";
 import { Conversation } from "./Conversation";
 import { Easing, PositionCoordinate } from "types";
 import { SerializedSpeaker } from "./types";
-import { LabelAction, RemoveSpeakerAction, SpeakerAlphaAction, SpeakerPositionAction, SpeakerScaleAction, SpeakerStyleAction, TextAction, WaitAction } from "./actions";
+import { LabelAction, MacroAction, RemoveSpeakerAction, SpeakerAlphaAction, SpeakerPositionAction, SpeakerScaleAction, SpeakerStyleAction, TextAction, WaitAction } from "./actions";
 import { SpeakerSet } from "./SpeakerSet";
+import { coerceMacro } from "coercion";
+import { InvalidMacroError } from "errors";
 
 export class Speaker {
   public readonly id = foundry.utils.randomID();
@@ -101,6 +103,16 @@ export class Speaker {
     action.easing = easing;
     this.conversation.queue.push(action);
 
+    return this;
+  }
+
+  public macro(macro: Macro): this
+  public macro(macro: string): this
+  public macro(arg: unknown): this {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    const macro = coerceMacro(arg as any);
+    if (!(macro instanceof Macro)) throw new InvalidMacroError(arg);
+    this.conversation.queue.push(new MacroAction(macro.uuid));
     return this;
   }
 
