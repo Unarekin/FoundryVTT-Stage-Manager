@@ -4,7 +4,7 @@ import { localize } from "./functions";
 import { InputManager } from "./InputManager";
 import { log, logError } from "./logging";
 import { StageManager } from "./StageManager";
-import { ImageStageObject, TextStageObject } from "./stageobjects";
+import { DialogueStageObject, ImageStageObject, TextStageObject } from "./stageobjects";
 import { TOOL_LAYERS } from "./types";
 // import { StageManager } from "./StageManager";
 
@@ -85,6 +85,17 @@ export class ControlButtonsHandler {
         button: true
       },
       {
+        name: "add-dialogue",
+        title: "STAGEMANAGER.SCENECONTROLS.DIALOGUE",
+        icon: `fas fa-comments`,
+        button: true,
+        visible: StageManager.canAddStageObjects(game?.user?.id ?? ""),
+        onClick: () => {
+          StageManager.DeselectAll();
+          void addDialogue();
+        }
+      },
+      {
         name: "view-as",
         title: "STAGEMANAGER.SCENECONTROLS.VIEWAS",
         icon: `fas ${StageManager.ViewingAs !== game.user ? "fa-eye-slash" : "fa-eye"}`,
@@ -137,6 +148,14 @@ async function addText() {
   } catch (err) {
     logError(err as Error);
   }
+}
+
+
+async function addDialogue() {
+  const dialogue = new DialogueStageObject();
+  const obj = await StageManager.CreateStageObject<DialogueStageObject>(dialogue.serialize());
+
+  log("Create:", obj);
 }
 
 function addImage() {
