@@ -152,10 +152,23 @@ async function addText() {
 
 
 async function addDialogue() {
-  const dialogue = new DialogueStageObject();
-  const obj = await StageManager.CreateStageObject<DialogueStageObject>(dialogue.serialize());
+  const layer = TOOL_LAYERS[game?.activeTool ?? ""];
+  if (!layer) return;
 
-  log("Create:", obj);
+  const dialogue = new DialogueStageObject();
+
+  if (!dialogue.panel.displayObject.texture.valid) {
+    await new Promise(resolve => {
+      dialogue.panel.displayObject.texture.baseTexture.once("loaded", () => { resolve();});
+    });
+  }
+  
+  const obj = await StageManager.CreateStageObject<DialogueStageObject>({
+    ...dialogue.serialize()
+  });
+  dialogue.destroy();
+  
+  if (obj) StageManager.addStageObject(obj, layer);
 }
 
 function addImage() {
@@ -191,13 +204,7 @@ function addImage() {
           })
           .then(obj => {
             // this.stageObject.displayObject.removeFromParent();
-
-            if (obj) {
-              if (obj) StageManager.addStageObject(obj, layer);
-
-              // const stageObject = StageManager.deserialize(obj.deserialize());
-              // StageManager.addStageObject(stageObject);
-            }
+            if (obj) StageManager.addStageObject(obj, layer);
           })
           .catch((err: Error) => {
             logError(err);

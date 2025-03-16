@@ -1,6 +1,6 @@
 import { coerceActor } from "../coercion";
 import { InvalidActorError, InvalidStageObjectError, SpeakerNotFoundError } from "../errors";
-import { logError } from "../logging";
+import { log, logError } from "../logging";
 import { StageManager } from "../StageManager";
 import { PositionCoordinate, SerializedDialogueStageObject } from "../types";
 import { ActorStageObject } from "./ActorStageObject";
@@ -22,7 +22,7 @@ export class DialogueStageObject extends StageObject<PIXI.Container> {
   #maxSpeakerHeight = 1024;
   // #speakerSlotTop: PositionCoordinate = "-height + panelHeight";
   #speakerSlotTop: PositionCoordinate = "-height";
-  #speakerSlotWidth = this.#maxSpeakerWidth / 2;
+  #speakerSlotWidth = 256;
 
   public get useCenterOfMass() { return this.#useCenterOfMass; }
   public set useCenterOfMass(val) {
@@ -136,10 +136,12 @@ export class DialogueStageObject extends StageObject<PIXI.Container> {
     try {
       super.deserialize(serialized);
 
-      this.maxSpeakerHeight = serialized.maxSpeakerHeight;
-      this.maxSpeakerWidth = serialized.maxSpeakerWidth;
-      this.speakerSlotTop = serialized.speakerSlotTop;
-      this.speakerSlotWidth = serialized.speakerSlotWidth;
+      log("Deserializing:", serialized);
+
+      if (typeof serialized.maxSpeakerHeight !== "undefined") this.maxSpeakerHeight = serialized.maxSpeakerHeight;
+      if (typeof serialized.maxSpeakerWidth !== "undefined") this.maxSpeakerWidth = serialized.maxSpeakerWidth;
+      if (typeof serialized.speakerSlotTop !== "undefined") this.speakerSlotTop = serialized.speakerSlotTop;
+      if (typeof serialized.speakerSlotWidth !== "undefined") this.speakerSlotWidth = serialized.speakerSlotWidth;
 
       if (serialized.text) this._textObject.deserialize(serialized.text);
       if (serialized.panel) this._panel.deserialize(serialized.panel);
@@ -281,11 +283,13 @@ export class DialogueStageObject extends StageObject<PIXI.Container> {
   }
 
   public slotPosition(slot: number): { x: PositionCoordinate, y: PositionCoordinate, z: PositionCoordinate } {
-    const base = {
-      x: slot * this.speakerSlotWidth,
+    log("Calculating slot:", slot);
+    const base: {x: PositionCoordinate, y: PositionCoordinate, z: PositionCoordinate} = {
+      x: `${slot} * ${this.speakerSlotWidth}`,
       y: this.speakerSlotTop,
       z: (-10 * slot) - 10
     }
+    log({...base});
 
     const prevSpeaker = this.speakers[slot - 1];
     if (this.useCenterOfMass && prevSpeaker) {
@@ -293,8 +297,13 @@ export class DialogueStageObject extends StageObject<PIXI.Container> {
       if (center)
         base.x = prevSpeaker.x + center.x;
     }
+    log({...base})
 
     return base;
+  }
+
+  public nextSlotPosition(): {x: PositionCoordinate, y: PositionCoordinate, z: PositionCoordinate} {
+    return this.slotPosition(this.speakers.length);
   }
 
   public speakerSlot(speaker: ImageStageObject): number {
@@ -343,6 +352,8 @@ export class DialogueStageObject extends StageObject<PIXI.Container> {
 
     speaker.width = width;
     speaker.height = height;
+
+    log("Positioning:", slot, speaker, { panelHeight: this.panel.height});
 
     const parsedCoordinates = parsePositionCoordinates(slot, speaker, { panelHeight: this.panel.height });
 

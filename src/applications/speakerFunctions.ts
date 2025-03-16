@@ -12,26 +12,28 @@ export async function addSpeaker(dialogue: DialogueStageObjectApplication) {
   const speakerType = await speakerTypeDialog();
   if (!speakerType) return;
 
-  await injectEditForm(dialogue, { id: foundry.utils.randomID(), type: speakerType, zIndex: -10, bounds: { x: 0, y: 0, width: 0, height: 0 } } as SerializedSpeaker);
+  const slot = dialogue.stageObject.nextSlotPosition();
+
+  await injectEditForm(dialogue, { id: foundry.utils.randomID(), type: speakerType, zIndex: -10, bounds: { x: slot.x, y: slot.y, width: 0, height: 0 } } as SerializedSpeaker);
 }
 
 export async function selectSpeaker(dialogue: DialogueStageObjectApplication, speaker: SerializedSpeaker) {
   await injectEditForm(dialogue, speaker);
-  dialogue.stageObject.speakers.forEach(item => {
-    if (item.id !== speaker.id) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      item.effects = item.effects.filter(effect => !(effect instanceof (PIXI.filters as any).OutlineFilter));
-      // item.displayObject.tint = new PIXI.Color("gray").toNumber();
-    } else {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      if (!item.effects.some(effect => effect instanceof (PIXI.filters as any).OutlineFilter)) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
-        item.effects.push(new (PIXI.filters as any).OutlineFilter(2, new PIXI.Color("#007bff").toNumber()))
-      }
-      // item.displayObject.tint = new PIXI.Color("white").toNumber();
+  // dialogue.stageObject.speakers.forEach(item => {
+  //   if (item.id !== speaker.id) {
+  //     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  //     // item.effects = item.effects.filter(effect => !(effect instanceof (PIXI.filters as any).OutlineFilter));
+  //     // item.displayObject.tint = new PIXI.Color("gray").toNumber();
+  //   } else {
+  //     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  //     // if (!item.effects.some(effect => effect instanceof (PIXI.filters as any).OutlineFilter)) {
+  //     //   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
+  //     //   item.effects.push(new (PIXI.filters as any).OutlineFilter(2, new PIXI.Color("#007bff").toNumber()))
+  //     // }
+  //     // item.displayObject.tint = new PIXI.Color("white").toNumber();
 
-    }
-  })
+  //   }
+  // })
 }
 
 async function injectEditForm(dialogue: DialogueStageObjectApplication, speaker: SerializedSpeaker) {
@@ -48,12 +50,12 @@ async function injectEditForm(dialogue: DialogueStageObjectApplication, speaker:
     height: speaker.bounds.height * bounds.height
   }
 
-  const autoPosition = dialogue.element.querySelector(`[data-action="toggleAutoPosition"]`);
+  // const autoPosition = dialogue.element.querySelector(`[data-action="toggleAutoPosition"]`);
 
   let content = "";
   const context: Record<string, unknown> = {
     actors: getDocuments("Actor", (speaker as SerializedActorStageObject).actor ?? ""),
-    autoPosition: autoPosition instanceof HTMLInputElement ? autoPosition.checked : false,
+    // autoPosition: autoPosition instanceof HTMLInputElement ? autoPosition.checked : false,
     speaker
   }
 
@@ -173,8 +175,10 @@ export function addEventListeners(dialogue: DialogueStageObjectApplication) {
       void setFormImage(parent, (filePicker as HTMLInputElement).value)
         .then(() => {
           dialogue.triggerFormChange();
-          const autoPosition = parent.querySelector(`[name="autoPosition"]`);
-          if (autoPosition instanceof HTMLInputElement && autoPosition.checked) dialogue.autoPositionSpeakers();
+          dialogue.autoPositionSpeakers();
+
+          // const autoPosition = parent.querySelector(`[name="autoPosition"]`);
+          // if (autoPosition instanceof HTMLInputElement && autoPosition.checked) dialogue.autoPositionSpeakers();
         })
         .catch((err: Error) => { logError(err); })
     })
@@ -195,8 +199,9 @@ export function addEventListeners(dialogue: DialogueStageObjectApplication) {
       void setFormImage(parent, settings.image)
         .then(() => {
           dialogue.triggerFormChange();
-          const autoPosition = parent.querySelector(`[name="autoPosition"]`);
-          if (autoPosition instanceof HTMLInputElement && autoPosition.checked) dialogue.autoPositionSpeakers();
+          dialogue.autoPositionSpeakers();
+          // const autoPosition = parent.querySelector(`[name="autoPosition"]`);
+          // if (autoPosition instanceof HTMLInputElement && autoPosition.checked) dialogue.autoPositionSpeakers();
         })
         .catch((err: Error) => { logError(err); })
     });

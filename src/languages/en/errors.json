@@ -24,7 +24,8 @@
       "UNKNOWNDOCUMENTTYPE": "Unknown document type: {document}",
       "UNKNOWNUSER": "Unknown user: {user}",
       "DIALOGUEALREADYSET": "This conversation is already linked to a dialogue object.",
-      "CONVERSATIONALREADYRUNNING": "This conversation is already executing."
+      "CONVERSATIONALREADYRUNNING": "This conversation is already executing.",
+      "INVALIDEXPRESSION": "Invalid expression: {expression}"
     }
   }
 }

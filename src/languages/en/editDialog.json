@@ -121,6 +121,7 @@
       "SIZE": "Size",
       "SKEW": "Skew",
       "SPEAKERS": {
+        "ABOVEPANEL": "Position speakers above dialogue panel",
         "ACTOR": "Actor",
         "ADD": "Add Speaker",
         "AUTOPOSITION": "Automatically Position Speakers",

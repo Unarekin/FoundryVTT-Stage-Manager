@@ -1,17 +1,25 @@
 <section class="tab {{tab.cssClass}}" data-group="primary" data-tab="speakers">
   {{#with stageObject}}
-    <div class="form-group submenu">
-      <label for="autoPosition">{{localize
+
+    <div class="form-group">
+      <label for="abovePanel">{{localize "STAGEMANAGER.EDITDIALOG.SPEAKERS.ABOVEPANEL"}}</label>
+      <input type="checkbox" name="abovePanel" id="abovePanel" data-action="toggleAbovePanel" {{checked ../abovePanel}}>
+    </div>
+    {{!-- <div class="form-group submenu"> --}}
+      {{!-- <label for="autoPosition">{{localize
           "STAGEMANAGER.EDITDIALOG.SPEAKERS.AUTOPOSITION"
-        }}</label>
-      <input
+        }}</label> --}}
+        <button type="button" name="autoPosition" id="autoPosition" data-action="autoPositionSpeakers">
+          {{localize "STAGEMANAGER.EDITDIALOG.SPEAKERS.AUTOPOSITION"}}
+        </button>
+      {{!-- <input
         type="checkbox"
         name="autoPosition"
         id="autoPosition"
         data-action="toggleAutoPosition"
-      />
-    </div>
-    <br />
+      /> --}}
+    {{!-- </div> --}}
+
     <div class="effects-body">
       <div data-role="speaker-list">
         <select

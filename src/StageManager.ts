@@ -482,10 +482,13 @@ export class StageManager {
    * @param {string} objId - id of the {@link StageObject} for which to get owners
    * @returns {string[]}
    */
-  public static getOwners(objId: string): string[] {
-    if (!coerceStageObject(objId)) throw new InvalidStageObjectError(objId);
+  public static getOwners(objId: string): string[]
+  public static getOwners(obj: StageObject): string[]
+  public static getOwners(arg: unknown): string[] {
+    const id = typeof arg === "string" ? arg : arg instanceof StageObject ? arg.id : (coerceStageObject(arg)?.id);
+    if (!id) throw new InvalidStageObjectError(arg);
     const owners = getSetting<Record<string, string[]>>("objectOwnership");
-    return owners?.[objId] ?? [];
+    return owners?.[id] ?? [];
   }
 
   public static layers: Record<string, ScreenSpaceCanvasGroup> = {};
@@ -600,19 +603,18 @@ export class StageManager {
    * @param {string} objId - id of the {@link StageObject}
    * @param {string[]} owners 
    */
-  public static async setOwners(objId: string, owners: string[]) {
+  public static async setOwners(objId: string, owners: string[]): Promise<void>
+  public static async setOwners(obj: StageObject, owners: string[]): Promise<void>
+  public static async setOwners(arg: unknown, owners: string[]): Promise<void> {
     try {
-      if (!game.user) throw new PermissionDeniedError();
-      if (!StageManager.canModifyStageObject(game.user.id, objId)) throw new PermissionDeniedError();
-
-      if (!coerceStageObject(objId)) throw new InvalidStageObjectError(objId);
+      const id = typeof arg === "string" ? arg : arg instanceof StageObject ? arg.id : (coerceStageObject(arg)?.id);
+      if (!id) throw new InvalidStageObjectError(arg);
+      if (!StageManager.canModifyStageObject(game.user?.id ?? "", id)) throw new PermissionDeniedError();
       await setSetting("objectOwnership", {
-        [objId]: owners
+        [id]: owners
       });
     } catch (err) {
-      if (err instanceof Error) {
-        logError(err);
-      }
+      logError(err as Error);
     }
   }
 

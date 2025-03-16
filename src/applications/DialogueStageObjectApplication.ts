@@ -75,8 +75,18 @@ export class DialogueStageObjectApplication extends StageObjectApplication<Dialo
       // eslint-disable-next-line @typescript-eslint/unbound-method
       autoPositionSpeakers: DialogueStageObjectApplication.AutoPositionSpeakers,
       // eslint-disable-next-line @typescript-eslint/unbound-method
-      toggleAutoPosition: DialogueStageObjectApplication.ToggleAutoPosition
+      toggleAutoPosition: DialogueStageObjectApplication.ToggleAutoPosition,
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      toggleAbovePanel: DialogueStageObjectApplication.ToggleAbovePanel,
     }
+  }
+
+  public static ToggleAbovePanel(this: DialogueStageObjectApplication, e: PointerEvent, elem: HTMLInputElement) {
+    if (elem.checked)
+      this.stageObject.speakerSlotTop = "-height";
+    else
+      this.stageObject.speakerSlotTop = "-height + panelHeight";
+    this.autoPositionSpeakers();
   }
 
   public static ToggleAutoPosition(this: DialogueStageObjectApplication, e: PointerEvent, elem: HTMLInputElement) {
@@ -230,7 +240,8 @@ export class DialogueStageObjectApplication extends StageObjectApplication<Dialo
     const newContext = {
       ...context,
       ...getFontContext(this.stageObject.serialize()),
-      ...getActorContext()
+      ...getActorContext(),
+      abovePanel: this.stageObject.speakerSlotTop === "-height" ? true : false
     }
 
 

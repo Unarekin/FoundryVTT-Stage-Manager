@@ -2,6 +2,7 @@ export * from './CannotDeserializeError';
 export * from './CanvasNotInitializedError';
 export * from './InvalidActorError';
 export * from './InvalidConversationActionType';
+export * from './InvalidExpressionError';
 export * from './InvalidMacroError';
 export * from './InvalidSpeakerType';
 export * from './InvalidStageObjectError';
