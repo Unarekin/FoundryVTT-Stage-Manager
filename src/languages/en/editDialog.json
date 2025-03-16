@@ -130,7 +130,11 @@
         "LABEL": "Label",
         "LOCATION": "Position",
         "SRC": "Image Source",
-        "ZINDEXHINT": "A zIndex > 0 will place the speaker in front of the dialogue panel."
+        "ZINDEXHINT": "A zIndex > 0 will place the speaker in front of the dialogue panel.",
+        "MAXSIZE": "Maximum Size",
+        "MAXWIDTH": "Width",
+        "MAXHEIGHT": "Height",
+        "SLOTWIDTH": "Slot Width"
       },
       "SRC": "Image source",
       "TEXT": "Text",
