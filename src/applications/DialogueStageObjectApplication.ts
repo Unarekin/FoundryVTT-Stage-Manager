@@ -4,7 +4,7 @@ import { Tab, StageObjectApplicationContext, DialogueStageObjectApplicationConte
 import { getActorContext, getFontContext, styleFontDropdown } from "./functions";
 import { AnyObject, DeepPartial } from "Foundry-VTT/src/types/utils.mjs";
 import { SerializedDialogueStageObject, SerializedSpeaker } from "../types";
-import { logError } from "../logging";
+import { log, logError } from "../logging";
 import { CanvasNotInitializedError, LocalizedError, SpeakerNotFoundError } from "../errors";
 import { addSpeaker, parseSpeakerFormData, selectSpeaker, setSpeakerOption, shouldAutoPosition } from './speakerFunctions';
 import { coerceJSON } from "../coercion";
@@ -381,11 +381,20 @@ export class DialogueStageObjectApplication extends StageObjectApplication<Dialo
   protected parseFormData(data: Record<string, unknown>): SerializedDialogueStageObject {
     // console.groupCollapsed("Parsing form data");
     // try {
-    // log("Initial data:", JSON.parse(JSON.stringify(data)));
+
+    log("Parsing form data:", data);
     const parsed = super.parseFormData(data);
     // log("First pass:", JSON.parse(JSON.stringify(parsed)));
 
     const serialized = this.prepareStageObject();
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    if ((parsed as any).abovePanel)
+      parsed.speakerSlotTop = "-height";
+    else
+      parsed.speakerSlotTop = "-height + panelHeight";
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    delete (parsed as any).abovePanel;
 
     const bounds = this.stageObject.restrictToVisualArea ? StageManager.VisualBounds : StageManager.ScreenBounds;
 
@@ -450,7 +459,7 @@ export class DialogueStageObjectApplication extends StageObjectApplication<Dialo
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     delete (parsed as any).speakerList;
 
-    // log("Final:", parsed);
+    log("Final:", parsed);
     return parsed;
     // } finally {
     //   console.groupEnd();

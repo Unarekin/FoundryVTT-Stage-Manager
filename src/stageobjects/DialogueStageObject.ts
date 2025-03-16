@@ -1,6 +1,6 @@
 import { coerceActor } from "../coercion";
 import { InvalidActorError, InvalidStageObjectError, SpeakerNotFoundError } from "../errors";
-import { logError } from "../logging";
+import { log, logError } from "../logging";
 import { StageManager } from "../StageManager";
 import { PositionCoordinate, SerializedDialogueStageObject } from "../types";
 import { ActorStageObject } from "./ActorStageObject";
@@ -136,7 +136,7 @@ export class DialogueStageObject extends StageObject<PIXI.Container> {
     try {
       super.deserialize(serialized);
 
-      // log("Deserializing:", serialized);
+      log("Deserializing:", serialized);
 
       if (typeof serialized.maxSpeakerHeight !== "undefined") this.maxSpeakerHeight = serialized.maxSpeakerHeight;
       if (typeof serialized.maxSpeakerWidth !== "undefined") this.maxSpeakerWidth = serialized.maxSpeakerWidth;
@@ -331,6 +331,7 @@ export class DialogueStageObject extends StageObject<PIXI.Container> {
   public positionSpeaker(speaker: ImageStageObject, animate: true): Promise<this>
   public positionSpeaker(speaker: ImageStageObject, animate: false): this
   public positionSpeaker(speaker: ImageStageObject, animate = false): this | Promise<this> {
+    log("Calling position speaker");
     if (speaker.destroyed) return this;
     const slot = this.speakerSlotPosition(speaker);
 
