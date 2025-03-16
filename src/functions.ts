@@ -56,7 +56,9 @@ export function parsePositionCoordinates(coord: { x: PositionCoordinate, y: Posi
 export function parsePositionCoordinate(coord: PositionCoordinate, stageObject: StageObject, context?: Record<string, number>): number
 export function parsePositionCoordinate(coord: PositionCoordinate, context?: Record<string, unknown>): number
 export function parsePositionCoordinate(coord: PositionCoordinate, ...args: unknown[]): number {
-  if (!coord || (typeof coord === "number" && isNaN(coord))) throw new InvalidExpressionError(coord);
+  if (typeof coord === "number" && isNaN(coord)) throw new InvalidExpressionError(coord);
+  if (typeof coord === "undefined" || coord === null) throw new InvalidExpressionError(coord);
+
   const context = {
     screenWidth: window.innerWidth,
     screenHeight: window.innerHeight,
@@ -78,11 +80,6 @@ export function parsePositionCoordinate(coord: PositionCoordinate, ...args: unkn
   if (!(args[args.length - 1] instanceof StageObject)) {
     foundry.utils.mergeObject(context, args[args.length - 1] as Record<string, unknown>);
   }
-
-  console.groupCollapsed("Evaluating");
-  console.log("Expression:", coord);
-  console.log("Context:", context);
-  console.groupEnd();
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
   return math.evaluate(typeof coord === "number" ? `${coord}` : coord, context) as number;

@@ -1,6 +1,6 @@
 import { coerceActor } from "../coercion";
 import { InvalidActorError, InvalidStageObjectError, SpeakerNotFoundError } from "../errors";
-import { log, logError } from "../logging";
+import { logError } from "../logging";
 import { StageManager } from "../StageManager";
 import { PositionCoordinate, SerializedDialogueStageObject } from "../types";
 import { ActorStageObject } from "./ActorStageObject";
@@ -136,7 +136,7 @@ export class DialogueStageObject extends StageObject<PIXI.Container> {
     try {
       super.deserialize(serialized);
 
-      log("Deserializing:", serialized);
+      // log("Deserializing:", serialized);
 
       if (typeof serialized.maxSpeakerHeight !== "undefined") this.maxSpeakerHeight = serialized.maxSpeakerHeight;
       if (typeof serialized.maxSpeakerWidth !== "undefined") this.maxSpeakerWidth = serialized.maxSpeakerWidth;
@@ -283,13 +283,12 @@ export class DialogueStageObject extends StageObject<PIXI.Container> {
   }
 
   public slotPosition(slot: number): { x: PositionCoordinate, y: PositionCoordinate, z: PositionCoordinate } {
-    log("Calculating slot:", slot);
+
     const base: {x: PositionCoordinate, y: PositionCoordinate, z: PositionCoordinate} = {
       x: `${slot} * ${this.speakerSlotWidth}`,
       y: this.speakerSlotTop,
       z: (-10 * slot) - 10
     }
-    log({...base});
 
     const prevSpeaker = this.speakers[slot - 1];
     if (this.useCenterOfMass && prevSpeaker) {
@@ -297,8 +296,6 @@ export class DialogueStageObject extends StageObject<PIXI.Container> {
       if (center)
         base.x = prevSpeaker.x + center.x;
     }
-    log({...base})
-
     return base;
   }
 
@@ -353,7 +350,7 @@ export class DialogueStageObject extends StageObject<PIXI.Container> {
     speaker.width = width;
     speaker.height = height;
 
-    log("Positioning:", slot, speaker, { panelHeight: this.panel.height});
+    // log("Positioning:", slot, speaker, { panelHeight: this.panel.height});
 
     const parsedCoordinates = parsePositionCoordinates(slot, speaker, { panelHeight: this.panel.height });
 

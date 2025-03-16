@@ -4,7 +4,7 @@ import { Tab, StageObjectApplicationContext, DialogueStageObjectApplicationConte
 import { getActorContext, getFontContext, styleFontDropdown } from "./functions";
 import { AnyObject, DeepPartial } from "Foundry-VTT/src/types/utils.mjs";
 import { SerializedDialogueStageObject, SerializedSpeaker } from "../types";
-import { log, logError } from "../logging";
+import { logError } from "../logging";
 import { CanvasNotInitializedError, LocalizedError, SpeakerNotFoundError } from "../errors";
 import { addSpeaker, parseSpeakerFormData, selectSpeaker, setSpeakerOption, shouldAutoPosition } from './speakerFunctions';
 import { coerceJSON } from "../coercion";
@@ -353,7 +353,7 @@ export class DialogueStageObjectApplication extends StageObjectApplication<Dialo
 
 
   _onChangeForm(): void {
-    log("Form changed");
+    // log("Form changed");
     super._onChangeForm();
     this.drawPreview();
   }
@@ -379,82 +379,82 @@ export class DialogueStageObjectApplication extends StageObjectApplication<Dialo
 
 
   protected parseFormData(data: Record<string, unknown>): SerializedDialogueStageObject {
-    console.groupCollapsed("Parsing form data");
-    try {
-      log("Initial data:", JSON.parse(JSON.stringify(data)));
-      const parsed = super.parseFormData(data);
-      log("First pass:", JSON.parse(JSON.stringify(parsed)));
+    // console.groupCollapsed("Parsing form data");
+    // try {
+    // log("Initial data:", JSON.parse(JSON.stringify(data)));
+    const parsed = super.parseFormData(data);
+    // log("First pass:", JSON.parse(JSON.stringify(parsed)));
 
-      const serialized = this.prepareStageObject();
+    const serialized = this.prepareStageObject();
 
-      const bounds = this.stageObject.restrictToVisualArea ? StageManager.VisualBounds : StageManager.ScreenBounds;
+    const bounds = this.stageObject.restrictToVisualArea ? StageManager.VisualBounds : StageManager.ScreenBounds;
 
-      // parsed.bounds = { ...parsed.bounds, width: this.stageObject.width, height: this.stageObject.height };
-      // parsed.bounds = this.normalizeBounds(parsed.bounds);
+    // parsed.bounds = { ...parsed.bounds, width: this.stageObject.width, height: this.stageObject.height };
+    // parsed.bounds = this.normalizeBounds(parsed.bounds);
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    delete (parsed.bounds as any).width;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    delete (parsed.bounds as any).height;
+
+    const text = parsed.text ? { ...serialized.text, ...parsed.text, text: serialized.text.text } : { ...serialized.text };
+    parsed.text = text;
+    parsed.panel = parsed.panel ? { ...serialized.panel, ...parsed.panel } : { ...serialized.panel };
+
+    parsed.alpha = serialized.alpha;
+    parsed.angle = serialized.angle;
+    // parsed.bounds = this.normalizeBounds(parsed.bounds);
+
+    parsed.panel.bounds.x = serialized.panel.bounds.x;
+    parsed.panel.bounds.y = serialized.panel.bounds.y;
+    parsed.panel.bounds.width /= bounds.width;
+    parsed.panel.bounds.height /= bounds.height;
+
+    // parsed.panel.bounds = this.normalizeBounds(parsed.panel.bounds);
+
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    if ((parsed as any).speaker) {
+      // There is a speaker being edited
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      delete (parsed.bounds as any).width;
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      delete (parsed.bounds as any).height;
-
-      const text = parsed.text ? { ...serialized.text, ...parsed.text, text: serialized.text.text } : { ...serialized.text };
-      parsed.text = text;
-      parsed.panel = parsed.panel ? { ...serialized.panel, ...parsed.panel } : { ...serialized.panel };
-
-      parsed.alpha = serialized.alpha;
-      parsed.angle = serialized.angle;
-      // parsed.bounds = this.normalizeBounds(parsed.bounds);
-
-      parsed.panel.bounds.x = serialized.panel.bounds.x;
-      parsed.panel.bounds.y = serialized.panel.bounds.y;
-      parsed.panel.bounds.width /= bounds.width;
-      parsed.panel.bounds.height /= bounds.height;
-
-      // parsed.panel.bounds = this.normalizeBounds(parsed.panel.bounds);
-
-
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      if ((parsed as any).speaker) {
-        // There is a speaker being edited
+      if ((parsed as any).autoPosition) {
+        const posX = this.element.querySelector(`input[name="speaker.bounds.x"]`);
+        const posY = this.element.querySelector(`input[name="speaker.bounds.y"]`);
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        if ((parsed as any).autoPosition) {
-          const posX = this.element.querySelector(`input[name="speaker.bounds.x"]`);
-          const posY = this.element.querySelector(`input[name="speaker.bounds.y"]`);
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-          if (posX instanceof HTMLInputElement) (parsed as any).speaker.bounds.x = parseFloat(posX.value);
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-          if (posY instanceof HTMLInputElement) (parsed as any).speaker.bounds.y = parseFloat(posY.value);
-        }
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
-        const speaker = parseSpeakerFormData(this.stageObject, (parsed as any).speaker);
-        setSpeakerOption(this.element, speaker);
+        if (posX instanceof HTMLInputElement) (parsed as any).speaker.bounds.x = parseFloat(posX.value);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        if (posY instanceof HTMLInputElement) (parsed as any).speaker.bounds.y = parseFloat(posY.value);
       }
-
-      parsed.speakers = [];
-
-      // Parse list of speakers
-      const speakerOptions = this.element.querySelectorAll(`select[name="speakerList"] option`);
-      for (const option of speakerOptions) {
-        if (option instanceof HTMLOptionElement) {
-          const deserialized = coerceJSON(option.dataset.serialized ?? "") as SerializedSpeaker | undefined;
-
-          if (deserialized) parsed.speakers.push(deserialized);
-        }
-      }
-
-
-      log("Speakers:", JSON.parse(JSON.stringify(parsed.speakers)));
-
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      delete (parsed as any).speaker;
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      delete (parsed as any).speakerList;
-
-      log("Final:", parsed);
-      return parsed;
-    } finally {
-      console.groupEnd();
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
+      const speaker = parseSpeakerFormData(this.stageObject, (parsed as any).speaker);
+      setSpeakerOption(this.element, speaker);
     }
+
+    parsed.speakers = [];
+
+    // Parse list of speakers
+    const speakerOptions = this.element.querySelectorAll(`select[name="speakerList"] option`);
+    for (const option of speakerOptions) {
+      if (option instanceof HTMLOptionElement) {
+        const deserialized = coerceJSON(option.dataset.serialized ?? "") as SerializedSpeaker | undefined;
+
+        if (deserialized) parsed.speakers.push(deserialized);
+      }
+    }
+
+
+    // log("Speakers:", JSON.parse(JSON.stringify(parsed.speakers)));
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    delete (parsed as any).speaker;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    delete (parsed as any).speakerList;
+
+    // log("Final:", parsed);
+    return parsed;
+    // } finally {
+    //   console.groupEnd();
+    // }
   }
 
   protected async _preparePartContext(partId: string, context: this extends foundry.applications.api.ApplicationV2.Internal.Instance<any, any, infer RenderContext extends AnyObject> ? RenderContext : unknown, options: DeepPartial<foundry.applications.api.HandlebarsApplicationMixin.HandlebarsRenderOptions>): Promise<this extends foundry.applications.api.ApplicationV2.Internal.Instance<any, any, infer RenderContext extends AnyObject> ? RenderContext : unknown> {
