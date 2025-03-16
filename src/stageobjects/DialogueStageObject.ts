@@ -499,7 +499,7 @@ export class DialogueStageObject extends StageObject<PIXI.Container> {
     this.textStyle.dropShadowAlpha = .8;
 
     this.panel.width = window.innerWidth;
-    this.scope = "temp";
+    // this.scope = "temp";
 
     // Set word wrap
     this._textObject.style.wordWrap = true;
