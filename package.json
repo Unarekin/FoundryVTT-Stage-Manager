@@ -1,7 +1,7 @@
 {
   "name": "foundryvtt-stage-manager",
-  "version": "0.0.1",
-  "description": "A module for Foundry VTT meant to replace Theatre Inserts and provide accessible methods to display and manipulate visual novel-like character art.",
+  "version": "1.1.0-alpha1",
+  "description": "A powerful, multi-purpose module for Foundry VTT that can handle visual novel style dialogues as well as placing GUI elements on the screen.",
   "main": "dist/module.js",
   "scripts": {
     "watch": "npx onchange -i src/**/* -- yarn build",
