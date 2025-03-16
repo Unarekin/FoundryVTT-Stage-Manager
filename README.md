@@ -8,6 +8,10 @@
 
 
 - [Stage Manager](#stage-manager)
+  - [Installation](#installation)
+- [Compability With Other Modules](#compability-with-other-modules)
+- [Attributions \& Acknowledgements](#attributions--acknowledgements)
+
 
 
 # Stage Manager
