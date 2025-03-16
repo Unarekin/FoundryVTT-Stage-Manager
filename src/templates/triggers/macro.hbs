@@ -1,0 +1,45 @@
+<section data-type="macro" style="display:none">
+  <div class="form-group">
+    <label for="trigger.macro">{{localize "DOCUMENT.Macro"}}</label>
+    <select name="trigger.macro" id="trigger.macro" required>
+      <option value=""></option>
+      {{#group macros by="pack"}}
+        {{#if value}}<optgroup label="{{value}}">{{/if}}
+          {{#each items}}
+            <option value="{{uuid}}"{{#if selected}} selected{{/if}}>{{name}}</option>
+          {{/each}}
+        {{#if value}}</optgroup>{{/if}}
+      {{/group}}
+    </select>
+  </div>
+  <br>
+
+  <div class="flexrow">
+    <label>{{localize "STAGEMANAGER.ADDTRIGGERDIALOG.ARGUMENTS"}}</label>
+    <div class="flex0">
+      <i class="fas fa-plus icon-button" data-action="addTriggerArgument"></i>
+    </div>
+  </div>
+  
+  <br>
+
+  <section data-role="additionalArguments">
+    <div class="form-group-slim flexrow" >
+      <input type="text" disabled value="{{localize "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.STAGEOBJECT"}}">
+      <input type="text" disabled value="{{localize "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.AUTO"}}">
+    </div>
+    <section data-role="autoArguments"></section>
+    <section data-role="customArguments">
+      {{#each trigger.arguments}}
+        <div class="form-group-slim flexrow" >
+          <input type="text" value="{{name}}" name="trigger.arg.{{index}}.name">
+          <input type="text" value="{{value}}" name="trigger.arg.{{inde}}.value">
+        </div>
+      {{/each}}
+    </section>
+  </section>
+  {{!-- <button type="button" data-action="addTriggerArgument">
+      <i class="fas fa-plus"></i>
+      {{localize "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ADD"}}
+  </button> --}}
+</section>

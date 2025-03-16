@@ -1,0 +1,110 @@
+<section class="tab {{tab.cssClass}}" data-group="{{tab.group}}" data-tab="basics">
+  {{#with stageObject }}
+    <input type="hidden" name="type" id="type" value="{{type}}">
+    <input type="hidden" name="id" id="id" value="{{id}}">
+    <div class="form-group">
+      <label for="name">{{localize "STAGEMANAGER.EDITDIALOG.NAME"}}</label>
+      <input type="text" name="name" id="name" value="{{name}}" />
+    </div>
+
+    <div class="form-group">
+      <label for="visible">{{localize "STAGEMANAGER.EDITDIALOG.VISIBLE"}}</label>
+      <input type="checkbox" name="visible" id="visible" {{checked visible}}>
+    </div>
+
+    <div class="form-group">
+      <label for="layer">{{localize "STAGEMANAGER.EDITDIALOG.LAYER"}}</label>
+      <select name="layer" id="layer">
+        {{selectOptions ../layerSelect selected=layer localize=true}}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="scope">{{localize "STAGEMANAGER.EDITDIALOG.SCOPE"}}</label>
+      <select name="scope" id="scope">
+        {{selectOptions ../scopeSelect localize=true selected=scope}}
+      </select>
+    </div>
+    <section data-scope="user">
+      <div class="form-group">
+        <label for="scopeOwners.users">{{localize "STAGEMANAGER.EDITDIALOG.USERS"}}</label>
+        <multi-select name="scopeOwners.users" id="scopeOwners.users">
+          {{selectOptions ../usersSelect localize="true"}}
+        </multi-select>
+      </div>
+    </section>
+    <section data-scope="scene">
+      <div class="form-group">
+        <label for="scopeOwners.scenes">{{localize "STAGEMANAGER.EDITDIALOG.SCENES"}}</label>
+        <multi-select name="scopeOwners.scenes" id="scopeOwners.scenes">
+          {{selectOptions ../scenesSelect localize="true"}}
+        </multi-select>
+      </div>
+    </section>
+
+    <div class="form-group">
+      <label for="owners">{{localize "STAGEMANAGER.EDITDIALOG.OWNERS"}}</label>
+      <multi-select name="owners" id="owners">
+        {{selectOptions ../ownersSelect localize=true}}
+      </multi-select>
+    </div>
+
+    <div class="form-group">
+      <label for="clickThrough">{{localize "STAGEMANAGER.EDITDIALOG.CLICKTHROUGH"}}</label>
+      <input type="checkbox" name="clickThrough" id="clickThrough" {{checked clickThrough}}>
+    </div>
+
+    <div class="form-group slim">
+      <label>{{localize "STAGEMANAGER.EDITDIALOG.LOCATION"}}</label>
+      <div class="form-fields">
+        <label for="bounds.x">{{localize "STAGEMANAGER.EDITDIALOG.POSX"}}</label>
+        <input type="number" name="bounds.x" id="bounds.x" value="{{bounds.x}}" step="any">
+        <label for="bounds.y">{{localize "STAGEMANAGER.EDITDIALOG.POSY"}}</label>
+        <input type="number" name="bounds.y" id="bounds.y" value="{{bounds.y}}" step="any">
+        <button id="location-preset" data-action="locationPresets" type="button" title="{{localize "STAGEMANAGER.EDITDIALOG.LOCATIONPRESET"}}">
+          <i class="fas fa-fw fa-location-crosshairs"></i>
+        </button>
+      </div>
+    </div>
+    <section id="location-presets" style="display:none">
+      <div class="flexrow">
+        <div class="flex1"></div>
+        <div class="flex0">
+          <table class="location-presets">
+            <tr>
+              <td><button type="button" data-action="presetTopLeft"><i class="fas fa-fw fa-arrow-up fa-rotate-by" style="--fa-rotate-angle: -45deg"></i></button></td>
+              <td><button type="button" data-action="presetTop"><i class="fas fa-fw fa-arrow-up"></i></button></td>
+              <td><button type="button" data-action="presetTopRight"><i class="fas fa-fw fa-arrow-up fa-rotate-by" style="--fa-rotate-angle: 45deg"></i></button></td>
+            </tr>
+            <tr>
+              <td><button type="button" data-action="presetLeft"><i class="fas fa-fw fa-arrow-left"></i></button></td>
+              <td><button type="button" data-action="presetCenter"><i class="fas fa-fw fa-arrows-to-dot"></i></button></td>
+              <td><button type="button" data-action="presetRight"><i class="fas fa-fw fa-arrow-right"></i></button></td>
+            </tr>
+            <tr>
+              <td><button type="button" data-action="presetBottomLeft"><i class="fas fa-fw fa-arrow-down fa-rotate-by" style="--fa-rotate-angle: 45deg"></i></button></td>
+              <td><button type="button" data-action="presetBottom"><i class="fas fa-fw fa-arrow-down"></i></button></td>
+              <td><button type="button" data-action="presetBottomRight"><i class="fas fa-fw fa-arrow-down fa-rotate-by" style="--fa-rotate-angle: -45deg"></i></button></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <div class="form-group">
+      <label for="restrictToVisualBounds">{{localize "STAGEMANAGER.EDITDIALOG.VISUALBOUNDS"}}</label>
+      <input type="checkbox" {{checked restrictToVisualArea}} name="restrictToVisualArea" id="restrictToVisualArea">
+      <section data-role="toggle-visual-bounds" style="flex-grow:0">
+        <i class="fas fa-fw fa-eye icon-button" data-action="showBounds" title="{{localize "STAGEMANAGER.EDITDIALOG.VISUALBOUNDSSHOW"}}" ></i>
+        <i class="fas fa-fw fa-eye-slash icon-button disabled" style="display:none" data-action="hideBounds" title="{{localize "STAGEMANAGER.EDITDIALOG.VISUALBOUNDSHIDE"}}" ></i>
+      </section>
+    </div>
+    <p class="hint">{{localize "STAGEMANAGER.EDITDIALOG.VISUALBOUNDSHINT"}}</p>
+
+    <div class="form-group">
+      <label for="zIndex">{{localize "STAGEMANAGER.EDITDIALOG.ZINDEX"}}</label>
+      <input type="number" name="zIndex" id="zIndex" value="{{zIndex}}">
+    </div>
+
+  {{/with}}
+</section>

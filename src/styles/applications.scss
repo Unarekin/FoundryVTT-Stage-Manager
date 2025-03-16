@@ -1,0 +1,58 @@
+.stage-manager {
+  .form-group.slim .form-fields label {
+    min-width: 40px;
+  }
+
+  &.standard-form [data-role="toggle-visual-bounds"] {
+    flex-grow: 0;
+
+    .disabled {
+      color: #a9a9a9;
+      pointer-events: inherit;
+      cursor: pointer;
+    }
+  }
+
+  .icon-button {
+    cursor: pointer;
+  }
+  .hidden {
+    display: none;
+  }
+
+  table[data-role="trigger-list"] {
+    margin: 0;
+  }
+
+  [data-role="customArguments"] .form-group-slim:first-child {
+    margin-right: 2px;
+  }
+
+  [data-role="customArguments"] .form-group.slim:last-child {
+    margin-left: 2px;
+  }
+
+  &.multiselect {
+    option {
+      color: var(--input-text-color);
+    }
+  }
+
+  .center {
+    text-align: center;
+  }
+
+  .effects-body {
+    display: grid;
+    grid-template-columns: 0.5fr 1fr;
+    grid-gap: 5px;
+    grid-auto-rows: max-content;
+  }
+
+  .background-selector {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 5px;
+    grid-auto-rows: max-content;
+  }
+}

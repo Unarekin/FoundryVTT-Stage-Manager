@@ -1,0 +1,52 @@
+<section class="tab {{tab.cssClass}}" data-group="{{tab.group}}" data-tab="font">
+  {{#with stageObject}}
+    <div class="form-group">
+      <label for="{{../formPrefix}}style.fontFamily">{{localize
+          "STAGEMANAGER.EDITDIALOG.FONT.FAMILY"
+        }}</label>
+      <select name="{{../formPrefix}}style.fontFamily" id="{{../formPrefix}}style.fontFamily" data-font-select>
+        {{selectOptions ../fontSelect selected=style.fontFamily}}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="{{../formPrefix}}style.fontSize">{{localize "STAGEMANAGER.EDITDIALOG.FONT.SIZE"}}</label>
+      <input type="number" min="8" step="1" name="{{../formPrefix}}style.fontSize" id="{{../formPrefix}}style.fontSize" value="{{style.fontSize}}">
+    </div>
+
+    <div class="form-group">
+      <label for="{{../formPrefix}}style.fill">{{localize "STAGEMANAGER.EDITDIALOG.FONT.COLOR"}}</label>
+      <input type="color" name="{{../formPrefix}}style.fill" id="{{../formPrefix}}style.fill" value="{{style.fill}}">
+    </div>
+
+    <div class="form-group">
+      <label for="{{../formPrefix}}style.dropShadow">{{localize "STAGEMANAGER.EDITDIALOG.FONT.DROPSHADOW"}}</label>
+      <input type="checkbox" {{checked style.dropShadow}} id="{{../formPrefix}}style.dropShadow" name="{{../formPrefix}}style.dropShadow">
+    </div>
+
+    <div class="form-group">
+      <label for="{{../formPrefix}}style.dropShadowAlpha">{{localize "STAGEMANAGER.EDITDIALOG.FONT.DROPSHADOWALPHA"}}</label>
+      <range-picker value="{{style.dropShadowAlpha}}" min="0" max="100" step="any" name="{{../formPrefix}}style.dropShadowAlpha" id="{{../formPrefix}}style.dropShadowAlpha"></range-picker>
+    </div>
+
+    <div class="form-group">
+      <label for="{{../formPrefix}}style.dropShadowAngle">{{localize "STAGEMANAGER.EDITDIALOG.FONT.DROPSHADOWANGLE"}}</label>
+      <range-picker value="{{style.dropShadowAngle}}" min="0" max="360" step="any" name="{{../formPrefix}}style.dropShadowAngle" id="{{../formPrefix}}style.dropShadowAngle"></range-picker>
+    </div>
+
+    <div class="form-group">
+      <label for="{{../formPrefix}}style.dropShadowBlur">{{localize "STAGEMANAGER.EDITDIALOG.FONT.DROPSHADOWBLUR"}}</label>
+      <input type="number" min="0" step="1" value="{{style.dropShadowBlur}}" id="{{../formPrefix}}style.dropShadowBlur" name="{{../formPrefix}}style.dropShadowBlur">
+    </div>
+
+    <div class="form-group">
+      <label for="{{../formPrefix}}style.dropShadowColor">{{localize "STAGEMANAGER.EDITDIALOG.FONT.DROPSHADOWCOLOR"}}</label>
+      <input type="color" name="{{../formPrefix}}style.dropShadowColor" id="{{../formPrefix}}style.dropShadowColor" value="{{style.dropShadowColor}}">
+    </div>
+
+    <div class="form-group">
+      <label for="{{../formPrefix}}style.dropShadowDistance">{{localize "STAGEMANAGER.EDITDIALOG.FONT.DROPSHADOWDISTANCE"}}</label>
+      <input type="number" name="{{../formPrefix}}style.dropShadowDistance" id="{{../formPrefix}}style.dropShadowDistance" value="{{style.dropShadowDistance}}" min="0" step="1">
+    </div>
+  {{/with}}
+</section>

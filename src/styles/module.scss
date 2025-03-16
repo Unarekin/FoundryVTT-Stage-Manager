@@ -1,0 +1,17 @@
+@import url("./icons.scss");
+@import url("./applications.scss");
+
+.stage-manager {
+  .location-presets {
+    tr {
+      background-color: inherit;
+    }
+    td {
+      padding: 2px;
+    }
+  }
+
+  .right-align {
+    text-align: right;
+  }
+}

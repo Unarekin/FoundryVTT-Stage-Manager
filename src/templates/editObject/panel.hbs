@@ -1,0 +1,64 @@
+<section class="tab {{tab.cssClass}}" data-group="primary" data-tab="panel">
+  {{#with stageObject}}
+    <div class="form-group">
+      <label for="{{../formPrefix}}src">{{localize "STAGEMANAGER.EDITDIALOG.SRC"}}</label>
+      <file-picker type="imagevideo" value="{{src}}" name="{{../formPrefix}}src" id="{{../formPrefix}}src"></file-picker>
+    </div>
+    
+    <div class="form-group slim">
+      <label>{{localize "STAGEMANAGER.EDITDIALOG.SIZE"}}</label>
+      <div class="form-fields">
+        <label for="{{../formPrefix}}bounds.width">{{localize "STAGEMANAGER.EDITDIALOG.WIDTH"}}</label>
+        <input type="number" name="{{../formPrefix}}bounds.width" id="{{../formPrefix}}bounds.width" value="{{bounds.width}}" step="any">
+        <label for="{{../formPrefix}}bounds.height">{{localize "STAGEMANAGER.EDITDIALOG.HEIGHT"}}</label>
+        <input type="number" name="{{../formPrefix}}bounds.height" id="{{../formPrefix}}bounds.height" value="{{bounds.height}}" step="any">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <canvas id="PanelPreview">
+    </div>
+    <div class="form-group">
+      <label>{{localize "STAGEMANAGER.EDITDIALOG.BORDERS.TITLE"}}</label>
+    </div>
+
+    <div class="form-group slim">
+      <label for="{{../formPrefix}}borders.left">{{localize "STAGEMANAGER.EDITDIALOG.BORDERS.LEFT"}}</label>
+      <input type="number" min="0" step="1" name="{{../formPrefix}}borders.left" id="{{../formPrefix}}borders.left" value="{{borders.left}}">
+      
+      <label for="{{../formPrefix}}borders.right">{{localize "STAGEMANAGER.EDITDIALOG.BORDERS.RIGHT"}}</label>
+      <input type="number" min="0" step="1" name="{{../formPrefix}}borders.right" id="{{../formPrefix}}borders.right" value="{{borders.right}}">
+    </div>
+
+    <div class="form-group">
+      <label for="{{../formPrefix}}borders.top">{{localize "STAGEMANAGER.EDITDIALOG.BORDERS.TOP"}}</label>
+      <input type="number" min="0" step="1" name="{{../formPrefix}}borders.top" id="{{../formPrefix}}borders.top" value="{{borders.top}}">
+      <label for="{{../formPrefix}}borders.bottom">{{localize "STAGEMANAGER.EDITDIALOG.BORDERS.BOTTOM"}}</label>
+      <input type="number" min="0" step="1" name="{{../formPrefix}}borders.bottom" id="{{../formPrefix}}borders.bottom" value="{{borders.bottom}}">
+    </div>
+
+    <div class="form-group">
+      <label for="{{../formPrefix}}angle">
+        {{localize "STAGEMANAGER.EDITDIALOG.ANGLE"}}
+        <span class="units">{{localize "STAGEMANAGER.EDITDIALOG.ANGLEHINT"}}</span>
+      </label>
+      <range-picker value="{{angle}}" min="0" max="360" step="any" name="{{../formPrefix}}angle" id="{{../formPrefix}}angle"></range-picker>
+    </div>
+
+    <div class="form-group slim">
+      <label>{{localize "STAGEMANAGER.EDITDIALOG.SKEW"}}</label>
+      <div class="form-fields">
+        <label for="{{../formPrefix}}skew.x">{{localize "STAGEMANAGER.EDITDIALOG.POSX"}}</label>
+        <input type="number" name="{{../formPrefix}}skew.x" id="{{../formPrefix}}skew.x" value="{{skew.x}}" min="0" step="any">
+        <label for="{{../formPrefix}}skew.y">{{localize "STAGEMANAGER.EDITDIALOG.POSY"}}</label>
+        <input type="number" name="{{../formPrefix}}skew.y" id="{{../formPrefix}}skew.y" value="{{skew.y}}" min="0" step="any">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="{{../formPrefix}}alpha">{{localize "STAGEMANAGER.EDITDIALOG.ALPHA"}}</label>
+      <range-picker value="{{alpha}}" min="0" max="1" step=".01" id="{{../formPrefix}}alpha" name="{{../formPrefix}}alpha"></range-picker>
+    </div>
+  {{/with}}
+</section>
+

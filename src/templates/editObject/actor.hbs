@@ -1,0 +1,48 @@
+<section class="tab {{tab.cssClass}}" data-group="primary" data-tab="actor">
+  {{#with stageObject}}
+    <div class="form-group">
+      <label for="actor">{{localize "STAGEMANAGER.EDITDIALOG.ACTOR"}}</label>
+      <select name="actor" id="actor">
+        {{selectOptions ../actorSelect selected=../actor}}
+      </select>
+    </div>
+
+        <div class="form-group">
+      <label for="src">{{localize "STAGEMANAGER.EDITDIALOG.SRC"}}</label>
+      <file-picker type="imagevideo" value="{{src}}" name="src" id="src"></file-picker>
+    </div>
+    
+    <div class="form-group slim">
+      <label>{{localize "STAGEMANAGER.EDITDIALOG.SIZE"}}</label>
+      <div class="form-fields">
+        <label for="bounds.width">{{localize "STAGEMANAGER.EDITDIALOG.WIDTH"}}</label>
+        <input type="number" name="bounds.width" id="bounds.width" value="{{bounds.width}}" step="any">
+        <label for="bounds.height">{{localize "STAGEMANAGER.EDITDIALOG.HEIGHT"}}</label>
+        <input type="number" name="bounds.height" id="bounds.height" value="{{bounds.height}}" step="any">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="angle">
+        {{localize "STAGEMANAGER.EDITDIALOG.ANGLE"}}
+        <span class="units">{{localize "STAGEMANAGER.EDITDIALOG.ANGLEHINT"}}</span>
+      </label>
+      <range-picker value="{{angle}}" min="0" max="360" step="any" name="angle" id="angle"></range-picker>
+    </div>
+
+    <div class="form-group slim">
+      <label>{{localize "STAGEMANAGER.EDITDIALOG.SKEW"}}</label>
+      <div class="form-fields">
+        <label for="skew.x">{{localize "STAGEMANAGER.EDITDIALOG.POSX"}}</label>
+        <input type="number" name="skew.x" id="skew.x" value="{{skew.x}}" min="0" step="any">
+        <label for="skew.y">{{localize "STAGEMANAGER.EDITDIALOG.POSY"}}</label>
+        <input type="number" name="skew.y" id="skew.y" value="{{skew.y}}" min="0" step="any">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="alpha">{{localize "STAGEMANAGER.EDITDIALOG.ALPHA"}}</label>
+      <range-picker value="{{alpha}}" min="0" max="1" step=".01" id="alpha" name="alpha"></range-picker>
+    </div>
+  {{/with}}
+</section>

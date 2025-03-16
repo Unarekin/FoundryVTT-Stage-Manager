@@ -1,0 +1,8 @@
+{
+  "STAGEMANAGER": {
+    "WARNINGS": {
+      "READONLYWIDTH": "Attempting to set the width of an unsized StageObject.",
+      "READONLYHEIGHT": "Attempting to set the height of an unsized StageObject."
+    }
+  }
+}

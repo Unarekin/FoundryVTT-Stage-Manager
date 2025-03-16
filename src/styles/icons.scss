@@ -1,0 +1,66 @@
+@mixin mask-icon($url) {
+  $mask: url($url);
+
+  mask-image: $mask;
+  -webkit-mask-image: $mask;
+  mask-repeat: no-repeat;
+  mask-position: center;
+}
+
+.sm-icon {
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center center;
+
+  &::before {
+    content: " ";
+  }
+}
+
+nav .sm-icon {
+  background-color: var(--color-text-dark-primary);
+}
+
+.sm-icon {
+  &.control {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    background-size: cover;
+    cursor: pointer;
+    background-color: var(--color-text-light-heading);
+  }
+
+  &.context-menu {
+    background-color: var(--color-text-light-1) !important;
+  }
+
+  &.actor-sheet {
+    background-color: var(--color-text-primary);
+  }
+
+  // Individual icons
+  &.curtains {
+    @include mask-icon("../assets/icons/theater-curtains.svg");
+  }
+
+  &.select-background {
+    @include mask-icon("../assets/icons/select-background.svg");
+  }
+
+  &.select-foreground {
+    @include mask-icon("../assets/icons/select-foreground.svg");
+  }
+
+  &.select-primary {
+    @include mask-icon("../assets/icons/select-primary.svg");
+  }
+
+  &.select-text {
+    @include mask-icon("../assets/icons/select-text.svg");
+  }
+
+  &.actor-sheet {
+    @include mask-icon("../assets/icons/actor-sheet.svg");
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": ["./src/module.ts"],
+  "out": "./docs",
+  "plugin": [
+    "typedoc-umlclass",
+    "typedoc-plugin-markdown",
+    "typedoc-github-wiki-theme"
+  ],
+  "umlClassDiagram": {}
+}

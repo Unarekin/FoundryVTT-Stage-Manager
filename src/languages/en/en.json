@@ -1,1 +1,18 @@
-{}
+{
+  "STAGEMANAGER": {
+    "IMAGE": "Image",
+    "LAYERS": {
+      "BACKGROUND": "Background",
+      "FOREGROUND": "Foreground",
+      "PRIMARY": "Primary",
+      "TEXT": "Text"
+    },
+    "SCOPES": {
+      "GLOBAL": "Global",
+      "SCENE": "Scene",
+      "TEMP": "Temporary",
+      "USER": "User"
+    },
+    "TEXT": "Text"
+  }
+}

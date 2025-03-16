@@ -11,6 +11,8 @@ import { promises as fs } from "fs";
 import { deepmerge } from "deepmerge-ts";
 import yoctoSpinner from "yocto-spinner";
 import { ESLint } from "eslint";
+import externalizeAllPackagesExcept from "esbuild-plugin-noexternal";
+import { compilePack } from "@foundryvtt/foundryvtt-cli";
 
 /** Paths */
 const SRC_PATH = "./src";
@@ -20,20 +22,29 @@ const STYLE_PATH = path.join(SRC_PATH, "styles");
 const TEMPLATE_PATH = path.join(SRC_PATH, "templates");
 
 // Import module.json for some config options
-import moduleConfig from "./module.json" assert { type: "json" };
+// import moduleConfig from "./module.json" with { type: "json" };
+const moduleConfig = JSON.parse(
+  (await fs.readFile("./module.json")).toString()
+);
+
+const packageConfig = JSON.parse(
+  (await fs.readFile("./package.json")).toString()
+);
 
 // Constants to be inserted into process.env during build
 const __DEV__ = process.env.NODE_ENV !== "production";
 const __MODULE_TITLE__ = moduleConfig.title;
 const __MODULE_ID__ = moduleConfig.id;
-const __MODULE_VERSION__ = moduleConfig.version;
+const __MODULE_VERSION__ = packageConfig.version;
 
 const start = Date.now();
 let spinner = null;
 
 if (!process.argv.slice(2).includes("--no-lint")) {
   const lintStart = Date.now();
-  spinner = yoctoSpinner({ text: "Linting..." }).start();
+  if (!process.env.GITHUB_ACTIONS)
+    spinner = yoctoSpinner({ text: "Linting..." }).start();
+  else console.log("Linting...");
 
   const linter = new ESLint({
     cache: true,
@@ -47,19 +58,26 @@ if (!process.argv.slice(2).includes("--no-lint")) {
 
   const hasErrors = lintResults.findIndex((result) => result.errorCount) !== -1;
   if (hasErrors) {
-    spinner.error("Linting errors found!");
+    if (spinner) spinner.error("Linting errors found!");
     formatter = await linter.loadFormatter("stylish");
     console.log(formatter.format(lintResults));
     process.exit();
   } else {
-    spinner.success(
-      `Linting passed in ${((Date.now() - start) / 1000).toFixed(2)}s`
-    );
+    if (spinner)
+      spinner.success(
+        `Linting passed in ${((Date.now() - start) / 1000).toFixed(2)}s`
+      );
+    else
+      console.log(
+        `Linting passed in ${((Date.now() - start) / 1000).toFixed(2)}s`
+      );
   }
 }
 
 const buildStart = Date.now();
-spinner = yoctoSpinner({ text: "Building..." }).start();
+if (!process.env.GITHUB_ACTIONS)
+  spinner = yoctoSpinner({ text: "Building..." }).start();
+else console.log("Building...");
 const jsonMergers = (
   await fs.readdir(LANG_PATH, { withFileTypes: true })
 ).reduce((prev, curr) => {
@@ -78,13 +96,11 @@ const jsonMergers = (
 // Create our copy plugins, ensuring that the paths we're copying from exist
 const STATIC_FILES = [
   { src: "./module.json", dest: "module.json" },
-  { src: "./system.json", dest: "system.json" },
   { src: "./LICENSE", dest: "LICENSE" },
   { src: "./README.md", dest: "README.md" },
-  { src: path.join(SRC_PATH, "fonts"), dest: "fonts" },
   { src: TEMPLATE_PATH, dest: "templates" },
-  { src: STYLE_PATH, dest: "styles" },
-  { src: path.join(SRC_PATH, "packs"), dest: "packs" },
+  { src: path.join(SRC_PATH, "assets"), dest: "assets" },
+  { src: path.join(SRC_PATH, "vendor"), dest: "vendor" },
 ];
 
 const copyPlugins = [];
@@ -101,12 +117,7 @@ for (const file of STATIC_FILES) {
       })
     );
   } catch (err) {
-    // ignore ENOENT, throw others
-    if (err.code === "ENOENT") {
-      console.warn(`Attempting to copy non-existent file: ${file.src}`);
-    } else {
-      throw err;
-    }
+    if (err.code !== "ENOENT") throw err;
   }
 }
 
@@ -126,22 +137,72 @@ const buildResults = await build({
     __MODULE_ID__: `"${__MODULE_ID__}"`,
     __MODULE_VERSION__: `"${__MODULE_VERSION__}"`,
   },
-  external: ["*.woff", "*.woff2", "*.otf", "*.ttf", "*.webp"],
+  external: [
+    "*.woff",
+    "*.woff2",
+    "*.otf",
+    "*.ttf",
+    "*.webp",
+    "*.svg",
+    "*.jpg",
+    "*.png",
+  ],
+  loader: {
+    ".frag": "text",
+    ".vert": "text",
+  },
   plugins: [
     nodeExternalsPlugin(),
     cleanPlugin({ patterns: "./dist/**" }),
     sassPlugin(),
     ...copyPlugins,
     ...jsonMergers,
+    externalizeAllPackagesExcept(["semver", "handlebars-group-by", "lunr"]),
+    // externalizeAllPackagesExcept(["rxjs", "mini-rx-store", "tslib", "mime", "@pixi/gif"])
   ],
 });
 
 if (buildResults.errors.length) {
-  spinner.error("Build failed!");
+  if (spinner) spinner.error("Build failed!");
+  else console.error("Build failed!");
   console.error(buildResults.errors);
 } else {
-  spinner.success(
-    `Build completed in ${((Date.now() - buildStart) / 1000).toFixed(2)}s`
-  );
-  if (buildResults.warnings.length) console.warn(buildResults.warnings);
+  if (spinner)
+    spinner.success(
+      `Build completed in ${((Date.now() - buildStart) / 1000).toFixed(2)}s`
+    );
+  else
+    console.log(
+      `Build completed in ${((Date.now() - buildStart) / 1000).toFixed(2)}s`
+    );
+  // if (buildResults.warnings.length) console.warn(buildResults.warnings);
+
+  const packStart = Date.now();
+  if (!process.env.GITHUB_ACTIONS)
+    spinner = yoctoSpinner({ text: "Packing compendia..." }).start();
+  else console.log("Packing compendia...");
+  try {
+    // Build compendia
+    const packs = await fs.readdir(path.join(SRC_PATH, "packs"));
+    for (const pack of packs) {
+      if (pack === ".gitattributes") continue;
+      await compilePack(
+        path.join(SRC_PATH, `packs`, pack),
+        path.join(OUT_PATH, "packs", pack),
+        { yaml: false }
+      );
+    }
+    if (spinner)
+      spinner.success(
+        `Compendia packed in ${((Date.now() - packStart) / 1000).toFixed(2)}s`
+      );
+    else
+      console.log(
+        `Compendia packed in ${((Date.now() - packStart) / 1000).toFixed(2)}s`
+      );
+  } catch (err) {
+    if (spinner) spinner.error("Build failed!");
+    else console.error("Build failed!");
+    console.error(err);
+  }
 }

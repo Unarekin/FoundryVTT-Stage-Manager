@@ -1,0 +1,49 @@
+{
+  "STAGEMANAGER": {
+    "ADDTEXT": {
+      "CONTENT": "Enter text to add:",
+      "TITLE": "Add Text"
+    },
+    "ADDTRIGGERDIALOG": {
+      "ARGS": {
+        "ACTIVEEFFECT": "activeEffect",
+        "ACTOR": "actor",
+        "ADD": "Add Argument",
+        "AUTO": "Automatic",
+        "COMBAT": "combat",
+        "COMBATANT": "combatant",
+        "MODKEYS": "modifierKeys",
+        "NAME": "Name",
+        "POS": "position",
+        "SCENE": "scene",
+        "STAGEOBJECT": "stageObject",
+        "STATUSEFFECT": "statusEffect",
+        "TIME": "time",
+        "TOKEN": "token",
+        "USER": "user",
+        "VALUE": "Value"
+      },
+      "ARGUMENTS": "Additional Arguments",
+      "TITLE": "Add New Trigger"
+    },
+    "CONFIRMREMOVETRIGGER": {
+      "MESSAGE": "Are you sure you want to remove {name}?\nThis cannot be undone.",
+      "TITLE": "Remove Trigger"
+    },
+    "TABS": {
+      "ACTOR": "Actor",
+      "BASICS": "Basics",
+      "EFFECTS": "Effects",
+      "FONT": "Font Style",
+      "IMAGE": "Image",
+      "PANEL": "Panel",
+      "SPEAKERS": "Speakers",
+      "TEXT": "Text",
+      "TRIGGERS": "Triggers",
+      "VIDEO": "Video"
+    },
+    "VIEWASUSER": {
+      "TITLE": "View As User"
+    }
+  }
+}

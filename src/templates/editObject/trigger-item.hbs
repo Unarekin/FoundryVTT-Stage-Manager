@@ -1,0 +1,31 @@
+<section
+  data-role="trigger-item"
+  data-id="{{trigger.id}}"
+  data-event="{{trigger.event}}"
+>
+  <input type="hidden" name="triggers" value="{{json trigger}}" />
+  <div class="flexrow">
+
+    <div data-action="editTrigger">{{localize eventLabel}}</div>
+    <div>{{actionLabel}}</div>
+    <div class="right-align">
+      <a
+        data-action="editTrigger"
+        data-id="{{trigger.id}}"
+        title="{{localize 'STAGEMANAGER.EDITDIALOG.EDIT' name=trigger.action}}"
+      >
+        <i class="fas fa-cogs"></i>
+      </a>
+      <a
+        data-action="removeTrigger"
+        data-id="{{trigger.id}}"
+        title="{{localize
+          'STAGEMANAGER.EDITDIALOG.DELETE'
+          name=trigger.action
+        }}"
+      >
+        <i class="fas fa-trash"></i>
+      </a>
+    </div>
+  </div>
+</section>

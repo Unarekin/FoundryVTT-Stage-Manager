@@ -1,0 +1,13 @@
+{
+  "STAGEMANAGER": {
+    "MENUS": {
+      "DELETEOBJECT": "Delete {name}",
+      "EDITOBJECT": "Edit {name}",
+      "LOCKOBJECT": "Lock {name}",
+      "UNLOCKOBJECT": "Unlock {name}",
+      "ACTORSHEET": "Actor Sheet",
+      "TOFRONT": "Bring to Front",
+      "TOBACK": "Send to Back"
+    }
+  }
+}

@@ -5,15 +5,16 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   eslint.configs.recommended,
-  ...tseslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
+  ...tseslint.configs.stylisticTypeChecked,
   {
-    files: ["src/**/*.ts", "src/**.ts"],
+    rules: {
+      "@typescript-eslint/no-namespace": "off",
+      "@typescript-eslint/no-explicit-any": "off",
+    },
     languageOptions: {
       parserOptions: {
-        project: "./tsconfig.json",
         projectService: true,
-        tsconfigRootDir: import.meta.dirname,
       },
     },
   }
