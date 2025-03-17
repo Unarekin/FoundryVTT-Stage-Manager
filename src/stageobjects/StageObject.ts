@@ -145,7 +145,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   // public resizing = false;
   // public synchronize = false;
   private _resizing = false;
-  private _synchronize = false;
+  private _synchronize = true;
   public get resizing() { return this._resizing; }
   public set resizing(val) {
     if (val !== this.resizing) {

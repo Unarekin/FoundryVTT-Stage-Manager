@@ -556,8 +556,11 @@ export class StageManager {
       StageManager.ScaleStageObjects();
     });
 
+    let persistTimeout: NodeJS.Timeout | undefined=undefined;
+
     Hooks.on(CUSTOM_HOOKS.SYNC_END, () => {
-      void StageManager.PersistStageObjects();
+      if (persistTimeout) clearTimeout(persistTimeout);
+      persistTimeout = setTimeout(() => { void StageManager.PersistStageObjects(); }, 250);
     });
 
     Hooks.on(CUSTOM_HOOKS.REMOTE_ADDED, (item: SerializedStageObject) => {
@@ -579,8 +582,9 @@ export class StageManager {
 
     Hooks.on(CUSTOM_HOOKS.REMOTE_REMOVED, (id: string) => {
       const obj = StageManager.StageObjects.get(id);
-      if (!obj) throw new InvalidStageObjectError(id);
-      obj.destroy();
+      if (obj instanceof StageObject) obj.destroy();
+      // if (!(obj instanceof StageObject)) logWarn(localize("STAGEMANAGER.WARNINGS.REMOVEUNKNOWNOBJECT", {id}));
+      // else obj.destroy();
     });
   }
 

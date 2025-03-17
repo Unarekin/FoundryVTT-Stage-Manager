@@ -1,6 +1,6 @@
 {
   "name": "foundryvtt-stage-manager",
-  "version": "1.1.0-alpha1",
+  "version": "1.1.0-alpha2",
   "description": "A powerful, multi-purpose module for Foundry VTT that can handle visual novel style dialogues as well as placing GUI elements on the screen.",
   "main": "dist/module.js",
   "scripts": {
