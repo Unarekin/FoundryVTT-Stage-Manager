@@ -3,12 +3,11 @@
   "entryPoints": ["src/**/*.ts"],
   "out": "docs",
   "cleanOutputDir": true,
+  "entryPointStrategy": "expand",
   "plugin": [
     "typedoc-github-theme",
     "typedoc-plugin-rename-defaults",
-    "typedoc-plugin-merge-modules",
     "typedoc-plugin-version-header",
   ],
-  "mergeModulesRenameDefaults": true,
   "useTsLinkResolution": true
 }
