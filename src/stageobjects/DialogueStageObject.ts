@@ -136,8 +136,6 @@ export class DialogueStageObject extends StageObject<PIXI.Container> {
     try {
       super.deserialize(serialized);
 
-      log("Deserializing:", serialized);
-
       if (typeof serialized.maxSpeakerHeight !== "undefined") this.maxSpeakerHeight = serialized.maxSpeakerHeight;
       if (typeof serialized.maxSpeakerWidth !== "undefined") this.maxSpeakerWidth = serialized.maxSpeakerWidth;
       if (typeof serialized.speakerSlotTop !== "undefined") this.speakerSlotTop = serialized.speakerSlotTop;
