@@ -28,10 +28,8 @@ export class SynchronizationManager {
       const message: SynchronizationMessage = {
         timestamp: Date.now(),
         removed: OBJECTS_REMOVED.filter(id => {
-          const obj = StageManager.StageObjects.get(id);
-          if (!(obj instanceof StageObject)) return false;
-          else if (!(game.user instanceof User) || !obj.canUserModify(game.user, "delete")) return false;
-          return obj.synchronize;
+          if (!(game.user instanceof User) || !StageManager.canDeleteStageObject(game.user.id, id)) return false;
+          else return true;
         }),
         added: OBJECTS_ADDED.reduce((prev, curr) => {
           const obj = StageManager.StageObjects.get(curr);
