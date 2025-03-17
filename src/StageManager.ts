@@ -157,8 +157,14 @@ export class StageManager {
     try {
       if (!StageManager.canAddStageObjects(game.user?.id ?? "")) throw new PermissionDeniedError();
       const obj = new ImageStageObject(path, name);
-      obj.x = typeof x === "number" ? x : window.innerWidth / 2;
-      obj.y = typeof y === "number" ? y : window.innerHeight / 2;
+      if (typeof x === "number") obj.x = x;
+      if (typeof y === "number") obj.y = y;
+      if (!obj.texture.valid && (typeof x !== "number" || typeof y !== "number")) {
+        obj.texture.baseTexture.once("loaded", () => {
+          if (typeof x !== "number") obj.x = (window.innerWidth - obj.width) / 2;
+          if (typeof y !== "number") obj.y = (window.innerHeight - obj.height) / 2;
+        });
+      }
 
       StageManager.addStageObject(obj, layer);
       return obj;
@@ -191,8 +197,8 @@ export class StageManager {
     try {
       if (!StageManager.canAddStageObjects(game.user?.id ?? "")) throw new PermissionDeniedError();
       const obj = new TextStageObject(text, style);
-      obj.x = typeof x === "number" ? x : window.innerWidth / 2;
-      obj.y = typeof y === "number" ? y : window.innerHeight / 2;
+      obj.x = typeof x === "number" ? x : (window.innerWidth - obj.width) / 2;
+      obj.y = typeof y === "number" ? y : (window.innerHeight - obj.height) / 2;
       StageManager.addStageObject(obj, layer);
       return obj;
     } catch (err) {
@@ -204,8 +210,14 @@ export class StageManager {
     try {
       if (!StageManager.canAddStageObjects(game.user?.id ?? "")) throw new PermissionDeniedError();
       const obj = new ActorStageObject(actor);
-      obj.x = typeof x === "number" ? x : window.innerWidth / 2;
-      obj.y = typeof y === "number" ? y : window.innerHeight / 2;
+      if (typeof x === "number") obj.x = x;
+      if (typeof y === "number") obj.y = y;
+      if (!obj.texture.valid && (typeof x !== "number" || typeof y !== "number")) {
+        obj.texture.baseTexture.once("loaded", () => {
+          if (typeof x !== "number") obj.x = (window.innerWidth - obj.width) / 2;
+          if (typeof y !== "number") obj.y = (window.innerHeight - obj.height) / 2;
+        });
+      }
       StageManager.addStageObject(obj, layer);
       return obj;
     } catch (err) {
