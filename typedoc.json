@@ -1,11 +1,14 @@
 {
   "$schema": "https://typedoc.org/schema.json",
-  "entryPoints": ["./src/module.ts"],
-  "out": "./docs",
+  "entryPoints": ["src/**/*.ts"],
+  "out": "docs",
+  "cleanOutputDir": true,
   "plugin": [
-    "typedoc-umlclass",
-    "typedoc-plugin-markdown",
-    "typedoc-github-wiki-theme"
+    "typedoc-github-theme",
+    "typedoc-plugin-rename-defaults",
+    "typedoc-plugin-merge-modules",
+    "typedoc-plugin-version-header",
   ],
-  "umlClassDiagram": {}
+  "mergeModulesRenameDefaults": true,
+  "useTsLinkResolution": true
 }
