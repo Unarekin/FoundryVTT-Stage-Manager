@@ -130,8 +130,10 @@ export class TextStageObject extends StageObject<PIXI.HTMLText> {
     this.text = prepareText(serialized.text);
     this.style = serialized.style as unknown as PIXI.HTMLTextStyle;
     this.scale.x = this.scale.y = 1;
-    if (typeof serialized.anchor.x !== "undefined") this.anchor.x = serialized.anchor.x;
-    if (typeof serialized.anchor.y !== "undefined") this.anchor.y = serialized.anchor.y;
+    if (typeof serialized.anchor !== "undefined") {
+      if (typeof serialized.anchor.x !== "undefined") this.anchor.x = serialized.anchor.x;
+      if (typeof serialized.anchor.y !== "undefined") this.anchor.y = serialized.anchor.y;
+    }
   }
 
   public static deserialize(serialized: SerializedTextStageObject) {

@@ -69,10 +69,6 @@ export interface SerializedPanelStageObject extends SerializedStageObject {
     bottom: number;
   }
   src: string;
-  anchor: {
-    x: number;
-    y: number;
-  };
 }
 
 export interface SerializedDialogueStageObject extends SerializedStageObject {
