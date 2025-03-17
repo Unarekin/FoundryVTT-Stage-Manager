@@ -465,20 +465,27 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
   }
 
   protected _onClose(): void {
+    delete this.stageObject.apps[this.appId];
+    if (this.ghost) this.ghost.destroy();
+
     StageManager.HideVisualBounds();
 
-    this.stageObject.synchronize = this.wasSynced;
+    if (!this.stageObject.destroyed) {
+      this.stageObject.synchronize = this.wasSynced;
 
-    if (this.wasSubmitted) {
-      if (this.submittedObject) this.stageObject.deserialize(this.submittedObject);
-      this.#resolve(this.submittedObject);
+      if (this.wasSubmitted) {
+        if (this.submittedObject) this.stageObject.deserialize(this.submittedObject);
+        this.#resolve(this.submittedObject);
+      } else {
+        const reverted = this.onRevert();
+        this.stageObject.deserialize(reverted);
+        this.#resolve();
+      }
+      this.stageObject.displayObject.removeFromParent();
     } else {
-      const reverted = this.onRevert();
-      this.stageObject.deserialize(reverted);
       this.#resolve();
     }
-    this.stageObject.displayObject.removeFromParent();
-    if (this.ghost) this.ghost.destroy();
+    
   }
 
   protected abstract getTabs(): Record<string, Tab>;
@@ -672,8 +679,12 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
     return ghost;
   }
 
+  public readonly appId: number;
+
   constructor(public stageObject: t, options?: DeepPartial<StageObjectApplicationConfiguration>) {
     super(options ?? {});
+    this.appId = parseInt(this.id.substring(4));
+    stageObject.apps[this.appId] = this;
     this.tabGroups.primary = "basics";
     this.originalObject = stageObject.serialize() as v;
     this.wasSynced = stageObject.synchronize;

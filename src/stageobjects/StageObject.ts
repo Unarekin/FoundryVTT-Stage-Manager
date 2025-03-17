@@ -12,6 +12,7 @@ import { log, logError } from "../logging";
 import { getTriggerActionType } from "../applications/functions";
 import { deserializeEffect, serializeEffect } from '../lib/effects';
 import { CustomFilter } from "../effects/CustomFilter";
+import { StageObjectApplication } from "applications";
 
 
 const TriggerActions = Object.fromEntries(Object.values(tempTriggers).map(val => [val.type, val]));
@@ -364,6 +365,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     }
   }
 
+  public readonly apps: Record<number, StageObjectApplication>={};
 
   constructor(private _displayObject: t, name?: string) {
     if (!canvas?.app?.renderer) throw new CanvasNotInitializedError();
@@ -899,6 +901,10 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
   public destroy() {
     if (!this.destroyed) {
+      const apps = Object.values(this.apps);
+      for (const app of apps)
+        void app.close({})
+
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       gsap.killTweensOf(this.displayObject);
 

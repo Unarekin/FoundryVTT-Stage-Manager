@@ -252,10 +252,14 @@ export class StageManager {
           app.render(true).catch(reject);
           app.closed
             .then(data => {
-              if (data?.layer && StageManager.layers[data.layer]) StageManager.layers[data.layer].addChild(obj.displayObject);
-              else if (layer && StageManager.layers[layer]) StageManager.layers[layer].addChild(obj.displayObject);
-              OpenApplications.delete(obj);
-              resolve(data);
+              if (!obj.destroyed) {
+                if (data?.layer && StageManager.layers[data.layer]) StageManager.layers[data.layer].addChild(obj.displayObject);
+                else if (layer && StageManager.layers[layer]) StageManager.layers[layer].addChild(obj.displayObject);
+                OpenApplications.delete(obj);
+                resolve(data);
+              } else {
+                resolve(undefined);
+              }
             })
             .catch((err: Error) => {
               logError(err);
@@ -556,7 +560,7 @@ export class StageManager {
       StageManager.ScaleStageObjects();
     });
 
-    let persistTimeout: NodeJS.Timeout | undefined=undefined;
+    let persistTimeout: NodeJS.Timeout | undefined = undefined;
 
     Hooks.on(CUSTOM_HOOKS.SYNC_END, () => {
       if (persistTimeout) clearTimeout(persistTimeout);
