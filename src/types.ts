@@ -42,6 +42,10 @@ export interface SerializedImageStageObject extends SerializedStageObject {
   src: string;
   // playing: boolean;
   loop: boolean;
+  anchor: {
+    x: number;
+    y: number;
+  };
 }
 
 export interface SerializedActorStageObject extends SerializedImageStageObject {
@@ -51,6 +55,10 @@ export interface SerializedActorStageObject extends SerializedImageStageObject {
 export interface SerializedTextStageObject extends SerializedStageObject {
   text: string;
   style: Record<string, unknown>;
+  anchor: {
+    x: number;
+    y: number;
+  };
 }
 
 export interface SerializedPanelStageObject extends SerializedStageObject {
@@ -61,6 +69,10 @@ export interface SerializedPanelStageObject extends SerializedStageObject {
     bottom: number;
   }
   src: string;
+  anchor: {
+    x: number;
+    y: number;
+  };
 }
 
 export interface SerializedDialogueStageObject extends SerializedStageObject {

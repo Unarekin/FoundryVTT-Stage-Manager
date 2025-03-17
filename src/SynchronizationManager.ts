@@ -1,122 +1,93 @@
-import { SocketManager } from './SocketManager';
-import { StageManager } from './StageManager';
-import { SerializedStageObject } from './types';
+import { StageObject } from "stageobjects";
 import { CUSTOM_HOOKS } from "./hooks";
-import { CanvasNotInitializedError, InvalidStageObjectError } from './errors';
-import { coerceStageObject } from './coercion';
-import { SynchronizationMessage } from "./types";
-import { StageObject } from './stageobjects';
-import { logError } from './logging';
+import { SerializedStageObject, SynchronizationMessage } from './types';
+import { StageManager } from "StageManager";
+import { SocketManager } from "SocketManager";
+import { logError } from "logging";
 
-let isSynchronizing = false;
+let OBJECTS_ADDED: string[] = [];
+let OBJECTS_REMOVED: string[] = [];
 
-const ADDITIONS: StageObject[] = [];
-const REMOVALS: StageObject[] = [];
+let IS_SYNCHRONIZING = false;
 
-/**
- * A class to handle the synchronization of {@link StageObject}s between connected clients.
- */
 export class SynchronizationManager {
-  public static get isSynchronizing() { return isSynchronizing; }
 
-  public static SuppressSynchronization = false;
-
-  public static SynchronizationReceived(objects: SerializedStageObject[]) {
-    // Many updates, left side.  Handle it.
-    for (const serialized of objects) {
-      const obj = coerceStageObject(serialized);
-      if (!obj) {
-        const err = new InvalidStageObjectError(obj);
-        logError(err);
-      } else {
-        Hooks.callAll(CUSTOM_HOOKS.SYNC_OBJECT, serialized, obj);
-        obj.deserialize(serialized);
-      }
-    }
-  }
-
-  public static onObjectAdded(this: void, stageObject: StageObject) {
-    if (!SynchronizationManager.SuppressSynchronization)
-      ADDITIONS.push(stageObject);
-  }
-
-  public static onObjectRemoved(this: void, stageObject: StageObject) {
-    if (!SynchronizationManager.SuppressSynchronization)
-      REMOVALS.push(stageObject);
-  }
+  public static get isSynchronizing() { return IS_SYNCHRONIZING; }
 
 
+  /**
+   * Handles synchronization logic
+   */
   public static async Synchronize(this: void) {
-    if (SynchronizationManager.SuppressSynchronization) return;
-    // Early exit to avoid clogging the pipes
-    if (SynchronizationManager.isSynchronizing) return;
+    try {
 
-    isSynchronizing = true;
+      // Only synchronize if not already sending a synchronization message
+      // if (SynchronizationManager.isSynchronizing) return;
+      IS_SYNCHRONIZING = true;
 
-    const userId = game?.user?.id ?? "";
+      const message: SynchronizationMessage = {
+        timestamp: Date.now(),
+        removed: OBJECTS_REMOVED.filter(id => {
+          const obj = StageManager.StageObjects.get(id);
+          if (!(obj instanceof StageObject)) return false;
+          else if (!(game.user instanceof User) || !obj.canUserModify(game.user, "delete")) return false;
+          return obj.synchronize;
+        }),
+        added: OBJECTS_ADDED.reduce((prev, curr) => {
+          const obj = StageManager.StageObjects.get(curr);
+          if (!(obj instanceof StageObject) || !obj.synchronize) return prev;
+          else if (!(game.user instanceof User) || !obj.canUserModify(game.user, "create")) return prev;
+          else return [...prev, obj.serialize()];
+        }, [] as SerializedStageObject[]),
+        updated: StageManager.StageObjects.dirty.reduce((prev, curr) => {
+          if (OBJECTS_ADDED.includes(curr.id) || OBJECTS_REMOVED.includes(curr.id) || !curr.synchronize) return prev;
+          else if (!(game.user instanceof User) || !curr.canUserModify(game.user, "update")) return prev;
+          else return [...prev, curr.serialize()];
+        }, [] as SerializedStageObject[])
+      }
 
-    const message: SynchronizationMessage = {
-      timestamp: Date.now(),
-      updated: StageManager.StageObjects.dirty.reduce((prev, curr) => {
-        if (!StageManager.canModifyStageObject(userId, curr.id)) return prev;
-        if (!curr.synchronize) return prev;
-        return [...prev, curr.serialize()];
-      }, [] as SerializedStageObject[]),
-      added: ADDITIONS.reduce((prev, curr, i, arr) => {
-        // Serialize, and remove duplicates
-        // Reversed to keep the most recent element
-        const index = arr.reverse().findIndex(item => item.id === curr.id);
-        if (index !== i) return prev;
-        if (!StageManager.canAddStageObjects(userId)) return prev;
-        return [...prev, curr.serialize()];
-      }, [] as SerializedStageObject[]),
-      removed: REMOVALS.reduce((prev, curr) => {
-        // Serialize, and remove duplicates
-        // Reverse to keep the most recent elements
-        if (prev.includes(curr.id)) return prev;
-        if (!StageManager.canDeleteStageObject(userId, curr.id)) return prev;
-        return [...prev, curr.id]
-      }, [] as string[])
-    };
 
-    // Remove from temporary buffers
-    ADDITIONS.splice(0, ADDITIONS.length);
-    REMOVALS.splice(0, REMOVALS.length);
 
-    if (message.updated.length || message.added.length || message.removed.length) {
-      Hooks.callAll(CUSTOM_HOOKS.SYNC_START, message);
-      await SocketManager.sendSynchronizationMessage(message);
-      Hooks.callAll(CUSTOM_HOOKS.SYNC_END, message);
+
+      if (message.added.length || message.removed.length || message.updated.length) {
+        // Remove from buffers
+        if (message.added.length) OBJECTS_ADDED = OBJECTS_ADDED.filter(id => !message.added.find(obj => obj.id === id));
+        if (message.removed.length) OBJECTS_REMOVED = OBJECTS_REMOVED.filter(id => !message.removed.includes(id));
+        if (message.updated.length) StageManager.StageObjects.dirty.forEach(obj => { obj.dirty = false; });
+
+
+        Hooks.callAll(CUSTOM_HOOKS.SYNC_START, message);
+        await SocketManager.sendSynchronizationMessage(message);
+        Hooks.callAll(CUSTOM_HOOKS.SYNC_END, message);
+      }
+
+    } catch (err) {
+      logError(err as Error);
+    } finally {
+      IS_SYNCHRONIZING = false;
     }
 
-    message.updated.forEach(item => {
-      const obj = coerceStageObject(item.id);
-      if (obj) obj.dirty = false;
-    });
 
-    isSynchronizing = false;
   }
-
-
-  // public static readonly Ticker = new PIXI.Ticker();
 
 
   public static init() {
-    // Empty
-    if (!canvas?.app?.renderer) throw new CanvasNotInitializedError();
-    if (ticker) ticker.destroy();
-    ticker = new PIXI.Ticker()
-    ticker.add(SynchronizationManager.Synchronize);
+    // Set up a ticker to handle our synchronization call
+    const ticker = new PIXI.Ticker();
+    ticker.add(() => {
+      void SynchronizationManager.Synchronize();
+    });
     ticker.start();
 
-    // canvas.app.renderer.addListener("postrender", () => { void SynchronizationManager.Synchronize(); });
+    Hooks.on(CUSTOM_HOOKS.OBJECT_ADDED, (obj: StageObject) => {
+      OBJECTS_ADDED.push(obj.id);
+    });
 
-    // this.Ticker.add(() => { void SynchronizationManager.Synchronize(); });
-    // this.Ticker.start();
-    Hooks.on(CUSTOM_HOOKS.OBJECT_ADDED, SynchronizationManager.onObjectAdded);
-    Hooks.on(CUSTOM_HOOKS.OBJECT_REMOVED, SynchronizationManager.onObjectRemoved);
-
+    Hooks.on(CUSTOM_HOOKS.OBJECT_REMOVED, (obj: StageObject) => {
+      OBJECTS_REMOVED.push(obj.id);
+    });
   }
+
 }
 
-let ticker: PIXI.Ticker | null = null;
+

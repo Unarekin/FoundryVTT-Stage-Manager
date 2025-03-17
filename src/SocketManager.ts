@@ -2,10 +2,10 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 import { SynchronizationMessage } from "./types";
 import { StageManager } from "./StageManager";
-import { InvalidUserError, PermissionDeniedError } from "./errors";
+import { CanvasNotInitializedError, InvalidUserError, PermissionDeniedError } from "./errors";
 import { CUSTOM_HOOKS } from "./hooks";
 import { setUserObjects } from "./Settings";
-import { log } from "./logging";
+import { log, logError } from "logging";
 
 
 let socket: any;
@@ -13,15 +13,15 @@ let socket: any;
 export class SocketManager {
 
   public static async sendSynchronizationMessage(message: SynchronizationMessage) {
-    // log("Sending synchronization message:", message);
-    const userId = game?.user?.id ?? "";
-    if (!userId) throw new PermissionDeniedError();
-    // Make sure we aren't trying to add/remove/modify stage objects we cannot
-    if (message.added.length && !StageManager.canAddStageObjects(userId)) throw new PermissionDeniedError();
-    for (const item of message.removed) if (!StageManager.canDeleteStageObject(userId, item)) throw new PermissionDeniedError();
-    for (const item of message.updated) if (!StageManager.canModifyStageObject(userId, item.id)) throw new PermissionDeniedError();
-
-    await socket.executeForOthers("syncStageObjects", message);
+    try {
+      // log("Sending synchronization message:", message);
+      if (!game?.user || !game?.users) throw new CanvasNotInitializedError();
+      const userId = game?.user?.id ?? "";
+      if (!userId) throw new PermissionDeniedError();
+      await socket.executeForOthers("syncStageObjects", message);
+    } catch (err) {
+      logError(err as Error);
+    }
   }
 
 
@@ -29,7 +29,7 @@ export class SocketManager {
     const user = game.user;
     if (!(user instanceof User)) throw new InvalidUserError(user);
     const objects = StageManager.StageObjects.contents.filter(item => item.scope === "user" && (item.scopeOwners.includes(user.id) || item.scopeOwners.includes(user.uuid)));
-    log("Persisting user objects:", user.name, objects.map(obj => obj.serialize()));
+    // log("Persisting user objects:", user.name, objects.map(obj => obj.serialize()));
     await setUserObjects(user, objects);
   }
 
@@ -39,6 +39,7 @@ export class SocketManager {
 
 
   public static onSynchronizationMessageReceived(this: void, message: SynchronizationMessage) {
+    log("Synchronization message received:", message);
     Hooks.callAll(CUSTOM_HOOKS.SYNC_START, message);
     for (const item of message.added) Hooks.callAll(CUSTOM_HOOKS.REMOTE_ADDED, item);
     for (const id of message.removed) Hooks.callAll(CUSTOM_HOOKS.REMOTE_REMOVED, id);
