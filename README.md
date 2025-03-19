@@ -20,7 +20,7 @@ At its heart, Stage Manager is a module about putting things on the screen in yo
 ## Installation
 To install this module, copoy and paste the following manifest URL to the module installation window in Foundry:
 ```
-https://github.com/Unarekin/FoundryVTT-Stage-Manager/releases/latest/download/module.json
+https://github.com/Unarekin/FoundryVTT-Stage-Manager/releases/download/1.0.0-alpha2/module.json
 ```
 
 
