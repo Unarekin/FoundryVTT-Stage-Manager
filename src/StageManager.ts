@@ -1,23 +1,24 @@
 import { ScreenSpaceCanvasGroup } from './ScreenSpaceCanvasGroup';
-import { ActorStageObject, ImageStageObject, PanelStageObject, StageObject, TextStageObject, DialogueStageObject } from './stageobjects';
+import { ActorStageObject, ImageStageObject, PanelStageObject, StageObject, TextStageObject, DialogueStageObject, ResourceStageObject } from './stageobjects';
 import { PartialWithRequired, SerializedStageObject, StageLayer } from './types';
-import { coerceStageObject, coerceUser } from './coercion';
+import { coerceActor, coerceStageObject, coerceUser } from './coercion';
 import { StageObjects } from './StageObjectCollection';
-import { CannotDeserializeError, CanvasNotInitializedError, InvalidStageObjectError, InvalidUserError, PermissionDeniedError } from './errors';
+import { CannotDeserializeError, CanvasNotInitializedError, InvalidActorError, InvalidStageObjectError, InvalidUserError, PermissionDeniedError } from './errors';
 import * as stageObjectTypes from "./stageobjects";
 import { addSceneObject, addUserObject, getGlobalObjects, getSceneObjects, getSetting, getUserObjects, removeSceneObject, removeUserObject, setGlobalObjects, setSceneObjects, setSetting, setUserObjects } from './Settings';
 import { CUSTOM_HOOKS } from './hooks';
 import { log, logError } from './logging';
-import { ActorStageObjectApplication, ImageStageObjectApplication, DialogueStageObjectApplication, PanelStageObjectApplication, StageObjectApplication, TextStageObjectApplication } from './applications';
+import { ActorStageObjectApplication, ImageStageObjectApplication, DialogueStageObjectApplication, PanelStageObjectApplication, StageObjectApplication, TextStageObjectApplication, ResourceStageObjectApplication } from './applications';
 import { SynchronizationManager } from './SynchronizationManager';
 import { Conversation } from "./conversation";
 
 const ApplicationHash: Record<string, typeof StageObjectApplication> = {
-  "image": ImageStageObjectApplication as typeof StageObjectApplication,
-  "actor": ActorStageObjectApplication as unknown as typeof StageObjectApplication,
-  "text": TextStageObjectApplication as unknown as typeof StageObjectApplication,
-  "panel": PanelStageObjectApplication as unknown as typeof StageObjectApplication,
-  dialogue: DialogueStageObjectApplication as unknown as typeof StageObjectApplication
+  image: ImageStageObjectApplication as typeof StageObjectApplication,
+  actor: ActorStageObjectApplication as unknown as typeof StageObjectApplication,
+  text: TextStageObjectApplication as unknown as typeof StageObjectApplication,
+  panel: PanelStageObjectApplication as unknown as typeof StageObjectApplication,
+  dialogue: DialogueStageObjectApplication as unknown as typeof StageObjectApplication,
+  resource: ResourceStageObjectApplication as unknown as typeof StageObjectApplication
 }
 
 const OpenApplications = new WeakMap<StageObject, StageObjectApplication>();
@@ -144,6 +145,41 @@ export class StageManager {
     }
   }
 
+
+
+
+  /**
+   * 
+   */
+  public static addResourceBar(actor: Actor | string, path: string, bg: PIXI.ColorSource | PIXI.TextureSource, fg: PIXI.ColorSource | PIXI.TextureSource, x?: number, y?: number, layer: StageLayer = "primary"): ResourceStageObject | undefined {
+    try {
+
+      if (!StageManager.canAddStageObjects(game.user?.id ?? "")) throw new PermissionDeniedError();
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      const actorObj = coerceActor(actor as any);
+      if (!(actorObj instanceof Actor)) throw new InvalidActorError(actor);
+      const obj = new ResourceStageObject(actorObj, path, bg, fg);
+      if (typeof x === "number") obj.x = x;
+      if (typeof y === "number") obj.y = y;
+      if (typeof x !== "number" || typeof y !== "number") {
+        if (!obj.bgObject.texture.valid) {
+          obj.bgObject.texture.baseTexture.once("loaded", () => {
+            if (typeof x !== "number") obj.x = (window.innerWidth - obj.width) / 2;
+            if (typeof y !== "number") obj.y = (window.innerHeight - obj.height) / 2;
+          });
+        } else {
+          if (typeof x !== "number") obj.x = (window.innerWidth - obj.width) / 2;
+          if (typeof y !== "number") obj.y = (window.innerHeight - obj.height) / 2;
+        }
+      }
+      StageManager.addStageObject(obj, layer);
+      return obj;
+    } catch (err) {
+      logError(err as Error);
+    }
+  }
+
+
   /**
    * Adds an {@link ImageStageObject} to the Stage.
    * @param {string} path - Path to the image to use as a texture
@@ -244,45 +280,49 @@ export class StageManager {
   public static async EditStageObject(name: string): Promise<SerializedStageObject | undefined>
   public static async EditStageObject(stageObject: StageObject): Promise<SerializedStageObject | undefined>
   public static async EditStageObject(arg: unknown): Promise<SerializedStageObject | undefined> {
-    const obj = coerceStageObject(arg);
-    if (!(obj instanceof StageObject)) throw new InvalidStageObjectError(arg);
-    if (OpenApplications.has(obj)) {
-      const app = OpenApplications.get(obj);
-      if (!app) throw new InvalidStageObjectError(arg);
-      app.bringToFront();
-    } else {
-      return new Promise<SerializedStageObject | undefined>((resolve, reject) => {
-        try {
-          const appClass = ApplicationHash[obj.type];
-          if (!appClass) throw new InvalidStageObjectError(obj.type);
+    try {
+      const obj = coerceStageObject(arg);
+      if (!(obj instanceof StageObject)) throw new InvalidStageObjectError(arg);
+      if (OpenApplications.has(obj)) {
+        const app = OpenApplications.get(obj);
+        if (!app) throw new InvalidStageObjectError(arg);
+        app.bringToFront();
+      } else {
+        return new Promise<SerializedStageObject | undefined>((resolve, reject) => {
+          try {
+            const appClass = ApplicationHash[obj.type];
+            if (!appClass) throw new InvalidStageObjectError(obj.type);
 
-          const layer = obj.layer;
+            const layer = obj.layer;
 
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-          const app = new (appClass as any)(obj, { layer: obj.layer ?? "primary" }) as StageObjectApplication;
-          OpenApplications.set(obj, app);
-          app.render(true).catch(reject);
-          app.closed
-            .then(data => {
-              if (!obj.destroyed) {
-                if (data?.layer && StageManager.layers[data.layer]) StageManager.layers[data.layer].addChild(obj.displayObject);
-                else if (layer && StageManager.layers[layer]) StageManager.layers[layer].addChild(obj.displayObject);
-                OpenApplications.delete(obj);
-                resolve(data);
-              } else {
-                resolve(undefined);
-              }
-            })
-            .catch((err: Error) => {
-              logError(err);
-              reject(err);
-              if (layer && StageManager.layers[layer]) StageManager.layers[layer].addChild(obj.displayObject);
-            })
-        } catch (err) {
-          OpenApplications.delete(obj);
-          reject(err as Error);
-        }
-      });
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+            const app = new (appClass as any)(obj, { layer: obj.layer ?? "primary" }) as StageObjectApplication;
+            OpenApplications.set(obj, app);
+            app.render(true).catch(reject);
+            app.closed
+              .then(data => {
+                if (!obj.destroyed) {
+                  if (data?.layer && StageManager.layers[data.layer]) StageManager.layers[data.layer].addChild(obj.displayObject);
+                  else if (layer && StageManager.layers[layer]) StageManager.layers[layer].addChild(obj.displayObject);
+                  OpenApplications.delete(obj);
+                  resolve(data);
+                } else {
+                  resolve(undefined);
+                }
+              })
+              .catch((err: Error) => {
+                logError(err);
+                reject(err);
+                if (layer && StageManager.layers[layer]) StageManager.layers[layer].addChild(obj.displayObject);
+              })
+          } catch (err) {
+            OpenApplications.delete(obj);
+            reject(err as Error);
+          }
+        });
+      }
+    } catch (err) {
+      logError(err as Error);
     }
   }
 
@@ -492,7 +532,6 @@ export class StageManager {
       logError(err as Error);
     }
   }
-
   /**
    * Returns a list of user IDs that are considered to have ownership over a given {@link StageObject}
    * @param {string} objId - id of the {@link StageObject} for which to get owners

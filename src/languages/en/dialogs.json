@@ -37,10 +37,13 @@
       "FONT": "Font Style",
       "IMAGE": "Image",
       "PANEL": "Panel",
+      "RESOURCE": "Resource",
       "SPEAKERS": "Speakers",
       "TEXT": "Text",
       "TRIGGERS": "Triggers",
-      "VIDEO": "Video"
+      "VIDEO": "Video",
+      "FOREGROUND": "Foreground",
+      "BACKGROUND": "Background"
     },
     "VIEWASUSER": {
       "TITLE": "View As User"

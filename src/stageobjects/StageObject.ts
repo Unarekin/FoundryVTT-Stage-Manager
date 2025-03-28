@@ -513,9 +513,6 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   //   logTexture(this.renderTexture);
   // }
 
-  // eslint-disable-next-line no-unused-private-class-members
-  #revokeProxy: (() => void) | null = null;
-
   #ignoredProperties = ["worldAlpha", "uvs", "dirty", "indices", "vertexDirty"];
 
   private proxyDisplayObject(val: t): t {
@@ -523,7 +520,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     const temp = this;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     (val as any).stageObject = this;
-    const { proxy, revoke } = deepProxy<t>(val, {
+    const { proxy } = deepProxy<t>(val, {
       set(target, prop, value) {
         if (typeof prop === "string" && !prop.startsWith("_") && !temp.#ignoredProperties.includes(prop) && temp[prop as keyof typeof temp] !== value) {
           temp.dirty = true;
@@ -532,7 +529,6 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
         return Reflect.set(target, prop, value);
       }
     });
-    this.#revokeProxy = revoke;
     return proxy
   }
 

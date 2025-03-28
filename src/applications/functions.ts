@@ -1,7 +1,7 @@
 import { TriggerAction } from "../triggeractions";
 import { FontSettings, SerializedStageObject, SerializedTrigger } from '../types';
 import * as tempTriggerActions from "../triggeractions";
-import { InvalidTriggerError, UnknownDocumentTypeError } from "../errors";
+import { InvalidActorTypeError, InvalidTriggerError, UnknownDocumentTypeError } from "../errors";
 import { log } from "../logging";
 // import { EditTriggerDialogV2 } from "./EditTriggerDialogV2";
 import { StageObject } from "../stageobjects";
@@ -283,6 +283,19 @@ export function getActorContext() {
   }
 }
 
+export function getActorTrackableResources(actorType?: string): string[] {
+  if (actorType) {
+    if (!Actor.TYPES.includes(actorType)) throw new InvalidActorTypeError(actorType);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    return (CONFIG.Actor.trackableAttributes[actorType] as any)?.bar as string[] ?? [];
+  } else {
+    return Object.values(CONFIG.Actor.trackableAttributes)
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    .reduce((prev, curr) => [...prev, ...((curr as any)?.bar as string[] ?? [])], [] as string[])
+    .filter((item, i, arr) => arr.indexOf(item) === i);
+
+  }
+}
 
 export function getFontContext(stageObject: SerializedStageObject) {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unused-vars
@@ -310,6 +323,25 @@ export function getScenesContext(obj: StageObject): { label: string, value: stri
 export function getUsersContext(obj: StageObject): { label: string, value: string, selected: boolean }[] {
   if (!game.users) return [];
   return game.users.map((user: User) => ({ label: user.name, value: user.uuid, selected: obj.scope === "user" && obj.scopeOwners.includes(user.uuid) }));
+}
+
+export function getActors(selected?: string): SectionSpec[] {
+  const docs = getDocuments("Actor", selected);
+  return [
+    ...docs,
+    ...(canvas?.scene ? canvas.scene.tokens.reduce((prev, curr) => {
+      if (!curr.actor) return prev;
+      return [
+        ...prev,
+        {
+          uuid: curr.actor.uuid,
+          name: curr.name,
+          pack: canvas.scene?.name ?? "",
+          selected: curr.actor.uuid === selected
+        }
+      ];
+    }, [] as SectionSpec[]) : [])
+  ];
 }
 
 export function getDocuments(documentName: string, selected?: string): SectionSpec[] {

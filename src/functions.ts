@@ -20,6 +20,9 @@ export function registerContextMenu(menu: ContextMenu) {
   }
 }
 
+export function isColor(data: string): boolean {
+  return CSS.supports("color", data);
+}
 
 
 export async function closeAllContextMenus(options?: ContextMenu.CloseOptions) {

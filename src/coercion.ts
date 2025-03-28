@@ -1,6 +1,7 @@
 import { InvalidUserError } from "./errors";
 import { StageObject } from "./stageobjects";
 import { StageManager } from "./StageManager";
+import { loadVideoTexture, pathIsVideo } from "lib/videoTextures";
 
 
 export function coerceUser(id: string): User | undefined
@@ -139,6 +140,7 @@ export function coerceTexture(source: unknown): PIXI.Texture | undefined {
 
   // Attempt to get a texture directly
   try {
+    if (typeof source === "string" && pathIsVideo(source)) return loadVideoTexture(source);
     return PIXI.Texture.from(source as PIXI.TextureSource);
   } catch { /* empty */ }
 }

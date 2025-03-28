@@ -563,6 +563,7 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected _onRender(context: StageObjectApplicationContext, options: StageObjectApplicationOptions): void {
+    try {
     // Set edit trigger event listeners
     setTriggerEventListeners(this.element);
     const triggers = Object.values(this.stageObject.triggers).flat();
@@ -582,6 +583,18 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     ColorPicker.install();
 
+    this.ghost = this.prepareDragGhost();
+
+    const layer = StageManager.layers[this.options?.layer ?? "primary"];
+    if (layer) {
+      layer.addChild(this.stageObject.displayObject);
+      layer.addChild(this.ghost);
+      this.ghost.zIndex = this.stageObject.displayObject.zIndex - 0.5;
+    }
+  } catch (err) {
+    if (this.ghost) this.ghost.destroy();
+    logError(err as Error);
+  }
   }
 
 
@@ -684,21 +697,11 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
   constructor(public stageObject: t, options?: DeepPartial<StageObjectApplicationConfiguration>) {
     super(options ?? {});
     this.appId = parseInt(this.id.substring(4));
-    stageObject.apps[this.appId] = this;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    stageObject.apps[this.appId] = this as any;
     this.tabGroups.primary = "basics";
     this.originalObject = stageObject.serialize() as v;
     this.wasSynced = stageObject.synchronize;
-
-    const layer = StageManager.layers[options?.layer ?? "primary"];
-
-    this.ghost = this.prepareDragGhost();
-
-    if (layer) {
-      layer.addChild(stageObject.displayObject);
-      layer.addChild(this.ghost);
-      this.ghost.zIndex = stageObject.displayObject.zIndex - 0.5;
-    }
-
 
     this.closed = new Promise<v | undefined>((resolve, reject) => {
       // this.#resolvePromise = resolve;

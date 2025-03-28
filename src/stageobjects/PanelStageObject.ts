@@ -1,59 +1,6 @@
 import { SerializedPanelStageObject } from "../types";
 import { StageObject } from "./StageObject";
-
-type BorderCallback = (left: number, right: number, top: number, bottom: number) => void;
-
-class ObservableBorder {
-
-  #left = 0;
-  #right = 0;
-  #top = 0;
-  #bottom = 0;
-
-  #cb: BorderCallback;
-
-  public get left() { return this.#left; }
-  public set left(val) {
-    if (val !== this.left) {
-      this.#left = val;
-      this.#callCallback();
-    }
-  }
-
-  public get right() { return this.#right; }
-  public set right(val) {
-    if (val !== this.right) {
-      this.#right = val;
-      this.#callCallback();
-    }
-  }
-
-  public get top() { return this.#top; }
-  public set top(val) {
-    if (val !== this.top) {
-      this.#top = val;
-      this.#callCallback();
-    }
-  }
-
-  public get bottom() { return this.#bottom; }
-  public set bottom(val) {
-    if (val !== this.bottom) {
-      this.#bottom = val;
-      this.#callCallback();
-    }
-  }
-
-  #callCallback() { this.#cb(this.#left, this.#right, this.#top, this.#bottom); }
-
-  constructor(left: number, right: number, top: number, bottom: number, cb: BorderCallback) {
-    this.#left = left;
-    this.#right = right;
-    this.#top = top;
-    this.#bottom = bottom;
-    this.#cb = cb;
-  }
-}
+import { ObservableBorder } from "./ObservableBorder";
 
 export class PanelStageObject extends StageObject<PIXI.NineSlicePlane> {
   public static readonly type: string = "panel";

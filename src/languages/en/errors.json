@@ -3,9 +3,14 @@
     "ERRORS": {
       "CANNOTDESERIALIZE": "Cannot deserialize stage object: {type}",
       "CANVASNOTINITIALIZED": "PIXI canvas not initialized, function likely called too early in the application's lifetime.",
+      "CONVERSATIONALREADYRUNNING": "This conversation is already executing.",
+      "DIALOGUEALREADYSET": "This conversation is already linked to a dialogue object.",
       "INVALIDACTOR": "Actor not found: {name}",
+      "INVALIDACTORTYPE": "Invalid actor type: {type}",
       "INVALIDCONVERSATIONACTIONTYPE": "Invalid action type: {type}",
+      "INVALIDEXPRESSION": "Invalid expression: {expression}",
       "INVALIDMACRO": "Invalid macro: {name}",
+      "INVALIDRESOURCEPATH": "Invalid resource path: {path}",
       "INVALIDSPEAKERTYPE": "Unknown speaker type: {type}",
       "INVALIDSTAGEOBJECT": "Invalid stage object: {key}",
       "INVALIDTEXTURE": "Invalid texture provided.",
@@ -22,10 +27,7 @@
       "PERMISSIONDENIED": "Permission denied.",
       "SPEAKERNOTFOUND": "Speaker not found: {speaker}",
       "UNKNOWNDOCUMENTTYPE": "Unknown document type: {document}",
-      "UNKNOWNUSER": "Unknown user: {user}",
-      "DIALOGUEALREADYSET": "This conversation is already linked to a dialogue object.",
-      "CONVERSATIONALREADYRUNNING": "This conversation is already executing.",
-      "INVALIDEXPRESSION": "Invalid expression: {expression}"
+      "UNKNOWNUSER": "Unknown user: {user}"
     }
   }
 }

@@ -62,12 +62,7 @@ export interface SerializedTextStageObject extends SerializedStageObject {
 }
 
 export interface SerializedPanelStageObject extends SerializedStageObject {
-  borders: {
-    left: number;
-    right: number;
-    top: number;
-    bottom: number;
-  }
+  borders: Border;
   src: string;
 }
 
@@ -85,6 +80,37 @@ export interface SerializedDialogueStageObject extends SerializedStageObject {
 }
 
 export type SerializedSpeaker = SerializedImageStageObject | SerializedActorStageObject;
+
+export const ResourceTextModes = ["none", "values", "percentage"] as const;
+export type ResourceTextMode = typeof ResourceTextModes[number];
+
+export const ResourceFGSizeModes = ["clip", "stretch"] as const;
+export type ResourceFGSizeMode = typeof ResourceFGSizeModes[number];
+
+export interface Border {
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+}
+
+export interface SerializedResourceStageObject extends SerializedStageObject {
+  bg: string;
+  fg: string;
+  lerpTexture: string;
+  primaryLerpTime?: number;
+  primaryLerpEasing?: Easing;
+  secondaryLerpTime?: number;
+  secondaryLerpEasing?: Easing;
+  textMode: ResourceTextMode;
+  resourcePath: string;
+  textStyle: Record<string, unknown>;
+  fgSizeMode: ResourceFGSizeMode;
+  actor: string;
+  fgPadding: Border;
+  bgBorders: Border;
+  fgBorders: Border;
+}
 
 /*
 export const StageLayers = ["primary", "foreground", "background", "text", "ui"] as const;
@@ -268,4 +294,10 @@ export interface SpeakerPosition {
   x: PositionCoordinate;
   y: PositionCoordinate;
   z: PositionCoordinate;
+}
+
+export interface ActorResource {
+  max: number;
+  value: number;
+  min?: number;
 }

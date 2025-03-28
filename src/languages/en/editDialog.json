@@ -6,6 +6,15 @@
       "ALPHA": "Opacity",
       "ANGLE": "Rotation",
       "ANGLEHINT": "(In degrees)",
+      "RESOURCEPATH": "Resource Path",
+      "SELECTTOKEN": "Select Token",
+      "SELECTTOKENHINT": "Select a token to link its actor.  Press the 'Select Token' button again to cancel.",
+      "RESOURCETEXTMODE": "Text Display Mode",
+      "TEXTMODE": {
+        "NONE": "None",
+        "VALUES": "Values",
+        "PERCENTAGE": "Percentage"
+      },
       "BGTYPES": {
         "COLOR": "Color",
         "IMAGE": "Image"

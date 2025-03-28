@@ -104,7 +104,8 @@ Hooks.once("ready", () => {
     `modules/${__MODULE_ID__}/templates/editObject/customArgument.hbs`,
     `modules/${__MODULE_ID__}/templates/textInput.hbs`,
     `modules/${__MODULE_ID__}/templates/effects/background-select.hbs`,
-    `modules/${__MODULE_ID__}/templates/speakers/common.hbs`
+    `modules/${__MODULE_ID__}/templates/speakers/common.hbs`,
+    `modules/${__MODULE_ID__}/templates/actorSelector.hbs`
   ])
 });
 
