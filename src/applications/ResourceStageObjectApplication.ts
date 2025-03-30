@@ -76,7 +76,8 @@ export class ResourceStageObjectApplication extends StageObjectApplication<Resou
 
           const target = this.element.querySelector(button.dataset.target);
           if (target instanceof HTMLSelectElement || target instanceof HTMLInputElement)
-            target.value = token.actor.uuid;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            target.value = (token.actor).uuid;
 
           this.endTokenSelect();
         }
@@ -98,6 +99,7 @@ export class ResourceStageObjectApplication extends StageObjectApplication<Resou
   }
 
   protected _onRender(context: StageObjectApplicationContext, options: StageObjectApplicationOptions): void {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     super._onRender(context, options);
 
     void this.setResourcePathList();
