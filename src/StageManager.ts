@@ -23,6 +23,8 @@ const ApplicationHash: Record<string, typeof StageObjectApplication> = {
 
 const OpenApplications = new WeakMap<StageObject, StageObjectApplication>();
 
+const _copiedObjects: SerializedStageObject[]=[];
+
 // #region Classes (1)
 
 /**
@@ -545,6 +547,15 @@ export class StageManager {
     const owners = getSetting<Record<string, string[]>>("objectOwnership");
     return owners?.[id] ?? [];
   }
+
+  public static get CopiedObjects() { return _copiedObjects; }
+  
+  public static CopyObjects(objects: StageObject[]): SerializedStageObject[] {
+    this.CopiedObjects.splice(0,this.CopiedObjects.length, ...objects.map(obj => obj.serialize()));
+    return this.CopiedObjects;
+  }
+
+  
 
   public static layers: Record<string, ScreenSpaceCanvasGroup> = {};
 

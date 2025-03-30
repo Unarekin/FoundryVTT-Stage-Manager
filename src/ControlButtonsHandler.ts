@@ -29,7 +29,6 @@ export class StageManagerControlsLayer extends InteractionLayer {
     });
     return true;
   }
-
 }
 
 
