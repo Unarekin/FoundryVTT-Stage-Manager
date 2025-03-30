@@ -21,6 +21,7 @@ export class StageManagerControlsLayer extends InteractionLayer {
 
   _sendToBackOrBringToFront(front: boolean): boolean {
     StageManager.StageObjects.selected.sort((a, b) => a.zIndex - b.zIndex).forEach(obj => {
+      if (!obj.canUserModify(game.user as User, "modify")) return;
       if (front)
         obj.bringToFront();
       else
