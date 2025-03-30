@@ -18,6 +18,17 @@ export class StageManagerControlsLayer extends InteractionLayer {
         obj.selected = true;
     });
   }
+
+  _sendToBackOrBringToFront(front: boolean): boolean {
+    StageManager.StageObjects.selected.sort((a, b) => a.zIndex - b.zIndex).forEach(obj => {
+      if (front)
+        obj.bringToFront();
+      else
+        obj.sendToBack();
+    });
+    return true;
+  }
+
 }
 
 

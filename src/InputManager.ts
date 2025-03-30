@@ -224,7 +224,7 @@ async function keyEventWrapper(wrapped: Function, ...args: unknown[]) {
 
     const context = KeyboardManager.getKeyboardEventContext(event, (args[1] as boolean) ?? false);
 
-    if (!context.up) {
+    // if (!context.up) {
       const actions = KeyboardManager._getMatchingActions(context);
       
       for (const action of actions) {
@@ -239,7 +239,7 @@ async function keyEventWrapper(wrapped: Function, ...args: unknown[]) {
         }
       }
 
-    }
+    // }
   }
   // Pass to original
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return

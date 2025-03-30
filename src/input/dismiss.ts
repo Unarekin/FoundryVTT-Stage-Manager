@@ -1,6 +1,6 @@
 import { StageManager } from "StageManager";
 
-function dismiss(): boolean {
+function dismiss(context: KeyboardManager.KeyboardEventContext): boolean {
   
   // Check for open context menu
   if (ui.context?.menu.length) return false;
@@ -11,7 +11,7 @@ function dismiss(): boolean {
   // Check for open UI windows
   if (Object.values(ui.windows).length) return false;
 
-  if (StageManager.StageObjects.selected.length) {
+  if (StageManager.StageObjects.selected.length && !context.up) {
     StageManager.DeselectAll();
     return true;
   }
