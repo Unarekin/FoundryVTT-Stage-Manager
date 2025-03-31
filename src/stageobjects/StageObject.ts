@@ -505,14 +505,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     }
   }
 
-  // protected createRenderTexture() {
-  //   if (!canvas?.app?.renderer) throw new CanvasNotInitializedError();
-  //   if (this.renderTexture) this.renderTexture.destroy();
-  //   this.renderTexture = PIXI.RenderTexture.create({ width: this.baseWidth, height: this.baseHeight });
-  //   canvas.app.renderer.render(this._displayObject, { renderTexture: this.renderTexture });
-  //   logTexture(this.renderTexture);
-  // }
-
+  
   #ignoredProperties = ["worldAlpha", "uvs", "dirty", "indices", "vertexDirty"];
 
   private proxyDisplayObject(val: t): t {

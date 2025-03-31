@@ -108,12 +108,30 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
         // this.createRenderTexture();
       });
     }
+
+    const origCb = this.scale.cb;
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const temp = this;
+
+    const lastScale = { x: this.scale.x, y: this.scale.y };
+
+    this.scale.cb = function(this: PIXI.Transform) {
+      
+      // If scale axes have swapped signs, invert the object's anchor for that axis
+      if ((lastScale.x * this.scale.x) < 0) temp.anchor.x = 1 - temp.anchor.x;
+      if ((lastScale.y * this.scale.y) < 0) temp.anchor.y = 1 - temp.anchor.y;
+
+      lastScale.x = this.scale.x;
+      lastScale.y = this.scale.y;
+
+      origCb.call(this.scale.scope);
+    }
+
   }
 
   // #endregion Constructors (1)
 
   // #region Public Getters And Setters (27)
-
 
   public get anchor() { return this.displayObject.anchor; }
 
