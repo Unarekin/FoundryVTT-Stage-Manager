@@ -1,3 +1,4 @@
+export * from './CannotCopyError';
 export * from './CannotDeserializeError';
 export * from './CanvasNotInitializedError';
 export * from './InvalidActorError';

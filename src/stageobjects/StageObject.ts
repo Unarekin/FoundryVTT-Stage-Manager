@@ -1,4 +1,4 @@
-import { CannotDeserializeError, CanvasNotInitializedError, InvalidStageObjectError } from "../errors";
+import { CannotCopyError, CannotDeserializeError, CanvasNotInitializedError, InvalidStageObjectError } from "../errors";
 import { closeAllContextMenus, localize, registerContextMenu } from "../functions";
 import { ScreenSpaceCanvasGroup } from "../ScreenSpaceCanvasGroup";
 import { StageManager } from "../StageManager";
@@ -8,7 +8,7 @@ import deepProxy from "../lib/deepProxy";
 import { CUSTOM_HOOKS } from "../hooks";
 import * as tempTriggers from "../triggeractions";
 import { StageManagerControlsLayer } from "../ControlButtonsHandler";
-import { log, logError } from "../logging";
+import { log, logError, logInfo } from "../logging";
 import { getTriggerActionType } from "../applications/functions";
 import { deserializeEffect, serializeEffect } from '../lib/effects';
 import { CustomFilter } from "../effects/CustomFilter";
@@ -747,6 +747,33 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
           this.locked = false;
         },
         condition: !!this.locked
+      },
+      {
+        name: localize("STAGEMANAGER.MENUS.COPYJSON"),
+        icon: `<i class="fas fa-code"></i>`,
+        callback: () => {
+          try {
+            if (navigator.clipboard) {
+              void navigator.clipboard.writeText(JSON.stringify(this.serialize())).then(() => {
+                logInfo(localize("STAGEMANAGER.MENUS.JSONCOPIED", { name: this.name}));
+              });
+            } else {
+              const textArea = document.createElement("textarea");
+              textArea.value = JSON.stringify(this.serialize());
+              textArea.style.position="absolute";
+              textArea.style.width="0";
+              textArea.style.height="0";
+              document.body.appendChild(textArea);
+              textArea.select();
+              document.execCommand("copy");
+              document.body.removeChild(textArea);
+
+              logInfo(localize("STAGEMANAGER.MENUS.JSONCOPIED", { name: this.name }));
+            }
+          } catch (err) {
+            logError(new CannotCopyError((err as Error).message));
+          }
+        }
       },
       {
         name: localize("STAGEMANAGER.MENUS.DELETEOBJECT", { name: this.name ?? this.id }),

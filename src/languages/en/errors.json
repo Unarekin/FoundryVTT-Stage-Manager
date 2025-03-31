@@ -1,6 +1,7 @@
 {
   "STAGEMANAGER": {
     "ERRORS": {
+      "CANNOTCOPY": "Unable to copy contents to clipboard: {message}",
       "CANNOTDESERIALIZE": "Cannot deserialize stage object: {type}",
       "CANVASNOTINITIALIZED": "PIXI canvas not initialized, function likely called too early in the application's lifetime.",
       "CONVERSATIONALREADYRUNNING": "This conversation is already executing.",
