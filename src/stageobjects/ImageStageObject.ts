@@ -298,19 +298,14 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
   public deserialize(serialized: SerializedImageStageObject): void {
     super.deserialize(serialized);
     // If the texture isn't loaded into memory, wait for it to be then set the width/height
-    if (!this.displayObject.texture.baseTexture.valid) {
-      this.displayObject.texture.baseTexture.once("loaded", () => {
-        this.path = serialized.src;
-        // this.loop = serialized.loop;
-        this.width = this.actualBounds.width * serialized.bounds.width;
-        this.height = this.actualBounds.height * serialized.bounds.height;
-      });
-    } else {
-      this.path = serialized.src;
-      // this.loop = serialized.loop;
+
+    void this.textureLoaded().then(() => {
       this.width = this.actualBounds.width * serialized.bounds.width;
       this.height = this.actualBounds.height * serialized.bounds.height;
-    }
+
+      if (serialized.bounds.width < 0) this.scale.x *= -1;
+      if (serialized.bounds.height < 0) this.scale.y *= -1;
+    });
     this.dirty = true;
     if (typeof serialized.anchor !== "undefined") {
       if (typeof serialized.anchor.x !== "undefined") this.anchor.x = serialized.anchor.x;
@@ -367,8 +362,9 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
 
 
   public serialize(): SerializedImageStageObject {
+    const serialized = super.serialize();
     return {
-      ...super.serialize(),
+      ...serialized,
       type: ImageStageObject.type,
       src: this.path,
       // playing: this.playing,

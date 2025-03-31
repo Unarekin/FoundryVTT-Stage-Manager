@@ -1020,9 +1020,17 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       bounds: {
         x: this.x / this.actualBounds.width,
         y: this.y / this.actualBounds.height,
-        width: this.width / this.actualBounds.width,
-        height: this.height / this.actualBounds.height
+        width: (this.baseWidth * this.scale.x) / this.actualBounds.width,
+        height: (this.baseHeight * this.scale.y) / this.actualBounds.height
       },
+      // pos: {
+      //   x: this.x / this.actualBounds.width,
+      //   y: this.y / this.actualBounds.height
+      // },
+      // scale: {
+      //   x: this.baseWidth * this.scale.x / this.actualBounds.width,
+      //   y: this.baseHeight * this.scale.y / this.actualBounds.height
+      // },
       angle: this.angle,
       restrictToVisualArea: this.restrictToVisualArea,
       scope: this.scope ?? "global",

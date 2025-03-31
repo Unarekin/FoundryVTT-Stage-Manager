@@ -44,19 +44,34 @@ export class PanelStageObject extends StageObject<PIXI.NineSlicePlane> {
 
   public deserialize(serialized: SerializedPanelStageObject) {
     super.deserialize(serialized);
-    this.borders.left = serialized.borders.left;
-    this.borders.right = serialized.borders.right;
-    this.borders.top = serialized.borders.top;
-    this.borders.bottom = serialized.borders.bottom;
 
     this.src = serialized.src;
+
+    void this.textureLoaded().then(() => {
+      this.width = Math.abs(this.width);
+      this.height = Math.abs(this.height);
+
+      if (serialized.bounds.width < 0) this.scale.x *= -1;
+      if (serialized.bounds.height < 0) this.scale.y *= -1;
+
+      this.borders.left = serialized.borders.left;
+      this.borders.right = serialized.borders.right;
+      this.borders.top = serialized.borders.top;
+      this.borders.bottom = serialized.borders.bottom;
+    });
   }
 
   public serialize(): SerializedPanelStageObject {
+    const serialized = super.serialize();
     return {
-      ...super.serialize(),
+      ...serialized,
       type: PanelStageObject.type,
       src: this.src,
+      bounds: {
+        ...serialized.bounds,
+        width: (this.width * this.scale.x) / this.actualBounds.width,
+        height: (this.height * this.scale.y) / this.actualBounds.height
+      },
       borders: {
         left: this.borders.left,
         right: this.borders.right,
