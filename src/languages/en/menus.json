@@ -1,15 +1,16 @@
 {
   "STAGEMANAGER": {
     "MENUS": {
+      "ACTORSHEET": "Actor Sheet",
+      "COPYJSON": "Copy as JSON",
+      "COPYOBJECT": "Copy {name}",
       "DELETEOBJECT": "Delete {name}",
       "EDITOBJECT": "Edit {name}",
+      "JSONCOPIED": "Copied {name} to clipboard.",
       "LOCKOBJECT": "Lock {name}",
-      "UNLOCKOBJECT": "Unlock {name}",
-      "ACTORSHEET": "Actor Sheet",
-      "TOFRONT": "Bring to Front",
       "TOBACK": "Send to Back",
-      "COPYJSON": "Copy JSON",
-      "JSONCOPIED": "Copied {name} to clipboard."
+      "TOFRONT": "Bring to Front",
+      "UNLOCKOBJECT": "Unlock {name}"
     }
   }
 }

@@ -365,7 +365,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     }
   }
 
-  public readonly apps: Record<number, StageObjectApplication>={};
+  public readonly apps: Record<number, StageObjectApplication> = {};
 
   constructor(private _displayObject: t, name?: string) {
     if (!canvas?.app?.renderer) throw new CanvasNotInitializedError();
@@ -505,7 +505,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     }
   }
 
-  
+
   #ignoredProperties = ["worldAlpha", "uvs", "dirty", "indices", "vertexDirty"];
 
   private proxyDisplayObject(val: t): t {
@@ -749,20 +749,32 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
         condition: !!this.locked
       },
       {
+        name: localize("STAGEMANAGER.MENUS.COPYOBJECT", { name: this.name ?? this.id }),
+        icon: `<i class="fas fa-copy"></i>`,
+        callback: () => {
+          // empty
+          StageManager.CopyObjects([this]);
+          ui.notifications?.info(localize("CONTROLS.CopiedObjects", {
+            count: "1",
+            type: localize("STAGEMANAGER.STAGEOBJECT")
+          }));
+        }
+      },
+      {
         name: localize("STAGEMANAGER.MENUS.COPYJSON"),
         icon: `<i class="fas fa-code"></i>`,
         callback: () => {
           try {
             if (navigator.clipboard) {
               void navigator.clipboard.writeText(JSON.stringify(this.serialize())).then(() => {
-                logInfo(localize("STAGEMANAGER.MENUS.JSONCOPIED", { name: this.name}));
+                logInfo(localize("STAGEMANAGER.MENUS.JSONCOPIED", { name: this.name }));
               });
             } else {
               const textArea = document.createElement("textarea");
               textArea.value = JSON.stringify(this.serialize());
-              textArea.style.position="absolute";
-              textArea.style.width="0";
-              textArea.style.height="0";
+              textArea.style.position = "absolute";
+              textArea.style.width = "0";
+              textArea.style.height = "0";
               document.body.appendChild(textArea);
               textArea.select();
               document.execCommand("copy");
