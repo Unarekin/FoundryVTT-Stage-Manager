@@ -11,6 +11,8 @@ import { log, logError } from './logging';
 import { ActorStageObjectApplication, ImageStageObjectApplication, DialogueStageObjectApplication, PanelStageObjectApplication, StageObjectApplication, TextStageObjectApplication, ResourceStageObjectApplication } from './applications';
 import { SynchronizationManager } from './SynchronizationManager';
 import { Conversation } from "./conversation";
+import { Point } from 'Foundry-VTT/src/foundry/common/types.mjs';
+import { localize } from 'functions';
 
 const ApplicationHash: Record<string, typeof StageObjectApplication> = {
   image: ImageStageObjectApplication as typeof StageObjectApplication,
@@ -23,7 +25,7 @@ const ApplicationHash: Record<string, typeof StageObjectApplication> = {
 
 const OpenApplications = new WeakMap<StageObject, StageObjectApplication>();
 
-const _copiedObjects: SerializedStageObject[]=[];
+const _copiedObjects: SerializedStageObject[] = [];
 
 // #region Classes (1)
 
@@ -549,13 +551,66 @@ export class StageManager {
   }
 
   public static get CopiedObjects() { return _copiedObjects; }
-  
+
   public static CopyObjects(objects: StageObject[]): SerializedStageObject[] {
-    this.CopiedObjects.splice(0,this.CopiedObjects.length, ...objects.map(obj => obj.serialize()));
+    this.CopiedObjects.splice(0, this.CopiedObjects.length, ...objects.map(obj => obj.serialize()));
     return this.CopiedObjects;
   }
 
-  
+  public static PasteObjects(position: Point): StageObject[] | undefined {
+    try {
+      if (!this.CopiedObjects.length) return [];
+      if (!StageManager.canAddStageObjects(game.user?.id ?? "")) throw new PermissionDeniedError();
+
+      const created: StageObject[] = this.CopiedObjects.reduce((prev: StageObject[], curr: SerializedStageObject) => {
+        const obj = StageManager.deserialize(curr);
+        if (!(obj instanceof StageObject)) return prev;
+
+        obj.id = foundry.utils.randomID();
+        return [
+          ...prev,
+          obj
+        ];
+      }, [] as StageObject[]);
+
+      // Calculate average center point of copied objects
+      const center = created.reduce((prev, curr) => {
+        const {x, y} = curr.center;
+        return {
+          x: prev.x + x,
+          y: prev.y +  y
+        };
+      }, { x: 0, y: 0});
+
+      center.x /= created.length;
+      center.y /= created.length;
+
+      log("Center:", center);
+      log("Paste position:", position);
+
+      for (const obj of created) {
+        // Offset from pasted point
+        obj.x = position.x + (obj.x - center.x) - (obj.width / 2);
+        obj.y = position.y + (obj.y - center.y) - (obj.height / 2);
+
+        log("Object position:", obj.x, obj.y);
+
+        StageManager.addStageObject(obj);
+      }
+
+
+      ui.notifications?.info(
+        localize("CONTROLS.PastedObjects", {
+          count: created.length.toString(),
+          type: localize("STAGEMANAGER.STAGEOBJECT")
+        })
+      )
+      return created;
+    } catch (err) {
+      logError(err as Error);
+    }
+  }
+
 
   public static layers: Record<string, ScreenSpaceCanvasGroup> = {};
 
