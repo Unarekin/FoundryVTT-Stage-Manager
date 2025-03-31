@@ -287,6 +287,16 @@ export class DialogueStageObject extends StageObject<PIXI.Container> {
     return this;
   }
 
+  public textureLoaded(): Promise<void> {
+    return new Promise(resolve => {
+      if (this.panel.displayObject.texture.valid) {
+        resolve();
+      } else {
+        this.panel.displayObject.texture.baseTexture.once("loaded", () => { resolve(); });
+      }
+    })
+  }
+
   public slotPosition(slot: number): { x: PositionCoordinate, y: PositionCoordinate, z: PositionCoordinate } {
 
     const base: {x: PositionCoordinate, y: PositionCoordinate, z: PositionCoordinate} = {
