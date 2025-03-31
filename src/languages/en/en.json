@@ -1,5 +1,6 @@
 {
   "STAGEMANAGER": {
+    "STAGEOBJECT": "Stage Object",
     "IMAGE": "Image",
     "LAYERS": {
       "BACKGROUND": "Background",

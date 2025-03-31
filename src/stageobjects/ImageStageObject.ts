@@ -182,6 +182,13 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
     }
   }
 
+  public get center(): PIXI.Point {
+    return new PIXI.Point(
+      this.x + (this.width * this.anchor.x),
+      this.y + (this.height * this.anchor.y)
+    );
+  }
+
   public get loop() {
     const resource = this.displayObject.texture.baseTexture.resource;
     if (resource instanceof PIXI.VideoResource) {

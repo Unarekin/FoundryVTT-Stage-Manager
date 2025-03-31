@@ -585,7 +585,9 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     }
   }
 
-
+  public get center(): PIXI.Point {
+    return new PIXI.Point(this.x, this.y);
+  }
 
 
   // public get owners() { return StageManager.getOwners(this.id).reduce((prev: User[], curr: string) => game?.users?.get(curr) ? [...prev, game.users.get(curr) as User] : prev, [] as User[]); }
@@ -801,6 +803,8 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       return "";
     }
   }
+
+
 
   public canUserModify(user: User, action: "create" | "update" | "modify" | "delete"): boolean {
     if (typeof user?.id !== "string") return false;

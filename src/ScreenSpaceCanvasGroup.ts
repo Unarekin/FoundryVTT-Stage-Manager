@@ -5,8 +5,7 @@ export class ScreenSpaceCanvasGroup extends PIXI.Container {
     switch (this.layer) {
       case "background": return "sm-select-background";
       case "foreground": return "sm-select-foreground";
-      case "primary": return "sm-select-primary";
-      case "text": return "sm-select-text";
+      case "primary": return "sm-select-primary"
     }
   }
 

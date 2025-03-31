@@ -3,6 +3,7 @@ import { CanvasNotInitializedError } from './errors/CanvasNotInitializedError';
 import { StageObject } from "./stageobjects";
 import { TOOLS } from "./ControlButtonsHandler";
 import { StageLayer } from "./types";
+import { InputHandlers } from "./input";
 
 // #region Classes (1)
 
@@ -15,6 +16,8 @@ export class InputManager {
   // #region Public Static Methods (5)
 
   public static setCanvasEvents() {
+    if (!canvas?.stage) throw new CanvasNotInitializedError();
+
     canvas.stage
       .on("mousemove", InputManager.onPointerMove)
       .on("pointerup", InputManager.onPointerUp)
@@ -43,8 +46,8 @@ export class InputManager {
 
     // Funky monkey patching for keydown event, to intercept the escape key and prevent Foundry from handling it on its own
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    libWrapper.register(__MODULE_ID__, "game.keyboard._handleKeyboardEvent", escapeWrapper);
-    document.addEventListener("keydown", InputManager.onKeyDown);
+    libWrapper.register(__MODULE_ID__, "game.keyboard._handleKeyboardEvent", keyEventWrapper);
+    // document.addEventListener("keydown", InputManager.onKeyDown);
   }
 
 
@@ -169,13 +172,21 @@ export class InputManager {
     }
   }
 
-  public static onKeyDown(this: void, e: KeyboardEvent) {
-    // The escape key is caught above
-    if (e.key === "Delete") {
-      const objs = StageManager.StageObjects.filter(obj => obj.selected);
-      for (const obj of objs) obj.destroy();
-    }
-  }
+  // // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // public static onKeyDown(this: void, e: KeyboardEvent) {
+  //   if (!game.keyboard) return;
+
+  //   // The escape key is caught above
+
+  //   log("Stuff:", game.keyboard.isCoreActionKeyActive("delete"))
+
+
+
+  //   if (game.keyboard.isCoreActionKeyActive("delete")) {
+  //     const objs = StageManager.StageObjects.filter(obj => obj.selected);
+  //     for (const obj of objs) obj.destroy();  
+  //   }
+  // }
 
   public static onPointerDown(this: void, e: PIXI.FederatedPointerEvent) {
     // log("Pointer down:", e);
@@ -204,16 +215,33 @@ function dragItem(event: PIXI.FederatedPointerEvent, item: StageObject) {
   // }
 }
 
+
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-function escapeWrapper(wrapped: Function, ...args: unknown[]) {
-  if (args[0] instanceof KeyboardEvent) {
+async function keyEventWrapper(wrapped: Function, ...args: unknown[]) {
+  if (!game.keyboard?.hasFocus && args[0] instanceof KeyboardEvent) {
     const event = args[0];
-    if (event.key === "Escape" && StageManager.SelectedObjects.length)
-      StageManager.DeselectAll();
-    else
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-      return wrapped(...args);
+
+    const context = KeyboardManager.getKeyboardEventContext(event, (args[1] as boolean) ?? false);
+
+    // if (!context.up) {
+      const actions = KeyboardManager._getMatchingActions(context);
+      
+      for (const action of actions) {
+        if (InputHandlers[action.action]) {
+          const handled = await InputHandlers[action.action](context);
+          if (handled) {
+            context.event?.preventDefault();
+            context.event?.stopPropagation();
+            return;
+          }
+        }
+      }
+
+    // }
   }
+  // Pass to original
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  return wrapped(...args);
 }
 
 function resizeItem(event: PIXI.FederatedPointerEvent, item: StageObject) {

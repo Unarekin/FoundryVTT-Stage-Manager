@@ -102,6 +102,13 @@ export class DialogueStageObject extends StageObject<PIXI.Container> {
     }
   }
 
+  public get center(): PIXI.Point {
+    return new PIXI.Point(
+      this.x + (this.width / 2),
+      this.y + (this.height / 2)
+    );
+  }
+
   public get labelStyle() { return this._labelObject.style; }
   public set labelStyle(val) {
     this._labelObject.style = val;
