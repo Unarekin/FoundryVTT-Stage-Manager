@@ -55,7 +55,7 @@ function shouldMove(context: KeyboardManager.KeyboardEventContext): boolean {
 export function moveUp(context: KeyboardManager.KeyboardEventContext): boolean {
   if (!shouldMove(context)) return false;
 
-  snap = context.isControl;
+  snap = context.isShift;
   movementDirections.up = !context.up;
   return handleMovement();
 }
@@ -63,7 +63,7 @@ export function moveUp(context: KeyboardManager.KeyboardEventContext): boolean {
 export function moveDown(context: KeyboardManager.KeyboardEventContext): boolean {
   if (!shouldMove(context)) return false;
 
-  snap = context.isControl;
+  snap = context.isShift;
   movementDirections.down = !context.up;
   return handleMovement();
 }
@@ -71,7 +71,7 @@ export function moveDown(context: KeyboardManager.KeyboardEventContext): boolean
 export function moveLeft(context: KeyboardManager.KeyboardEventContext): boolean {
   if (!shouldMove(context)) return false;
 
-  snap = context.isControl;
+  snap = context.isShift;
   movementDirections.left = !context.up;
   return handleMovement();
 }
@@ -79,7 +79,7 @@ export function moveLeft(context: KeyboardManager.KeyboardEventContext): boolean
 export function moveRight(context: KeyboardManager.KeyboardEventContext): boolean {
   if (!shouldMove(context)) return false;
 
-  snap = context.isControl;
+  snap = context.isShift;
   movementDirections.right = !context.up;
   return handleMovement();
 }
@@ -87,7 +87,7 @@ export function moveRight(context: KeyboardManager.KeyboardEventContext): boolea
 export function moveUpRight(context: KeyboardManager.KeyboardEventContext): boolean {
   if (!shouldMove(context)) return false;
 
-  snap = context.isControl;
+  snap = context.isShift;
   movementDirections.right = !context.up;
   movementDirections.up = !context.up;
   return handleMovement();
@@ -96,7 +96,7 @@ export function moveUpRight(context: KeyboardManager.KeyboardEventContext): bool
 export function moveUpLeft(context: KeyboardManager.KeyboardEventContext): boolean {
   if (!shouldMove(context)) return false;
 
-  snap = context.isControl;
+  snap = context.isShift;
   movementDirections.left = !context.up;
   movementDirections.up = !context.up;
   return handleMovement();
@@ -105,7 +105,7 @@ export function moveUpLeft(context: KeyboardManager.KeyboardEventContext): boole
 export function moveDownRight(context: KeyboardManager.KeyboardEventContext): boolean {
   if (!shouldMove(context)) return false;
 
-  snap = context.isControl;
+  snap = context.isShift;
   movementDirections.right = !context.up;
   movementDirections.down = !context.up;
   return handleMovement();
@@ -114,7 +114,7 @@ export function moveDownRight(context: KeyboardManager.KeyboardEventContext): bo
 export function moveDownLeft(context: KeyboardManager.KeyboardEventContext): boolean {
   if (!shouldMove(context)) return false;
 
-  snap = context.isControl;
+  snap = context.isShift;
   movementDirections.left = !context.up;
   movementDirections.down = !context.up;
   return handleMovement();
