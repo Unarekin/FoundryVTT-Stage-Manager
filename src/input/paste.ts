@@ -6,7 +6,7 @@ function paste(context: KeyboardManager.KeyboardEventContext): boolean {
   if (!context.up && canvas.activeLayer instanceof StageManagerControlsLayer && StageManager.CopiedObjects.length && StageManager.canAddStageObjects(game.user?.id ?? "")) {
     const pos = new PIXI.Point();
     // Apply inverse world transform to get to screen space
-    canvas.app?.stage.localTransform.clone().invert().applyInverse(canvas.mousePosition, pos);    
+    canvas.app?.stage.localTransform.clone().invert().applyInverse(canvas.mousePosition, pos);
 
     StageManager.PasteObjects(pos);
     return true;

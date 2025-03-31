@@ -585,15 +585,10 @@ export class StageManager {
       center.x /= created.length;
       center.y /= created.length;
 
-      log("Center:", center);
-      log("Paste position:", position);
-
       for (const obj of created) {
         // Offset from pasted point
         obj.x = position.x + (obj.x - center.x) - (obj.width / 2);
         obj.y = position.y + (obj.y - center.y) - (obj.height / 2);
-
-        log("Object position:", obj.x, obj.y);
 
         StageManager.addStageObject(obj);
       }
