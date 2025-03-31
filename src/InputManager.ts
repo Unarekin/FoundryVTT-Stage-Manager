@@ -3,7 +3,6 @@ import { CanvasNotInitializedError } from './errors/CanvasNotInitializedError';
 import { StageObject } from "./stageobjects";
 import { TOOLS } from "./ControlButtonsHandler";
 import { StageLayer } from "./types";
-import { log } from "logging";
 import { InputHandlers } from "./input";
 
 // #region Classes (1)
@@ -219,7 +218,7 @@ function dragItem(event: PIXI.FederatedPointerEvent, item: StageObject) {
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 async function keyEventWrapper(wrapped: Function, ...args: unknown[]) {
-  if (!game.keyboard.hasFocus && args[0] instanceof KeyboardEvent) {
+  if (!game.keyboard?.hasFocus && args[0] instanceof KeyboardEvent) {
     const event = args[0];
 
     const context = KeyboardManager.getKeyboardEventContext(event, (args[1] as boolean) ?? false);
@@ -231,7 +230,6 @@ async function keyEventWrapper(wrapped: Function, ...args: unknown[]) {
         if (InputHandlers[action.action]) {
           const handled = await InputHandlers[action.action](context);
           if (handled) {
-            log(`Handled key action: ${action.action}`);
             context.event?.preventDefault();
             context.event?.stopPropagation();
             return;
