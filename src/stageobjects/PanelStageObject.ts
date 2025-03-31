@@ -114,6 +114,16 @@ export class PanelStageObject extends StageObject<PIXI.NineSlicePlane> {
     }
   }
 
+  public textureLoaded(): Promise<void> {
+    return new Promise(resolve => {
+      if (this.displayObject.texture.valid) {
+        resolve();
+      } else {
+        this.displayObject.texture.baseTexture.once("loaded", () => { resolve(); });
+      }
+    })
+  }
+
   public get left() { return this.x + this.actualBounds.left - this.pivot.x; }
 
   public set left(val) {
