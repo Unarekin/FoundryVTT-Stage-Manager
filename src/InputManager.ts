@@ -219,7 +219,7 @@ function dragItem(event: PIXI.FederatedPointerEvent, item: StageObject) {
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 async function keyEventWrapper(wrapped: Function, ...args: unknown[]) {
-  if (args[0] instanceof KeyboardEvent) {
+  if (!game.keyboard.hasFocus && args[0] instanceof KeyboardEvent) {
     const event = args[0];
 
     const context = KeyboardManager.getKeyboardEventContext(event, (args[1] as boolean) ?? false);
