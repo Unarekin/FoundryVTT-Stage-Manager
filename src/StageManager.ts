@@ -12,7 +12,7 @@ import { ActorStageObjectApplication, ImageStageObjectApplication, DialogueStage
 import { SynchronizationManager } from './SynchronizationManager';
 import { Conversation } from "./conversation";
 import { Point } from 'Foundry-VTT/src/foundry/common/types.mjs';
-import { localize } from 'functions';
+import { durationOfHold, localize } from 'functions';
 
 const ApplicationHash: Record<string, typeof StageObjectApplication> = {
   image: ImageStageObjectApplication as typeof StageObjectApplication,
@@ -555,6 +555,10 @@ export class StageManager {
   public static CopyObjects(objects: StageObject[]): SerializedStageObject[] {
     this.CopiedObjects.splice(0, this.CopiedObjects.length, ...objects.map(obj => obj.serialize()));
     return this.CopiedObjects;
+  }
+
+  public static durationOfHold(text: string): number {
+    return durationOfHold(text);
   }
 
   public static PasteObjects(position: Point): StageObject[] | undefined {
