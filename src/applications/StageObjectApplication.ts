@@ -144,6 +144,7 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
 
   protected toTop() { this.setY(this.stageObject.actualBounds.top); }
   protected toLeft() { this.setX(this.stageObject.actualBounds.left); }
+
   protected toRight() {
     this.stageObject.right = this.stageObject.actualBounds.right;
     this.setX(this.stageObject.x);
@@ -552,7 +553,13 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
     }
   }
 
+  public readonly appId: number;
+
   constructor(public readonly stageObject: t) {
     super({});
+
+    this.appId = parseInt(this.id.substring(4));
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    stageObject.apps[this.appId] = this as any;
   }
 }
