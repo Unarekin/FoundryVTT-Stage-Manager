@@ -1,65 +1,100 @@
-import type { AnyObject, DeepPartial } from "Foundry-VTT/src/types/utils.d.mts";
-import { StageObject } from "../stageobjects";
-import { StageObjectApplicationContext, StageObjectApplicationOptions, StageObjectApplicationConfiguration, Tab } from "./types";
-import { SerializedEffect, SerializedStageObject, SerializedTrigger, TriggerEventSignatures } from '../types';
-import { StageManager } from "../StageManager";
-import ApplicationV2 from "Foundry-VTT/src/foundry/client-esm/applications/api/application.mjs";
-import HandlebarsApplicationMixin from "Foundry-VTT/src/foundry/client-esm/applications/api/handlebars-application.mjs";
-import { localize } from "../functions";
-import { getLayerContext, getScenesContext, getScopeContext, getUsersContext, selectEffectDialog } from "./functions";
-import { logError } from "../logging";
-import { defaultEffect, deserializeEffect, getEffectHandler, getEffectTemplate } from "../lib/effects";
-import { addTrigger, editTrigger, getTriggerActionType, parseTriggerFormData, deleteTrigger, setEventListeners as setTriggerEventListeners, setTriggerOption } from "./triggerFunctions";
+import { StageObject } from '../stageobjects/StageObject';
+import { SerializedStageObject, SerializedTrigger } from '../types';
+import { log, logError } from '../logging';
+import { AnyObject, DeepPartial, EmptyObject } from 'Foundry-VTT/src/types/utils.mjs';
+import { localize } from 'functions';
+import { addEventListeners } from "./functions";
+import { InvalidTriggerError, LocalizedError } from 'errors';
+import { StageManager } from 'StageManager';
+import { addTrigger, deleteTrigger, editTrigger, parseTriggerFormData, parseTriggerList, setTriggerOption } from "./triggerFunctions";
+import { addEffect, deleteEffect, parseEffectFormData, parseEffectList, selectEffect, setEffectOption } from "./effectFunctions";
+import { getEffectHandler } from 'lib/effects';
+import { getTriggerActionType } from 'triggeractions';
 
+export abstract class StageObjectApplication<t extends StageObject = StageObject, v extends SerializedStageObject = SerializedStageObject> extends foundry.applications.api.HandlebarsApplicationMixin(foundry.applications.api.ApplicationV2) {
 
+  public static readonly stageObjectType = "";
 
-export abstract class StageObjectApplication<t extends StageObject = StageObject, v extends SerializedStageObject = SerializedStageObject> extends foundry.applications.api.HandlebarsApplicationMixin(foundry.applications.api.ApplicationV2<
-  StageObjectApplicationContext,
-  StageObjectApplicationConfiguration,
-  StageObjectApplicationOptions>
-) {
+  #reject: ((err: Error) => void) | undefined = undefined;
+  #resolve: ((val?: v) => void) | undefined = undefined;
 
-  static PARTS: Record<string, unknown> = {
+  private _original: v | undefined = undefined;
+  public get original() { return this._original; }
+
+  private _closed: Promise<v | undefined> | undefined = undefined;
+  public get closed() { return this._closed; }
+
+  private _ghost: PIXI.DisplayObject | undefined = undefined;
+  public get ghost() { return this._ghost; }
+
+  public static readonly FRONT_PARTS: Record<string, foundry.applications.api.HandlebarsApplicationMixin.HandlebarsTemplatePart> = {
     tabs: {
       template: "templates/generic/tab-navigation.hbs"
     },
     basics: {
       template: `modules/${__MODULE_ID__}/templates/editObject/basics.hbs`
-    },
+    }
+  }
+
+  public static readonly BACK_PARTS: Record<string, foundry.applications.api.HandlebarsApplicationMixin.HandlebarsTemplatePart> = {
     effects: {
       template: `modules/${__MODULE_ID__}/templates/editObject/effects.hbs`
     },
     triggers: {
       template: `modules/${__MODULE_ID__}/templates/editObject/triggers.hbs`
     },
+    permissions: {
+      template: `modules/${__MODULE_ID__}/templates/editObject/permissions.hbs`
+    },
     footer: {
       template: "templates/generic/form-footer.hbs"
     }
   }
 
-  static DEFAULT_OPTIONS = {
-    tag: "form",
-    position: {
-      width: 550
-    },
+  public static readonly PARTS: Record<string, foundry.applications.api.HandlebarsApplicationMixin.HandlebarsTemplatePart> = {
+    ...StageObjectApplication.FRONT_PARTS,
+    ...StageObjectApplication.BACK_PARTS
+  };
+
+  public static readonly DEFAULT_OPTIONS: Record<string, unknown> = {
     window: {
       icon: "fas fa-gear",
       contentClasses: ["stage-manager", "standard-form"]
     },
+    position: {
+      width: 600
+    },
+    tag: "form",
     form: {
+      submitOnChange: false,
       closeOnSubmit: true,
       // eslint-disable-next-line @typescript-eslint/unbound-method
-      handler: StageObjectApplication.onSubmit,
-
+      handler: StageObjectApplication.onSubmit
     },
-
     actions: {
       // eslint-disable-next-line @typescript-eslint/unbound-method
-      showBounds: StageObjectApplication.ShowVisualBounds,
+      showBounds: StageObjectApplication.ShowBounds,
       // eslint-disable-next-line @typescript-eslint/unbound-method
-      hideBounds: StageObjectApplication.HideVisualBounds,
+      hideBounds: StageObjectApplication.HideBounds,
       // eslint-disable-next-line @typescript-eslint/unbound-method
       locationPresets: StageObjectApplication.ToggleLocationPresets,
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      addTrigger: StageObjectApplication.AddTrigger,
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      addTriggerArgument: StageObjectApplication.AddTriggerArgument,
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      removeTriggerArgument: StageObjectApplication.RemoveTriggerArgument,
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      selectTrigger: StageObjectApplication.SelectTrigger,
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      deleteTrigger: StageObjectApplication.DeleteTrigger,
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      addEffect: StageObjectApplication.AddEffect,
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      selectEffect: StageObjectApplication.SelectEffect,
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      deleteEffect: StageObjectApplication.DeleteEffect,
+
       // eslint-disable-next-line @typescript-eslint/unbound-method
       presetTopLeft: StageObjectApplication.SetPresetTopLeft,
       // eslint-disable-next-line @typescript-eslint/unbound-method
@@ -77,170 +112,138 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
       // eslint-disable-next-line @typescript-eslint/unbound-method
       presetBottom: StageObjectApplication.SetPresetBottom,
       // eslint-disable-next-line @typescript-eslint/unbound-method
-      presetBottomRight: StageObjectApplication.SetPresetBottomRight,
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      addTrigger: StageObjectApplication.AddTrigger,
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      selectTrigger: StageObjectApplication.SelectTrigger,
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      deleteTrigger: StageObjectApplication.DeleteTrigger,
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      addTriggerArgument: StageObjectApplication.AddTriggerArgument,
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      removeTriggerArgument: StageObjectApplication.RemoveTriggerArgument,
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      addEffect: StageObjectApplication.AddEffect,
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      selectEffect: StageObjectApplication.SelectEffect,
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      deleteEffect: StageObjectApplication.DeleteEffect
+      presetBottomRight: StageObjectApplication.SetPresetBottomRight
+
     }
   }
 
-  public triggerFormChange() {
+  public static async DeleteEffect(this: StageObjectApplication) {
+    await deleteEffect(this.element);
     this._onChangeForm();
   }
 
-  protected selectedEffectId = "";
+  public static async SelectEffect(this: StageObjectApplication, e: PointerEvent, elem: HTMLSelectElement) {
+    await selectEffect(this.element, elem.value);
+    this._onChangeForm();
+  }
+
+  public static async AddEffect(this: StageObjectApplication) {
+    await addEffect(this.element);
+    this._onChangeForm();
+  }
+
+  protected setX(val: number) {
+    const elem = this.element.querySelector(`input[name="bounds.x"]`);
+    if (elem instanceof HTMLInputElement) elem.value = val.toString();
+  }
+
+  protected setY(val: number) {
+    const elem = this.element.querySelector(`input[name="bounds.y"]`);
+    if (elem instanceof HTMLInputElement) elem.value = val.toString();
+  }
+
+  protected toTop() { this.setY(this.stageObject.actualBounds.top); }
+  protected toLeft() { this.setX(this.stageObject.actualBounds.left); }
+  protected toRight() {
+    this.stageObject.right = this.stageObject.actualBounds.right;
+    this.setX(this.stageObject.x);
+  }
+  protected toBottom() {
+    this.stageObject.bottom = this.stageObject.actualBounds.bottom;
+    this.setY(this.stageObject.y);
+  }
+
+
+  public static SetPresetTopLeft(this: StageObjectApplication) {
+    this.toTop();
+    this.toLeft();
+    this._onChangeForm();
+  }
+
+  public static SetPresetTop(this: StageObjectApplication) {
+    this.toTop();
+    this._onChangeForm();
+  }
+
+  public static SetPresetTopRight(this: StageObjectApplication) {
+    this.toTop();
+    this.toRight();
+    this._onChangeForm();
+  }
+
+  public static SetPresetLeft(this: StageObjectApplication) {
+    this.toLeft();
+    this._onChangeForm();
+  }
+
+  public static SetPresetRight(this: StageObjectApplication) {
+    this.toRight();
+    this._onChangeForm();
+  }
+
+  public static SetPresetBottomLeft(this: StageObjectApplication) {
+    this.toLeft();
+    this.toBottom();
+    this._onChangeForm();
+  }
+
+  public static SetPresetBottom(this: StageObjectApplication) {
+    this.toBottom();
+    this._onChangeForm();
+  }
+
+  public static SetPresetBottomRight(this: StageObjectApplication) {
+    this.toBottom();
+    this.toRight();
+    this._onChangeForm();
+  }
+
+  public static SetPresetCenter(this: StageObjectApplication) {
+    this.setX(this.stageObject.actualBounds.left + (this.stageObject.actualBounds.width / 2));
+    this.setY(this.stageObject.actualBounds.top + (this.stageObject.actualBounds.height / 2));
+
+    this._onChangeForm();
+  }
 
   public static async DeleteTrigger(this: StageObjectApplication) {
     await deleteTrigger(this.element);
-    this.triggerFormChange();
+    this._onChangeForm();
+  }
+
+  // eslint-disable-next-line @typescript-eslint/require-await
+  public static async SelectTrigger(this: StageObjectApplication, e: PointerEvent, elem: HTMLSelectElement) {
+    try {
+      const option = elem.options[elem.selectedIndex];
+      if (!(option instanceof HTMLOptionElement)) return;
+      if (!option.dataset.serialized) return;
+
+      void editTrigger(this.element, JSON.parse(option.dataset.serialized) as SerializedTrigger);
+    } catch (err) {
+      logError(err as Error);
+    }
   }
 
   public static RemoveTriggerArgument(this: StageObjectApplication, e: PointerEvent, elem: HTMLElement) {
-    const row = elem.closest(`[data-role="custom-argument"]`);
-    if (row instanceof HTMLElement) row.remove();
+    try {
+      const row = elem.closest(`[data-role="custom-argument"]`);
+      if (row instanceof HTMLElement) row.remove();
+    } catch (err) {
+      logError(err as Error);
+    }
   }
 
   public static async AddTriggerArgument(this: StageObjectApplication) {
-    const container = this.element.querySelector(`[data-role="customArguments"]`);
-    if (!(container instanceof HTMLElement)) return;
+    try {
+      const container = this.element.querySelector(`[data-role="customArguments"]`);
+      if (!(container instanceof HTMLElement)) return;
 
-    // Count arguments
-    const count = container.querySelectorAll(`[data-role="custom-argument"]`).length;
-
-    const content = await renderTemplate(`modules/${__MODULE_ID__}/templates/editObject/customArgument.hbs`, { count });
-    container.innerHTML += content;
-  }
-
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public static async DeleteEffect(this: StageObjectApplication, e: PointerEvent, element: HTMLSelectElement) {
-
-    const idElem = this.element.querySelector(`input[name="effect.id"]`);
-    if (!(idElem instanceof HTMLInputElement)) return;
-    const id = idElem.value;
-    const option = this.element.querySelector(`select#effectsList option[value="${id}"]`);
-    if (!(option instanceof HTMLOptionElement)) return;
-
-    const confirm = await foundry.applications.api.DialogV2.confirm({
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      window: ({ title: localize(`STAGEMANAGER.EDITDIALOG.DELETEEFFECT.TITLE`, { type: option.dataset.type ?? "" }) } as any),
-      content: localize("STAGEMANAGER.EDITDIALOG.DELETEEFFECT.MESSAGE").replaceAll("\n", "<br>")
-    });
-    if (confirm) {
-      option.remove();
-      this.selectEffect("");
-      this.triggerFormChange();
+      const count = container.querySelectorAll(`[data-role="custom-argument"]`).length;
+      const content = await renderTemplate(`modules/${__MODULE_ID__}/templates/editObject/customArgument.hbs`, { count });
+      container.innerHTML += content;
+    } catch (err) {
+      logError(err as Error);
     }
   }
-
-
-  public static SelectEffect(this: StageObjectApplication, e: PointerEvent, element: HTMLSelectElement) {
-    this.selectEffect(element.value);
-  }
-
-  protected selectEffect(id: string) {
-
-    const section = this.element.querySelector(`[data-role="effect-config"]`);
-    if (!(section instanceof HTMLElement)) return;
-
-    section.innerHTML = "";
-    const option = this.element.querySelector(`select[name="effectsList"] option[value="${id}"]`);
-
-    if (option instanceof HTMLOptionElement) {
-      if (typeof option.dataset.serialized !== "string") return;
-      const deserialized = JSON.parse(option.dataset.serialized) as SerializedEffect;
-      const template = getEffectTemplate(deserialized.type);
-      if (!template) return;
-      renderTemplate(`modules/${__MODULE_ID__}/templates/effects/${template}`, {
-        ...deserialized,
-        serialized: option.dataset.serialized,
-        bgTypeSelect: {
-          "image": "STAGEMANAGER.EDITDIALOG.BGTYPES.IMAGE",
-          "color": "STAGEMANAGER.EDITDIALOG.BGTYPES.COLOR"
-        }
-      })
-        .then(content => {
-          section.innerHTML = content;
-          this.setBgSelectorConfig();
-          //effect.backgroundType
-          const bgSelector = section.querySelector(`[name="effect.backgroundType"]`);
-          if (bgSelector instanceof HTMLSelectElement) {
-            bgSelector.addEventListener("change", () => { this.setBgSelectorConfig(); })
-          }
-
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-          ColorPicker.install();
-        })
-        .catch((err: Error) => { logError(err); })
-        ;
-      const deleteButton = this.element.querySelector(`button[data-action="deleteEffect"]`);
-      if (deleteButton instanceof HTMLButtonElement) deleteButton.removeAttribute("disabled");
-
-    } else {
-      const deleteButton = this.element.querySelector(`button[data-action="deleteEffect"]`);
-      if (deleteButton instanceof HTMLButtonElement) deleteButton.removeAttribute("disabled");
-    }
-  }
-
-  protected setBgSelectorConfig() {
-    const selector = this.element.querySelector(`[name="effect.backgroundType"]`);
-    const configs = this.element.querySelectorAll(`[data-background-type]`);
-    for (const config of configs)
-      (config as HTMLElement).style.display = "none";
-
-    if (selector instanceof HTMLSelectElement) {
-      const config = this.element.querySelector(`[data-background-type="${selector.value}"]`);
-      if (config instanceof HTMLElement)
-        config.style.display = "block";
-    }
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public static async AddEffect(this: StageObjectApplication, e: PointerEvent, element: HTMLElement) {
-    const selected = await selectEffectDialog();
-    if (!selected) return;
-
-    const handler = getEffectHandler(selected);
-    if (!handler) return;
-
-    const effect = defaultEffect(selected);
-    if (!effect) return;
-
-    effect.id = foundry.utils.randomID();
-
-    const filter = deserializeEffect(effect);
-    if (!(filter instanceof PIXI.Filter)) return;
-
-    if (Array.isArray(this.stageObject.effects)) this.stageObject.effects.push(filter);
-    else this.stageObject.effects = [filter];
-
-    const selectList = this.element.querySelector(`select[name="effectsList"]`);
-    if (!(selectList instanceof HTMLSelectElement)) return;
-
-    const option = document.createElement("option");
-    option.setAttribute("value", effect.id);
-    option.dataset.type = effect.type;
-    option.dataset.serialized = JSON.stringify(effect);
-    option.innerText = localize(`STAGEMANAGER.EDITDIALOG.EFFECTS.${handler.label}`);
-    selectList.add(option);
-    selectList.value = effect.id;
-    this.selectEffect(effect.id);
-    this.triggerFormChange();
-  }
-
 
   public static async AddTrigger(this: StageObjectApplication) {
     try {
@@ -250,257 +253,185 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
     }
   }
 
-  public static async SelectTrigger(this: StageObjectApplication) {
+  public static ToggleLocationPresets(this: StageObjectApplication) {
     try {
-      await editTrigger(this.element);
+      // Use jquery on this one to animate the slide in/out
+      const section = $(this.element).find("#location-presets");
+      const visibility = section.css("display");
+      if (visibility === "none") section.slideDown();
+      else section.slideUp();
     } catch (err) {
       logError(err as Error);
     }
   }
 
-  protected toLeft(): this {
-    // log("To left");
-    const elem = $(this.element);
-    const bounds = elem.find("#restrictToVisualArea").is(":checked") ? StageManager.VisualBounds : StageManager.ScreenBounds;
-    elem.find("[name='bounds.x']").val(bounds.left);
-    // this.triggerFormChange();
-    return this;
-  }
-
-  protected toTop(): this {
-    // log("To top");
-    const elem = $(this.element);
-    const bounds = elem.find("#restrictToVisualArea").is(":checked") ? StageManager.VisualBounds : StageManager.ScreenBounds;
-    elem.find("[name='bounds.y']").val(bounds.top);
-    // this.triggerFormChange();
-    return this;
-  }
-
-  protected toRight(): this {
-    // log("To right");
-    const elem = $(this.element);
-    const bounds = elem.find("#restrictToVisualArea").is(":checked") ? StageManager.VisualBounds : StageManager.ScreenBounds;
-    elem.find("[name='bounds.x']").val(bounds.right);
-    // this.triggerFormChange();
-    return this;
-  }
-
-  protected toBottom(): this {
-    // log("To bottom");
-    const elem = $(this.element);
-    const bounds = elem.find("#restrictToVisualArea").is(":checked") ? StageManager.VisualBounds : StageManager.ScreenBounds;
-    elem.find("[name='bounds.y']").val(bounds.bottom);
-    // this.triggerFormChange();
-    return this;
-  }
-
-  protected toCenter(): this {
-    // log("To center");
-    const elem = $(this.element);
-    elem.find("[name='bounds.x']").val(window.innerWidth / 2);
-    elem.find("[name='bounds.y']").val(window.innerHeight / 2);
-    // this.triggerFormChange();
-    return this;
-  }
-
-
-  public static SetPresetTopLeft(this: StageObjectApplication) { this.toTop().toLeft().triggerFormChange(); }
-  public static SetPresetLeft(this: StageObjectApplication) { this.toLeft().triggerFormChange(); }
-  public static SetPresetTop(this: StageObjectApplication) { this.toTop().triggerFormChange(); }
-  public static SetPresetTopRight(this: StageObjectApplication) { this.toTop().toRight().triggerFormChange(); }
-  public static SetPresetRight(this: StageObjectApplication) { this.toRight().triggerFormChange(); }
-  public static SetPresetCenter(this: StageObjectApplication) { this.toCenter().triggerFormChange(); }
-  public static SetPresetBottomLeft(this: StageObjectApplication) { this.toBottom().toLeft().triggerFormChange(); }
-  public static SetPresetBottom(this: StageObjectApplication) { this.toBottom().triggerFormChange(); }
-  public static SetPresetBottomRight(this: StageObjectApplication) { this.toBottom().toRight().triggerFormChange(); }
-
-  public static ToggleLocationPresets(this: StageObjectApplication) {
-    // $(this.element).find("#location-presets").css("display", )
-    const section = $(this.element).find("#location-presets");
-    const visibility = section.css("display");
-    if (visibility === "none") section.slideDown();
-    else section.slideUp();
-    // section.css("display", visibility === "block" ? "none" : "block");
-  }
-
-  protected wasSubmitted = false;
-  public readonly closed: Promise<v | undefined>;
-  #resolve: (val?: v | PromiseLike<v>) => void = () => { /* empty */ };
-  // eslint-disable-next-line no-unused-private-class-members
-  #reject: (err: any) => void = () => { /* Empty */ };
-
-  public static ShowVisualBounds(this: StageObjectApplication) {
-    StageManager.HideVisualBounds();
+  public static ShowBounds(this: StageObjectApplication) {
     StageManager.ShowVisualBounds();
-    $("[data-action='showBounds']").css("display", "none");
-    $("[data-action='hideBounds']").css("display", "block");
+    const showBounds = this.element.querySelector(`[data-action="showBounds"]`);
+    const hideBounds = this.element.querySelector(`[data-action="hideBounds"]`);
+    if (showBounds instanceof HTMLElement) showBounds.style.display = "none";
+    if (hideBounds instanceof HTMLElement) hideBounds.style.display = "block";
   }
 
-  public static HideVisualBounds(this: StageObjectApplication) {
+  public static HideBounds(this: StageObjectApplication) {
     StageManager.HideVisualBounds();
-    $("[data-action='showBounds']").css("display", "block");
-    $("[data-action='hideBounds']").css("display", "none");
+    const showBounds = this.element.querySelector(`[data-action="showBounds"]`);
+    const hideBounds = this.element.querySelector(`[data-action="hideBounds"]`);
+    if (showBounds instanceof HTMLElement) showBounds.style.display = "block";
+    if (hideBounds instanceof HTMLElement) hideBounds.style.display = "none";
   }
 
-  protected parseFormData(data: Record<string, unknown>): v {
-    // try {
-    //   console.group("Parsing form data");
-    //   console.log("Data:", data);
-    const parsed = foundry.utils.expandObject(data) as v;
-    // console.log("Initial parsing:", parsed);
+  public get title() {
+    return localize("STAGEMANAGER.EDITDIALOG.TITLE", { name: this.stageObject.name ?? this.stageObject.id });
+  }
 
-    if (!parsed.skew) parsed.skew = { x: 0, y: 0 };
+  protected submitted = false;
+
+  public static onSubmit(this: StageObjectApplication) {
+    this.submitted = true;
+  }
+
+  protected cleanup() {
+    try {
+      this.#reject = undefined;
+      this.#resolve = undefined;
+      this._closed = undefined;
+      try {
+        if (this.ghost instanceof PIXI.DisplayObject) this.ghost.destroy();
+      } catch { /* empty */ }
+      this._ghost = undefined;
+      this._original = undefined;
+      this.stageObject.synchronize = true;
+    } catch (err) {
+      logError(err as Error);
+    }
+  }
 
 
-    if (parsed.scope === "user") {
-      parsed.scopeOwners = data["scopeOwners.users"] as string[] ?? [];
-    } else if (parsed.scope === "scene") {
-      parsed.scopeOwners = data["scopeOwners.scenes"] as string[] ?? [];
-    } else {
-      parsed.scopeOwners = [];
+  protected parseForm(form: HTMLFormElement): v {
+    const formData = new FormDataExtended(form, {});
+    const data = foundry.utils.expandObject(formData.object) as Record<string, unknown>;
+
+
+    const bounds = data.restrictToVisualArea ? StageManager.VisualBounds : StageManager.ScreenBounds;
+
+    data.bounds = {
+      ...(typeof data.bounds === "object" ? data.bounds : {}),
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      x: (data.bounds as any).x / bounds.width,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      y: (data.bounds as any).y / bounds.height
     }
 
-    // log("Scope owners:", parsed.scopeOwners);
+    data.triggers = {};
 
-    const bounds = parsed.restrictToVisualArea ? StageManager.VisualBounds : StageManager.ScreenBounds;
-    parsed.bounds.x /= bounds.width;
-    parsed.bounds.y /= bounds.height;
-    parsed.bounds.width /= bounds.width;
-    parsed.bounds.height /= bounds.height;
+    // Parse triggers
+    data.triggers = parseTriggerList(form);
 
-    if (parsed.triggers) {
-      if (typeof parsed.triggers === "string") {
-        const temp = JSON.parse(parsed.triggers) as SerializedTrigger;
-        parsed.triggers = {
-          [temp.event]: [temp]
-        };
-      } else if (Array.isArray(parsed.triggers)) {
-        const triggers = [...parsed.triggers] as string[];
-        parsed.triggers = {};
-        for (const trigger of triggers) {
-          const temp = JSON.parse(trigger) as SerializedTrigger;
-          if (Array.isArray(parsed.triggers[temp.event])) parsed.triggers[temp.event]?.push(temp);
-          else parsed.triggers[temp.event] = [temp];
-        }
-      }
-    } else {
-      parsed.triggers = {};
-    }
-
-    // Effects
-    // Check to see if we're editing an effect
-    const effectConfig = this.element.querySelector(`[data-role="effect-config"]`);
-    if (effectConfig instanceof HTMLElement) {
-      // We *are* editing one
-      const typeElem = effectConfig.querySelector(`[name="effect.type"]`)
-      const effectType = typeElem instanceof HTMLInputElement ? typeElem.value : "";
-      const handler = getEffectHandler(effectType);
-      if (handler) {
-        const fromForm = handler.fromForm(effectConfig);
-        if (fromForm) {
-          const option = this.element.querySelector(`option[value="${fromForm.id}"]`);
-          if (option instanceof HTMLOptionElement) {
-            option.dataset.serialized = JSON.stringify(fromForm);
-          }
-        }
-      }
-    }
-
-
-    const options = Array.from(this.element.querySelectorAll(`select[name="effectsList"] option`).values()) as HTMLElement[];
-
-    parsed.effects = options.map(option => option.dataset.serialized ? JSON.parse(option.dataset.serialized) as SerializedEffect : "").filter(item => !!item);
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    delete (parsed as any).effect;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    delete (parsed as any).effectsList;
-
-    // Triggers
-    const triggerForm = parseTriggerFormData(parsed as Record<string, unknown>);
+    const triggerForm = parseTriggerFormData(data);
     if (triggerForm) {
-      parsed.triggers = {
-        [triggerForm.event]: [triggerForm]
-      }
-      setTriggerOption(this.element, triggerForm);
-    } else {
-      parsed.triggers = {};
-    }
-
-    // Parse trigger list
-    const triggers = Array.from(this.element.querySelectorAll(`select[name="triggerList"] option`).values()) as HTMLOptionElement[];
-    for (const trigger of triggers) {
-      const event = trigger.dataset.event as keyof TriggerEventSignatures;
-      if (!event) continue;
-      const serialized = trigger.dataset.serialized;
-      if (!serialized) continue;
-      const deserialized = JSON.parse(serialized) as SerializedTrigger;
-
-      if (Array.isArray(parsed.triggers[event]) && parsed.triggers[event].findIndex(item => item.id === deserialized.id) === -1) parsed.triggers[event].push(deserialized);
-      else parsed.triggers[event] = [deserialized];
-    }
-
-
-
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    delete (parsed as any).trigger;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    delete (parsed as any).triggerList;
-
-    return parsed;
-    // } finally {
-    //   console.groupEnd();
-    // }
-  }
-
-  protected submittedObject: v | undefined = undefined;
-  public static onSubmit(this: StageObjectApplication, event: Event, form: HTMLFormElement, formData: FormDataExtended) {
-    this.wasSubmitted = true;
-    this.submittedObject = this.parseFormData(formData.object);
-  }
-
-  protected onRevert(): SerializedStageObject {
-    return this.originalObject;
-  }
-
-  protected _onClose(): void {
-    delete this.stageObject.apps[this.appId];
-    if (this.ghost) this.ghost.destroy();
-
-    StageManager.HideVisualBounds();
-
-    if (!this.stageObject.destroyed) {
-      this.stageObject.synchronize = this.wasSynced;
-
-      if (this.wasSubmitted) {
-        if (this.submittedObject) this.stageObject.deserialize(this.submittedObject);
-        this.#resolve(this.submittedObject);
+      const triggers = data.triggers as Record<string, SerializedTrigger[]>;
+      if (Array.isArray(triggers[triggerForm.event])) {
+        const index = triggers[triggerForm.event].findIndex(item => item.id === triggerForm.id);
+        if (index !== -1) triggers[triggerForm.event][index] = triggerForm;
+        else triggers[triggerForm.event].push(triggerForm);
       } else {
-        const reverted = this.onRevert();
-        this.stageObject.deserialize(reverted);
-        this.#resolve();
+        triggers[triggerForm.event] = [triggerForm];
       }
-      this.stageObject.displayObject.removeFromParent();
-    } else {
-      this.#resolve();
+
+      setTriggerOption(this.element, triggerForm);
     }
-    
+
+
+
+    delete data.triggerList;
+    delete data.trigger;
+
+    // Parse effects
+    const effectsList = parseEffectList(form);
+    data.effects = effectsList;
+
+    const effectForm = parseEffectFormData(form);
+    if (effectForm) {
+      const index = effectsList.findIndex(item => item.id === effectForm.id);
+      if (index !== -1) effectsList[index] = effectForm;
+      else effectsList.push(effectForm);
+
+      setEffectOption(form, effectForm);
+    }
+
+
+
+    delete data.effect;
+    delete data.effectsList;
+
+    return {
+      ...data
+    } as unknown as v;
+
   }
 
-  protected abstract getTabs(): Record<string, Tab>;
+  _onChangeForm(): void {
+    if (!(this.element instanceof HTMLFormElement)) throw new LocalizedError("INVALIDFORMELEMENT");
+    const data = this.parseForm(this.element);
+    log("Form change:", data);
+    this.stageObject.deserialize(data);
+  }
 
-  private _getTabs(): Record<string, Tab> {
-    return {
+  protected _onClose(options: { force?: boolean | undefined; position?: { top?: number | undefined; left?: number | undefined; width?: number | 'auto' | undefined; height?: number | 'auto' | undefined; scale?: number | undefined; zIndex?: number | undefined; } | undefined; window?: { title?: string | undefined; icon?: string | false | undefined; controls?: boolean | undefined; } | undefined; parts?: string[] | undefined; isFirstRender?: boolean | undefined; }): void {
+    try {
+      super._onClose(options);
+      if (this.ghost instanceof PIXI.DisplayObject) this.ghost.destroy();
+
+
+      if (!this.submitted && this.original) {
+        log("reverting");
+        this.stageObject.deserialize(this.original);
+      }
+
+      if (this.#resolve) this.#resolve();
+    } catch (err) {
+      logError(err as Error);
+      if (this.#reject) this.#reject(err as Error);
+    } finally {
+      this.cleanup();
+    }
+  }
+
+  protected getTabs(): Record<string, foundry.applications.api.ApplicationV2.Tab> {
+    return {}
+  }
+
+  protected async _prepareContext(options: { force?: boolean | undefined; position?: { top?: number | undefined; left?: number | undefined; width?: number | 'auto' | undefined; height?: number | 'auto' | undefined; scale?: number | undefined; zIndex?: number | undefined; } | undefined; window?: { title?: string | undefined; icon?: string | false | undefined; controls?: boolean | undefined; } | undefined; parts?: string[] | undefined; isFirstRender?: boolean | undefined; }): Promise<EmptyObject> {
+    const context = await super._prepareContext(options) as Record<string, unknown>
+    const bounds = this.stageObject.actualBounds;
+
+    const serialized = this.stageObject.serialize();
+    context.stageObject = serialized;
+
+    // De-normalize
+    serialized.bounds = {
+      ...serialized.bounds,
+      x: serialized.bounds.x * bounds.width,
+      y: serialized.bounds.y * bounds.height
+    }
+
+    context.layerSelect = {
+      primary: "STAGEMANAGER.LAYERS.PRIMARY",
+      foreground: "STAGEMANAGER.LAYERS.FOREGROUND",
+      background: "STAGEMANAGER.LAYERS.BACKGROUND"
+    }
+
+    context.tabs = {
       basics: {
         id: "basics",
         cssClass: "active",
         group: "primary",
         active: false,
-        icon: `fas fa-cubes`,
-        label: `STAGEMANAGER.TABS.BASICS`
+        icon: "fas fa-cubes",
+        label: "STAGEMANAGER.TABS.BASICS"
       },
-      ...(this.getTabs()),
+      ...this.getTabs(),
       effects: {
         id: "effects",
         group: "primary",
@@ -514,200 +445,114 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
         group: "primary",
         active: false,
         cssClass: "",
-        icon: `fas fa-forward`,
+        icon: "fas fa-forward",
         label: "STAGEMANAGER.TABS.TRIGGERS"
+      },
+      permissions: {
+        id: "permissions",
+        group: "primary",
+        active: false,
+        cssClass: "",
+        icon: "fas fa-shield",
+        label: "STAGEMANAGER.TABS.PERMISSIONS"
       }
     }
-  }
+
+    context.effects = serialized.effects.map(effect => {
+      const handler = getEffectHandler(effect.type);
+      if (!handler) throw new Error();
+      return {
+        ...effect,
+        serialized: JSON.stringify(effect),
+        label: `STAGEMANAGER.EDITDIALOG.EFFECTS.${handler.label}`
+      };
+    });
 
 
-  protected getElementValue<t>(parent: HTMLElement, selector: string, attr: string): t | undefined {
-    const elem = parent.querySelector(selector);
-    if (!(elem instanceof HTMLElement)) return;
-    return elem.getAttribute(attr) as t;
-  }
+    context.triggers = Object.values(serialized.triggers).flat().map(trigger => {
+      const triggerClass = getTriggerActionType(trigger.action);
+      if (!triggerClass) throw new InvalidTriggerError(trigger.action);
+      return {
+        trigger,
+        serialized: JSON.stringify(trigger),
+        actionLabel: triggerClass.getDialogLabel(trigger),
+        eventLabel: `STAGEMANAGER.TRIGGERS.EVENTS.${trigger.event.toUpperCase()}`
+      };
+    });
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  protected async _preparePartContext(partId: string, context: this extends ApplicationV2.Internal.Instance<any, any, infer RenderContext extends AnyObject> ? RenderContext : unknown, options: DeepPartial<HandlebarsApplicationMixin.HandlebarsRenderOptions>): Promise<this extends ApplicationV2.Internal.Instance<any, any, infer RenderContext extends AnyObject> ? RenderContext : unknown> {
-    const tabs = this._getTabs();
-    context.tab = tabs[partId];
+    // context.effects = [];
+    // context.triggers = [];
+
     context.buttons = [
       { type: "submit", icon: "fas fa-save", label: "SETTINGS.Save" }
-    ]
+    ];
 
-    return Promise.resolve(context);
+
+    return context as EmptyObject;
   }
 
-  _onChangeForm(): void {
+  protected async _preparePartContext(partId: string, ctx: this extends foundry.applications.api.ApplicationV2.Internal.Instance<any, any, infer RenderContext extends AnyObject> ? RenderContext : unknown, options: DeepPartial<foundry.applications.api.HandlebarsApplicationMixin.HandlebarsRenderOptions>): Promise<this extends foundry.applications.api.ApplicationV2.Internal.Instance<any, any, infer RenderContext extends AnyObject> ? RenderContext : unknown> {
+    const context = await super._preparePartContext(partId, ctx, options) as Record<string, unknown>;
 
-    const form = this.element instanceof HTMLFormElement ? new FormDataExtended(this.element) : new FormDataExtended($(this.element).find("form")[0]);
-    const data = this.parseFormData(form.object);
 
-    this.stageObject.deserialize(data);
-  }
+    context.tab = (context.tabs as Record<string, foundry.applications.api.ApplicationV2.Tab>)[partId];
+    // switch (partId) {
 
-  protected prepareStageObject(): v {
-    const bounds = this.originalObject.restrictToVisualArea ? StageManager.VisualBounds : StageManager.ScreenBounds;
-    return {
-      ...(foundry.utils.deepClone(this.originalObject)),
-      bounds: {
-        x: this.originalObject.bounds.x * bounds.width,
-        y: this.originalObject.bounds.y * bounds.height,
-      }
-    }
+    // }
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return context as any;
   }
 
 
-
-  protected ghost: PIXI.DisplayObject | null = null;
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  protected _onRender(context: StageObjectApplicationContext, options: StageObjectApplicationOptions): void {
+  protected _onRender(context: Record<string, undefined>, options: { force?: boolean | undefined; position?: { top?: number | undefined; left?: number | undefined; width?: number | 'auto' | undefined; height?: number | 'auto' | undefined; scale?: number | undefined; zIndex?: number | undefined; } | undefined; window?: { title?: string | undefined; icon?: string | false | undefined; controls?: boolean | undefined; } | undefined; parts?: string[] | undefined; isFirstRender?: boolean | undefined; }): void {
     try {
-    // Set edit trigger event listeners
-    setTriggerEventListeners(this.element);
-    const triggers = Object.values(this.stageObject.triggers).flat();
-    for (const trigger of triggers)
-      setTriggerOption(this.element, trigger);
+      super._onRender(context, options);
 
-    // Create ghost
-    this.stageObject.synchronize = false;
-    if (this.stageObject.layer) StageManager.setStageObjectLayer(this.stageObject, this.stageObject.layer);
-    // addEventListeners(this.element);
+      this.submitted = false;
+      this.stageObject.synchronize = false;
 
-    this.setScopeOwners();
-    const scopeSelect = this.element.querySelector(`select[name="scope"]`);
-    if (scopeSelect instanceof HTMLSelectElement)
-      scopeSelect.addEventListener("input", () => { this.setScopeOwners(); });
+      this._closed = new Promise<v | undefined>((resolve, reject) => {
+        this.#resolve = resolve;
+        this.#reject = reject;
+      });
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    ColorPicker.install();
-
-    this.ghost = this.prepareDragGhost();
-
-    const layer = StageManager.layers[this.options?.layer ?? "primary"];
-    if (layer) {
-      layer.addChild(this.stageObject.displayObject);
-      layer.addChild(this.ghost);
-      this.ghost.zIndex = this.stageObject.displayObject.zIndex - 0.5;
-    }
-  } catch (err) {
-    if (this.ghost) this.ghost.destroy();
-    logError(err as Error);
-  }
-  }
+      options.window = {
+        ...(options.window ? options.window : {}),
+        title: localize("STAGEMANAGER.EDITDIALOG.TITLE", { name: this.stageObject.name })
+      }
 
 
+      if (options.isFirstRender)
+        addEventListeners(this.element);
 
+      // loadTriggers(this.element, this.stageObject);
 
-  protected setScopeOwners() {
-    const select = this.element.querySelector(`select[name="scope"]`);
-    if (!(select instanceof HTMLSelectElement)) return;
+      const ghost = this.stageObject.createDragGhost();
+      this._ghost = ghost;
+      ghost.alpha = 0.5;
+      ghost.zIndex = this.stageObject.zIndex - 1;
 
-    const scope = select.value;
-    const sections = this.element.querySelectorAll(`[data-scope]`) as unknown as HTMLElement[];
-    for (const section of sections)
-      section.style.display = scope === section.dataset.scope ? "block" : "none";
-  }
+      // ghost.alpha = this.stageObject.alpha;
+      // this.stageObject.alpha = .5;
+      this.stageObject.displayObject.parent.addChild(ghost);
 
-  protected normalizeBounds(bounds: { x: number, y: number, width: number, height: number }): { x: number, y: number, width: number, height: number } {
-    const { width, height } = this.stageObject.actualBounds;
+      ghost.interactive = false;
+      ghost.interactiveChildren = false;
 
-    return {
-      x: bounds.x / width,
-      y: bounds.y / height,
-      width: bounds.width / width,
-      height: bounds.height / height
+      this._original = this.stageObject.serialize() as v;
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+      ColorPicker.install();
+
+    } catch (err) {
+      logError(err as Error);
+      if (this.#reject) this.#reject(err as Error);
+      this.cleanup();
     }
   }
 
-  protected boundsToScreen(bounds: { x: number, y: number, width: number, height: number }): { x: number, y: number, width: number, height: number } {
-    const { width, height } = this.stageObject.actualBounds;
-
-    return {
-      x: bounds.x * width,
-      y: bounds.y * height,
-      width: bounds.width * width,
-      height: bounds.height * height
-    }
-  }
-
-  protected async _prepareContext(options: { force?: boolean | undefined; position?: { top?: number | undefined; left?: number | undefined; width?: number | "auto" | undefined; height?: number | "auto" | undefined; scale?: number | undefined; zIndex?: number | undefined; } | undefined; window?: { title?: string | undefined; icon?: string | false | undefined; controls?: boolean | undefined; } | undefined; parts?: string[] | undefined; isFirstRender?: boolean | undefined; }): Promise<StageObjectApplicationContext> {
-    const serialized = this.prepareStageObject();
-    const triggers = Object.values(serialized.triggers).flat();
-    const context = {
-      ...(await super._prepareContext(options)),
-      stageObject: serialized,
-      originalStageObject: foundry.utils.deepClone(serialized),
-      tabs: this._getTabs(),
-      layerSelect: getLayerContext(),
-      scopeSelect: getScopeContext(),
-      usersSelect: getUsersContext(this.stageObject),
-      scenesSelect: getScenesContext(this.stageObject),
-      ownersSelect: getUsersContext(this.stageObject).reduce((prev, curr) => {
-        const user = fromUuidSync(curr.value) as User;
-        if (user.isGM) return prev;
-        if (this.stageObject.owners.includes(user)) curr.selected = true;
-        else curr.selected = false;
-        return [...prev, curr];
-      }, [] as { value: string, label: string, selected: boolean }[]),
-      effects: serialized.effects.map(effect => {
-        const handler = getEffectHandler(effect.type);
-        if (!handler) throw new Error();
-        return {
-          ...effect,
-          serialized: JSON.stringify(effect),
-          label: `STAGEMANAGER.EDITDIALOG.EFFECTS.${handler.label}`
-        }
-      }),
-      triggers: triggers.map(trigger => {
-        const triggerClass = getTriggerActionType(trigger.action);
-        if (triggerClass) {
-          return {
-            trigger,
-            serialized: JSON.stringify(trigger),
-            actionLabel: triggerClass.getDialogLabel(trigger),
-            eventLabel: `STAGEMANAGER.TRIGGERS.EVENTS.${trigger.event.toUpperCase()}`
-          }
-        }
-      })
-    };
-
-    return context;
-  }
-
-  get title() {
-    return localize("STAGEMANAGER.EDITDIALOG.TITLE", { name: this.stageObject.name ?? this.stageObject.id });
-  }
-
-  protected originalObject: v;
-  protected wasSynced = false;
-
-  protected prepareDragGhost(): PIXI.DisplayObject {
-    const ghost = this.stageObject.createDragGhost();
-    ghost.alpha = 0.5;
-    ghost.x = this.stageObject.x;
-    ghost.y = this.stageObject.y;
-
-    return ghost;
-  }
-
-  public readonly appId: number;
-
-  constructor(public stageObject: t, options?: DeepPartial<StageObjectApplicationConfiguration>) {
-    super(options ?? {});
-    this.appId = parseInt(this.id.substring(4));
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    stageObject.apps[this.appId] = this as any;
-    this.tabGroups.primary = "basics";
-    this.originalObject = stageObject.serialize() as v;
-    this.wasSynced = stageObject.synchronize;
-
-    this.closed = new Promise<v | undefined>((resolve, reject) => {
-      // this.#resolvePromise = resolve;
-      // this.#rejectPromise = reject;
-      this.#resolve = resolve;
-      this.#reject = reject;
-    });
+  constructor(public readonly stageObject: t) {
+    super({});
   }
 }

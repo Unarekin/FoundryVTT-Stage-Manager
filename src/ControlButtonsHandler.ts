@@ -1,6 +1,5 @@
-import { inputPrompt } from "./applications/functions";
 import { InvalidUserError } from "./errors";
-import { localize } from "./functions";
+import { localize, inputPrompt } from "./functions";
 import { InputManager } from "./InputManager";
 import { log, logError } from "./logging";
 import { StageManager } from "./StageManager";
@@ -169,16 +168,16 @@ async function addDialogue() {
   const dialogue = new DialogueStageObject();
 
   if (!dialogue.panel.displayObject.texture.valid) {
-    await new Promise(resolve => {
-      dialogue.panel.displayObject.texture.baseTexture.once("loaded", () => { resolve();});
+    await new Promise<void>(resolve => {
+      dialogue.panel.displayObject.texture.baseTexture.once("loaded", () => { resolve(); });
     });
   }
-  
+
   const obj = await StageManager.CreateStageObject<DialogueStageObject>({
     ...dialogue.serialize()
   });
   dialogue.destroy();
-  
+
   if (obj) StageManager.addStageObject(obj, layer);
 }
 

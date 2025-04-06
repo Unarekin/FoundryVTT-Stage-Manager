@@ -168,3 +168,40 @@ export function durationOfHold(text: string): number {
   const words = text.split(/\W/).filter(char => !!char);
   return (.2 * words.length) + (words.length >= 10 ? 3 : 2);
 }
+
+export async function inputPrompt(content: string, title?: string): Promise<string | undefined> {
+  const input = await foundry.applications.api.DialogV2.wait({
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    window: ({ title: localize(title ?? "") } as any),
+    content: localize(content),
+    rejectClose: false,
+    buttons: [
+      {
+        icon: `<i class="fas fa-check"></i>`,
+        label: localize("Confirm"),
+        action: "confirm",
+        callback: (e, button, dialog) => {
+          const input = dialog.querySelector("#text");
+          if (!(input instanceof HTMLInputElement)) return Promise.resolve();
+          return Promise.resolve(input.value);
+        }
+      },
+      {
+        icon: `<I class="fas fa-times"></i>`,
+        label: localize("Cancel"),
+        action: "cancel"
+      }
+    ]
+  });
+  if (input === "cancel" || !input || input === "confirm") return undefined;
+  else return input;
+}
+
+export async function confirm(title: string, content: string) {
+  return foundry.applications.api.DialogV2.confirm({
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    window: ({ title } as any),
+    content,
+    rejectOnClose: false
+  });
+}

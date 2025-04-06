@@ -1,3 +1,4 @@
+import { localize } from 'functions';
 import { coerceJSON, coerceMacro } from '../coercion';
 import { InvalidMacroError, MacroPermDeniedError } from '../errors';
 import { SerializedMacroTrigger, SerializedTrigger, TriggerEventSignatures } from '../types';
@@ -61,17 +62,17 @@ export class MacroTriggerAction extends TriggerAction {
   public static getDialogLabel(item: SerializedMacroTrigger): string {
     const macro = fromUuidSync(item.macro) as Macro;
     if (!(macro)) throw new InvalidMacroError(item.macro);
-    return game.i18n?.format(`STAGEMANAGER.EDITDIALOG.TRIGGERLABELS.MACRO`, { macro: macro.name }) ?? "";
+    return localize("STAGEMANAGER.EDITDIALOG.TRIGGERLABELS.MACRO", { macro: macro.name });
   }
 
   public static fromFormData(data: Record<string, unknown>): SerializedMacroTrigger {
     return {
-      id: data.id as string ?? foundry.utils.randomID(),
+      id: data.id ? data.id as string : foundry.utils.randomID(),
       label: data.label as string ?? "",
       version: data.version as string ?? "1.0.0",
       action: "macro",
       macro: data.macro as string ?? "",
-      event: data.event as TriggerEventSignatures ?? "",
+      event: data.event as keyof TriggerEventSignatures ?? "",
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       arguments: data.arg ? Object.values(data.arg) : [],
       ...(data.actor ? { actor: data.actor as string } : {})

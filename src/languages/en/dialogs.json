@@ -43,7 +43,8 @@
       "TRIGGERS": "Triggers",
       "VIDEO": "Video",
       "FOREGROUND": "Foreground",
-      "BACKGROUND": "Background"
+      "BACKGROUND": "Background",
+      "PERMISSIONS": "Permissions"
     },
     "VIEWASUSER": {
       "TITLE": "View As User"
