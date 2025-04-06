@@ -2,11 +2,16 @@ import { SerializedImageStageObject } from "../types";
 import { StageObject } from "./StageObject";
 import mime from "../mime";
 import { logError } from "../logging";
+import { ImageStageObjectApplication, StageObjectApplication } from "applications";
 
 const VIDEO_OBJECTS: Record<string, ImageStageObject[]> = {};
 
 export class ImageStageObject extends StageObject<PIXI.Sprite> {
   // #region Properties (3)
+
+  public static readonly ApplicationType: typeof StageObjectApplication = ImageStageObjectApplication as typeof StageObjectApplication;
+  public readonly ApplicationType = ImageStageObject.ApplicationType;
+
   private _path: string;
   public get path() { return this._path; }
   public set path(val) {
@@ -115,8 +120,8 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
 
     const lastScale = { x: this.scale.x, y: this.scale.y };
 
-    this.scale.cb = function(this: PIXI.Transform) {
-      
+    this.scale.cb = function (this: PIXI.Transform) {
+
       // If scale axes have swapped signs, invert the object's anchor for that axis
       if ((lastScale.x * this.scale.x) < 0) temp.anchor.x = 1 - temp.anchor.x;
       if ((lastScale.y * this.scale.y) < 0) temp.anchor.y = 1 - temp.anchor.y;

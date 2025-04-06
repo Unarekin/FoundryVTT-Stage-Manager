@@ -6,16 +6,12 @@ import { Scope, SerializedStageObject, SerializedTrigger, StageLayer, TriggerEve
 import { PinHash } from "./PinHash";
 import deepProxy from "../lib/deepProxy";
 import { CUSTOM_HOOKS } from "../hooks";
-import * as tempTriggers from "../triggeractions";
 import { StageManagerControlsLayer } from "../ControlButtonsHandler";
 import { log, logError, logInfo } from "../logging";
-import { getTriggerActionType } from "../applications/functions";
+import { getTriggerActionType } from "../triggeractions";
 import { deserializeEffect, serializeEffect } from '../lib/effects';
 import { CustomFilter } from "../effects/CustomFilter";
 import { StageObjectApplication } from "applications";
-
-
-const TriggerActions = Object.fromEntries(Object.values(tempTriggers).map(val => [val.type, val]));
 
 const KNOWN_OBJECTS: Record<string, StageObject> = {};
 
@@ -48,6 +44,9 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   public set dirty(val) {
     this._dirty = val;
   }
+
+  public static readonly ApplicationType: typeof StageObjectApplication = StageObjectApplication;
+  public readonly abstract ApplicationType: typeof StageObjectApplication;
 
 
 
@@ -341,26 +340,19 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   }
 
   public async triggerEvent<k extends keyof TriggerEventSignatures>(event: k, args: TriggerEventSignatures[k]) {
-    // console.groupCollapsed("Event Triggered");
-    // console.log("Event:", event)
-    // console.log("StageObject:", this);
-    // console.log("Args:", args);
-    // console.groupEnd();
     log("Event triggered:", event);
 
     if (this.triggers[event]) {
       for (const trigger of this.triggers[event]) {
-        if (TriggerActions[trigger.action]) {
-          const triggerClass = getTriggerActionType(trigger);
-          if (!triggerClass) continue;
-          const scope = {
-            ...triggerClass.getArguments(trigger),
-            ...this.getTriggerArguments(event, args),
-            ...args
-          };
-          const exec = triggerClass.execute(trigger, scope);
-          if (exec instanceof Promise) await exec;
-        }
+        const triggerClass = getTriggerActionType(trigger);
+        if (!triggerClass) continue;
+        const scope = {
+          ...triggerClass.getArguments(trigger),
+          ...this.getTriggerArguments(event, args),
+          ...args
+        };
+        const exec = triggerClass.execute(trigger, scope);
+        if (exec instanceof Promise) await exec;
       }
     }
   }

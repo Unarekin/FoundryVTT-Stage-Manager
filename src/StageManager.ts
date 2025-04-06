@@ -3,27 +3,16 @@ import { ActorStageObject, ImageStageObject, PanelStageObject, StageObject, Text
 import { PartialWithRequired, SerializedStageObject, StageLayer } from './types';
 import { coerceActor, coerceStageObject, coerceUser } from './coercion';
 import { StageObjects } from './StageObjectCollection';
-import { CannotDeserializeError, CanvasNotInitializedError, InvalidActorError, InvalidStageObjectError, InvalidUserError, PermissionDeniedError } from './errors';
+import { CannotDeserializeError, CanvasNotInitializedError, InvalidActorError, InvalidApplicationClassError, InvalidStageObjectError, InvalidUserError, PermissionDeniedError } from './errors';
 import * as stageObjectTypes from "./stageobjects";
 import { addSceneObject, addUserObject, getGlobalObjects, getSceneObjects, getSetting, getUserObjects, removeSceneObject, removeUserObject, setGlobalObjects, setSceneObjects, setSetting, setUserObjects } from './Settings';
 import { CUSTOM_HOOKS } from './hooks';
 import { log, logError } from './logging';
-import { ActorStageObjectApplication, ImageStageObjectApplication, DialogueStageObjectApplication, PanelStageObjectApplication, StageObjectApplication, TextStageObjectApplication, ResourceStageObjectApplication } from './applications';
+import { StageObjectApplication } from './applications';
 import { SynchronizationManager } from './SynchronizationManager';
 import { Conversation } from "./conversation";
-import { Point } from 'Foundry-VTT/src/foundry/common/types.mjs';
 import { durationOfHold, localize } from 'functions';
 
-const ApplicationHash: Record<string, typeof StageObjectApplication> = {
-  image: ImageStageObjectApplication as typeof StageObjectApplication,
-  actor: ActorStageObjectApplication as unknown as typeof StageObjectApplication,
-  text: TextStageObjectApplication as unknown as typeof StageObjectApplication,
-  panel: PanelStageObjectApplication as unknown as typeof StageObjectApplication,
-  dialogue: DialogueStageObjectApplication as unknown as typeof StageObjectApplication,
-  resource: ResourceStageObjectApplication as unknown as typeof StageObjectApplication
-}
-
-const OpenApplications = new WeakMap<StageObject, StageObjectApplication>();
 
 const _copiedObjects: SerializedStageObject[] = [];
 
@@ -216,7 +205,7 @@ export class StageManager {
 
   public static addPanel(path: string, left: number, right: number, top: number, bottom: number, layer?: StageLayer): PanelStageObject | undefined
   public static addPanel(path: string, horizontal: number, vertical: number, layer?: StageLayer): PanelStageObject | undefined
-  public static addPanel(path: string, ...args: (number | StageLayer)[]): PanelStageObject | undefined {
+  public static addPanel(path: string, ...args: unknown[]): PanelStageObject | undefined {
     try {
       const left = args[0] as number;
       const right = ((args.length === 2 || args.length === 3) ? args[0] : args[1]) as number;
@@ -265,19 +254,26 @@ export class StageManager {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/require-await
   public static async CreateStageObject<t extends StageObject = StageObject>(serialized: PartialWithRequired<SerializedStageObject, "type">): Promise<t | undefined> {
-    if (!ApplicationHash[serialized.type]) throw new InvalidStageObjectError(serialized.type);
+    try {
+      // empty
+      return Promise.resolve();
+    } catch (err) {
+      logError(err as Error);
+    }
+    // if (!ApplicationHash[serialized.type]) throw new InvalidStageObjectError(serialized.type);
 
-    const obj = StageManager.deserialize(serialized as SerializedStageObject);
-    if (!(obj instanceof StageObject)) throw new InvalidStageObjectError(serialized.type);
+    // const obj = StageManager.deserialize(serialized as SerializedStageObject);
+    // if (!(obj instanceof StageObject)) throw new InvalidStageObjectError(serialized.type);
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-    const app = (new (ApplicationHash[serialized.type] as any)(obj) as StageObjectApplication);
-    void app.render(true);
-    return app.closed
-      .then(data => {
-        if (data) return StageManager.deserialize(data) as t;
-      })
+    // // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    // const app = (new (ApplicationHash[serialized.type] as any)(obj) as StageObjectApplication);
+    // void app.render(true);
+    // return app.closed
+    //   .then(data => {
+    //     if (data) return StageManager.deserialize(data) as t;
+    //   })
   }
 
   public static async EditStageObject(id: string): Promise<SerializedStageObject | undefined>
@@ -287,43 +283,22 @@ export class StageManager {
     try {
       const obj = coerceStageObject(arg);
       if (!(obj instanceof StageObject)) throw new InvalidStageObjectError(arg);
-      if (OpenApplications.has(obj)) {
-        const app = OpenApplications.get(obj);
-        if (!app) throw new InvalidStageObjectError(arg);
-        app.bringToFront();
+
+      const app = Object.values(obj.apps)[0];
+      if (app instanceof StageObjectApplication) {
+        return app.render()
+          .then(() => {
+            app.bringToFront();
+            return app.closed;
+          });
       } else {
-        return new Promise<SerializedStageObject | undefined>((resolve, reject) => {
-          try {
-            const appClass = ApplicationHash[obj.type];
-            if (!appClass) throw new InvalidStageObjectError(obj.type);
-
-            const layer = obj.layer;
-
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-            const app = new (appClass as any)(obj, { layer: obj.layer ?? "primary" }) as StageObjectApplication;
-            OpenApplications.set(obj, app);
-            app.render(true).catch(reject);
-            app.closed
-              .then(data => {
-                if (!obj.destroyed) {
-                  if (data?.layer && StageManager.layers[data.layer]) StageManager.layers[data.layer].addChild(obj.displayObject);
-                  else if (layer && StageManager.layers[layer]) StageManager.layers[layer].addChild(obj.displayObject);
-                  OpenApplications.delete(obj);
-                  resolve(data);
-                } else {
-                  resolve(undefined);
-                }
-              })
-              .catch((err: Error) => {
-                logError(err);
-                reject(err);
-                if (layer && StageManager.layers[layer]) StageManager.layers[layer].addChild(obj.displayObject);
-              })
-          } catch (err) {
-            OpenApplications.delete(obj);
-            reject(err as Error);
-          }
-        });
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const appClass = obj.ApplicationType as any;
+        if (!appClass) throw new InvalidApplicationClassError(obj.type);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        const app = new appClass(obj) as StageObjectApplication;
+        return app.render(true)
+          .then(() => app.closed);
       }
     } catch (err) {
       logError(err as Error);
@@ -371,7 +346,7 @@ export class StageManager {
       case "user": {
         if (!game.users) return;
         // const users = (game.users as User[]).filter(user => user.canUserModify(game.user, "update"));
-        const users = game.users.filter((user: User) => !!user && user.canUserModify(game.user, "update")) as User[];
+        const users = game.users.filter((user: User) => !!user && user.canUserModify(game.user as User, "update")) as User[];
 
         for (const user of users) {
           if (owners.includes(user.id ?? "") || owners.includes(user.uuid))
@@ -384,7 +359,7 @@ export class StageManager {
       case "scene": {
         if (!game.scenes) return;
 
-        const scenes = game.scenes.filter((scene: Scene) => !!scene && scene.canUserModify(game.user, "update")) as Scene[];
+        const scenes = game.scenes.filter((scene: Scene) => !!scene && scene.canUserModify(game.user as User, "update")) as Scene[];
         for (const scene of scenes) {
           if (owners.includes(scene.id ?? "") || owners.includes(scene.uuid))
             promises.push(addSceneObject(scene, object));
@@ -396,13 +371,13 @@ export class StageManager {
       case "global":
       case "temp": {
         if (game.scenes) {
-          const scenes = game.scenes.filter((scene: Scene) => !!scene && scene.canUserModify(game.user, "update")) as Scene[];
+          const scenes = game.scenes.filter((scene: Scene) => !!scene && scene.canUserModify(game.user as User, "update")) as Scene[];
           for (const scene of scenes)
             promises.push(removeSceneObject(scene, object));
 
         }
         if (game.users) {
-          const users = game.users.filter((user: User) => !!user && user.canUserModify(game.user, "update")) as User[];
+          const users = game.users.filter((user: User) => !!user && user.canUserModify(game.user as User, "update")) as User[];
           for (const user of users)
             promises.push(removeUserObject(user, object));
         }
@@ -424,18 +399,18 @@ export class StageManager {
 
       // Global
       if (game.user.can("SETTINGS_MODIFY"))
-        promises.push(setGlobalObjects(StageManager.StageObjects.global));
+        promises.push(setGlobalObjects(StageManager.StageObjects.global.filter(obj => obj.synchronize)));
 
       // Scene
       if (canvas.scene.canUserModify(game.user, "update"))
-        promises.push(setSceneObjects(canvas.scene, StageManager.StageObjects.scene));
+        promises.push(setSceneObjects(canvas.scene, StageManager.StageObjects.scene.filter(obj => obj.synchronize)));
 
       // Users
 
       const user = StageManager.ViewingAs;
 
       if (user instanceof User && user.canUserModify(game.user, "update")) {
-        const objects = StageManager.StageObjects.filter(obj => obj.scope === "user" && (obj.scopeOwners.includes(game.user?.id ?? "") || obj.scopeOwners.includes(game.user?.uuid ?? "")));
+        const objects = StageManager.StageObjects.filter(obj => obj.synchronize && obj.scope === "user" && (obj.scopeOwners.includes(game.user?.id ?? "") || obj.scopeOwners.includes(game.user?.uuid ?? "")));
         promises.push(setUserObjects(game.user, objects));
       }
 
@@ -561,7 +536,7 @@ export class StageManager {
     return durationOfHold(text);
   }
 
-  public static PasteObjects(position: Point): StageObject[] | undefined {
+  public static PasteObjects(position: PIXI.Point): StageObject[] | undefined {
     try {
       if (!this.CopiedObjects.length) return [];
       if (!StageManager.canAddStageObjects(game.user?.id ?? "")) throw new PermissionDeniedError();
@@ -579,12 +554,12 @@ export class StageManager {
 
       // Calculate average center point of copied objects
       const center = created.reduce((prev, curr) => {
-        const {x, y} = curr.center;
+        const { x, y } = curr.center;
         return {
           x: prev.x + x,
-          y: prev.y +  y
+          y: prev.y + y
         };
-      }, { x: 0, y: 0});
+      }, { x: 0, y: 0 });
 
       center.x /= created.length;
       center.y /= created.length;
