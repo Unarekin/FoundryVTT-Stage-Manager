@@ -127,7 +127,7 @@ export class TextStageObject extends StageObject<PIXI.HTMLText> {
 
   public deserialize(serialized: SerializedTextStageObject) {
     super.deserialize(serialized);
-    this.text = prepareText(serialized.text);
+    this.text = prepareText(serialized.text ?? "");
     this.style = serialized.style as unknown as PIXI.HTMLTextStyle;
     this.scale.x = this.scale.y = 1;
     if (typeof serialized.anchor !== "undefined") {

@@ -79,6 +79,7 @@ export class ActorStageObject extends ImageStageObject {
     const actor = coerceActor(serialized.actor);
     if (!(actor instanceof Actor)) throw new InvalidActorError(serialized.actor);
     super.deserialize(serialized);
+
     this.actor = actor;
     // if (serialized.src) this.path = serialized.src;
   }

@@ -54,10 +54,10 @@ export class PanelStageObject extends StageObject<PIXI.NineSlicePlane> {
       if (serialized.bounds.width < 0) this.scale.x *= -1;
       if (serialized.bounds.height < 0) this.scale.y *= -1;
 
-      this.borders.left = serialized.borders.left;
-      this.borders.right = serialized.borders.right;
-      this.borders.top = serialized.borders.top;
-      this.borders.bottom = serialized.borders.bottom;
+      this.borders.left = serialized.borders?.left ?? 0;
+      this.borders.right = serialized.borders?.right ?? 0;
+      this.borders.top = serialized.borders?.top ?? 0;
+      this.borders.bottom = serialized.borders?.bottom ?? 0;
     });
   }
 
