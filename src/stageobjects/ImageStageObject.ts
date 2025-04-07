@@ -327,11 +327,13 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
       if (serialized.bounds.width < 0) this.scale.x *= -1;
       if (serialized.bounds.height < 0) this.scale.y *= -1;
     });
-    this.dirty = true;
+
     if (typeof serialized.anchor !== "undefined") {
       if (typeof serialized.anchor.x !== "undefined") this.anchor.x = serialized.anchor.x;
       if (typeof serialized.anchor.y !== "undefined") this.anchor.y = serialized.anchor.y;
     }
+
+    this.dirty = true;
   }
 
   public destroy() {

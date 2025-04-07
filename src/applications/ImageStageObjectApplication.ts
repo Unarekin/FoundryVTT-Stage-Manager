@@ -40,6 +40,13 @@ export class ImageStageObjectApplication extends StageObjectApplication<ImageSta
       height: serialized.bounds.height * bounds.height
     }
 
+    context.blendModeSelect = {
+      0: `STAGEMANAGER.BLENDMODES.NORMAL`,
+      1: `STAGEMANAGER.BLENDMODES.ADD`,
+      2: `STAGEMANAGER.BLENDMODES.MULTIPLY`,
+      3: `STAGEMANAGER.BLENDMODES.SCREEN`
+    };
+
     return context as EmptyObject;
   }
 
