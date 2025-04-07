@@ -447,7 +447,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       // this._maskObj.y = this.y;
       this._maskObj.width = this.width;
       this._maskObj.height = this.height;
-      this._maskObj.angle = this.angle;
+      // this._maskObj.angle = this.angle;
     }
   }
 
@@ -1055,9 +1055,8 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
           this._maskObj = PIXI.Sprite.from(val);
           // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
           if ((this.displayObject as any).addChild) (this.displayObject as any).addChild(this._maskObj);
-          this._maskObj.width = this.width;
-          this._maskObj.height = this.height;
           this.displayObject.mask = this._maskObj;
+          this.updateMaskObject();
         }
       }
     } catch (err) {
