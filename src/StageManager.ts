@@ -16,6 +16,8 @@ import { durationOfHold, localize } from 'functions';
 
 const _copiedObjects: SerializedStageObject[] = [];
 
+let screenDarkenObject: ImageStageObject | undefined = undefined;
+
 // #region Classes (1)
 
 /**
@@ -306,6 +308,50 @@ export class StageManager {
     }
   }
 
+  public static async Darken(amount: number, duration = 0): Promise<void> {
+    try {
+      if (!StageManager.canAddStageObjects(game.user?.id ?? "")) throw new PermissionDeniedError();
+      if (!(screenDarkenObject instanceof ImageStageObject)) screenDarkenObject = new ImageStageObject(`modules/${__MODULE_ID__}/assets/black.webp`);
+
+      StageManager.addStageObject(screenDarkenObject, "background");
+      screenDarkenObject.sendToBack();
+      screenDarkenObject.x = screenDarkenObject.y = 0;
+      screenDarkenObject.width = window.innerWidth;
+      screenDarkenObject.height = window.innerHeight;
+
+      if (duration) {
+        screenDarkenObject.alpha = 0;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+        await gsap.to(screenDarkenObject, { alpha: amount, duration: duration / 1000, ease: "none" });
+      } else {
+        screenDarkenObject.alpha = amount;
+      }
+    } catch (err) {
+      logError(err as Error);
+      if (screenDarkenObject instanceof ImageStageObject) screenDarkenObject.destroy();
+      screenDarkenObject = undefined;
+    }
+  }
+
+  public static async Undarken(duration = 0): Promise<void> {
+    try {
+      if (!StageManager.canAddStageObjects(game.user?.id ?? "")) throw new PermissionDeniedError();
+      if (!(screenDarkenObject instanceof ImageStageObject)) return;
+      if (duration) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+        await gsap.to(screenDarkenObject, { alpha: 0, duration: duration / 1000, ease: "none" });
+
+      } else {
+        StageManager.removeStageObject(screenDarkenObject);
+      }
+    } catch (err) {
+      logError(err as Error);
+    } finally {
+      if (screenDarkenObject instanceof ImageStageObject) screenDarkenObject.destroy();
+      screenDarkenObject = undefined;
+    }
+  }
+
   public static HydrateStageObjects(user?: User) {
     if (!canvas?.scene) throw new CanvasNotInitializedError();
     if (!game.user) throw new InvalidUserError(game.user);
@@ -333,6 +379,10 @@ export class StageManager {
         deserialized.dirty = false;
       }
     }
+
+    const darkenObj = StageManager.StageObjects.find(obj => obj.name === "ScreenDarken");
+    if ((darkenObj instanceof ImageStageObject)) screenDarkenObject = darkenObj;
+
   }
 
   public static Conversation(dialogue?: DialogueStageObject): Conversation {
