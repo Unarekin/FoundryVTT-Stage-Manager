@@ -286,7 +286,8 @@ export class StageManager {
 
       const app = Object.values(obj.apps)[0];
       if (app instanceof StageObjectApplication) {
-        return app.render()
+
+        return app.render(!app.rendered)
           .then(() => {
             app.bringToFront();
             return app.closed;

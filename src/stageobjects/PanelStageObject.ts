@@ -139,60 +139,24 @@ export class PanelStageObject extends StageObject<PIXI.NineSlicePlane> {
     })
   }
 
-  public get left() { return this.x + this.actualBounds.left - this.pivot.x; }
-
-  public set left(val) {
-    if (this.left !== val) {
-      this.x = val + this.actualBounds.left + (this.width * this.pivot.x);
-      // this.updateScaledDimensions();
-      this.updatePinLocations();
-      this.updatePivot()
-    }
-  }
-
-  public get center(): PIXI.Point {
-    return new PIXI.Point(
-      this.x + (this.width / 2),
-      this.y + (this.height / 2)
-    );
-  }
-
-  public get right() { return this.actualBounds.right - (this.x + this.pivot.x); }
-
-  public set right(val) {
-    if (this.right !== val) {
-      // Set relative to right side of screen
-      this.displayObject.x = this.actualBounds.right - val - this.pivot.x;
-      this.dirty = true;
-
-      // this.updateScaledDimensions();
-      this.updatePinLocations();
+  public get x() { return super.x; }
+  public set x(val) {
+    if (val !== this.x) {
+      super.x = val;
       this.updatePivot();
     }
   }
 
-  public get top() { return this.y - this.actualBounds.top - this.pivot.y; }
-
-  public set top(val) {
-    if (this.top !== val) {
-      this.y = val + this.actualBounds.top + this.pivot.y;
-      this.dirty = true;
-      // this.updateScaledDimensions();
-      this.updatePinLocations();
+  public get y() { return super.y; }
+  public set y(val) {
+    if (val !== this.y) {
+      super.y = val;
       this.updatePivot();
     }
   }
 
-  public get bottom() { return this.actualBounds.bottom - (this.y + this.pivot.y); }
 
-  public set bottom(val) {
-    if (this.bottom !== val) {
-      this.displayObject.y = this.actualBounds.bottom - val - this.pivot.y;
-      // this.updateScaledDimensions();
-      this.updatePinLocations();
-      this.updatePivot();
-    }
-  }
+
 
   public get baseWidth() { return this.displayObject.texture.width; }
   public get baseHeight() { return this.displayObject.texture.height; }

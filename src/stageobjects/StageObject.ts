@@ -440,15 +440,25 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   // eslint-disable-next-line @typescript-eslint/class-literal-property-style
   public get baseWidth(): number { return 0; }
 
-  public get bottom() { return this.y; }
-  public set bottom(bottom) {
-    if (bottom !== this.y) {
-      this.dirty = true;
-      this.y = bottom;
-      // this.updateScaledDimensions();
-      this.updatePinLocations();
-    }
+
+  public get left() { return this.x - this.actualBounds.left; }
+  public set left(val) { this.x = val + this.actualBounds.left; }
+
+  public get right() { return this.x - this.actualBounds.left + this.width; }
+  public set right(val) { this.x = val + this.actualBounds.left - this.width; }
+
+  public get top() { return this.y - this.actualBounds.top; }
+  public set top(val) { this.y = val + this.actualBounds.top; }
+
+  public get bottom() { return this.y - this.actualBounds.top + this.height; }
+  public set bottom(val) { this.y = val + this.actualBounds.top - this.height; }
+
+  public get center() { return new PIXI.Point(this.x + (this.width / 2), this.y + (this.width / 2)); }
+  public set center(val) {
+    this.x = val.x + this.actualBounds.left - (this.width / 2);
+    this.y = val.y + this.actualBounds.top - (this.height / 2);
   }
+
 
   public get bounds() { return this.displayObject.getBounds(); }
 
@@ -560,19 +570,6 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     }
   }
 
-  public get left() { return this.x; }
-  public set left(left) {
-    if (left !== this.x) {
-      this.x = left;
-      // this.updateScaledDimensions();
-      this.updatePinLocations();
-      this.dirty = true;
-    }
-  }
-
-  public get center(): PIXI.Point {
-    return new PIXI.Point(this.x, this.y);
-  }
 
 
   // public get owners() { return StageManager.getOwners(this.id).reduce((prev: User[], curr: string) => game?.users?.get(curr) ? [...prev, game.users.get(curr) as User] : prev, [] as User[]); }
@@ -599,17 +596,6 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
     if (!resizable) {
       if (this.resizeHandle) this.resizeHandle.visible = false;
-    }
-  }
-
-  public get right() { return this.x + this.width; }
-  public set right(right) {
-    // this.x = right;
-    if (this.x !== this.actualBounds.right - right) {
-      this.dirty = true;
-      this.x = this.actualBounds.right - right;
-      // this.updateScaledDimensions();
-      this.updatePinLocations();
     }
   }
 
@@ -643,16 +629,6 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   public get skew() { return this.displayObject.skew; }
 
   public set skew(skew) { this.displayObject.skew = skew; }
-
-  public get top() { return this.y; }
-  public set top(top) {
-    if (top !== this.y) {
-      this.y = top;
-      this.dirty = true;
-      // this.updateScaledDimensions();
-      this.updatePinLocations();
-    }
-  }
 
   public get effects(): PIXI.Filter[] {
     if (!Array.isArray(this.displayObject.filters)) this.displayObject.filters = [];

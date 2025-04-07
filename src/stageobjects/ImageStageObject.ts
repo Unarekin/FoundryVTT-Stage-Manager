@@ -138,6 +138,49 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
 
   // #region Public Getters And Setters (27)
 
+  /**
+   * The distance from the top of the screen to the top edge of this object.
+   * 
+   * @remarks If {@link StageObject.restrictToVisualArea | restrictToVisualArea} is true, then this is the distance from the top of the visual bounds, instead.
+   */
+  public get top() { return this.y + this.actualBounds.top - (this.height * this.anchor.y); }
+  public set top(val) { this.y = this.actualBounds.top + val + (this.height * this.anchor.y); }
+
+  /**
+   * The distance from the left side of the screen to the left-most edge of this object
+   * 
+   * @remarks If {@link StageObject.restrictToVisualArea | restrictToVisualArea} is true, then this is the distance from the left of the visual bounds, instead.
+   */
+  public get left() { return this.x - this.actualBounds.left - (this.width * this.anchor.x); }
+  public set left(val) { this.x = val + this.actualBounds.left + (this.width * this.anchor.x); }
+
+  /**
+   * The distance from the left side of the screen to the right-most edge of this object.
+   * 
+   * @remarks If {@link StageObject.restrictToVisualArea | restrictToVisualArea} is true, then this is the distance from the left of the visual bounds, instead.
+   */
+  public get right() { return this.x + this.actualBounds.left + (this.width * (1 - this.anchor.x)); }
+  public set right(val) { this.x = val + this.actualBounds.left - (this.width * (1 - this.anchor.x)); }
+
+  /**
+   * The distance from the top of the screen to the bottom-most edge of the object.
+   * 
+   * @remarks If {@link StageObject.restrictToVisualArea | restrictToVisualArea} is true, then this is the distance from the top of the visual bounds, instead.
+   */
+  public get bottom() { return this.y - this.actualBounds.top + (this.height * (1 - this.anchor.y)); }
+  public set bottom(val) { this.y = val + this.actualBounds.top - (this.height * (1 - this.anchor.y)); }
+
+  public get center(): PIXI.Point {
+    return new PIXI.Point(
+      this.x + (this.width * (.5 - this.anchor.x)),
+      this.y + (this.height * (.5 - this.anchor.y))
+    );
+  }
+  public set center(val: PIXI.Point) {
+    this.x = val.x + this.actualBounds.left - (this.width * (.5 - this.anchor.x));
+    this.y = val.y + this.actualBounds.top - (this.height * (.5 - this.anchor.y));
+  }
+
   public get anchor() { return this.displayObject.anchor; }
 
   public set anchor(anchor) { this.displayObject.anchor = anchor; }
@@ -150,15 +193,7 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
 
   public get baseWidth() { return this.displayObject.texture.width; }
 
-  public get bottom() { return this.actualBounds.bottom - (this.y + (this.height * this.anchor.y)); }
 
-  public set bottom(val) {
-    if (this.bottom !== val) {
-      this.displayObject.y = this.actualBounds.bottom - val - (this.height * this.anchor.y);
-      // this.updateScaledDimensions();
-      this.updatePinLocations();
-    }
-  }
 
   public get displayObject(): PIXI.Sprite { return super.displayObject; }
 
@@ -195,22 +230,7 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
     return { x, y };
   }
 
-  public get left() { return this.x + this.actualBounds.left - (this.width * this.anchor.x); }
 
-  public set left(val) {
-    if (this.left !== val) {
-      this.x = val + this.actualBounds.left + (this.width * this.anchor.x);
-      // this.updateScaledDimensions();
-      this.updatePinLocations();
-    }
-  }
-
-  public get center(): PIXI.Point {
-    return new PIXI.Point(
-      this.x + (this.width * this.anchor.x),
-      this.y + (this.height * this.anchor.y)
-    );
-  }
 
   public get loop() {
     const resource = this.displayObject.texture.baseTexture.resource;
@@ -231,33 +251,11 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
   }
 
 
-  public get right() { return this.actualBounds.right - (this.x + (this.width * this.anchor.x)); }
-
-  public set right(val) {
-    if (this.right !== val) {
-      // Set relative to right side of screen
-      this.displayObject.x = this.actualBounds.right - val - (this.width * this.anchor.x);
-      this.dirty = true;
-
-      // this.updateScaledDimensions();
-      this.updatePinLocations();
-    }
-  }
-
   public get scale() { return this.displayObject.scale; }
 
   public get texture() { return this.displayObject.texture; }
 
-  public get top() { return this.y - this.actualBounds.top - (this.height * this.anchor.y); }
 
-  public set top(val) {
-    if (this.top !== val) {
-      this.y = val + this.actualBounds.top + (this.height * this.anchor.y);
-      this.dirty = true;
-      // this.updateScaledDimensions();
-      this.updatePinLocations();
-    }
-  }
 
   public get volume() {
     const resource = this.displayObject.texture.baseTexture.resource;

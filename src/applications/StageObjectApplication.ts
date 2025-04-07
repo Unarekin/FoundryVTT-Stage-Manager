@@ -142,15 +142,21 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
     if (elem instanceof HTMLInputElement) elem.value = val.toString();
   }
 
-  protected toTop() { this.setY(this.stageObject.actualBounds.top); }
-  protected toLeft() { this.setX(this.stageObject.actualBounds.left); }
+  protected toTop() {
+    this.stageObject.top = 0;
+    this.setY(this.stageObject.y);
+  }
+  protected toLeft() {
+    this.stageObject.left = 0;
+    this.setX(this.stageObject.x);
+  }
 
   protected toRight() {
-    this.stageObject.right = this.stageObject.actualBounds.right;
+    this.stageObject.right = this.stageObject.actualBounds.right - this.stageObject.actualBounds.left;
     this.setX(this.stageObject.x);
   }
   protected toBottom() {
-    this.stageObject.bottom = this.stageObject.actualBounds.bottom;
+    this.stageObject.bottom = this.stageObject.actualBounds.bottom - this.stageObject.actualBounds.top;
     this.setY(this.stageObject.y);
   }
 
@@ -200,8 +206,12 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
   }
 
   public static SetPresetCenter(this: StageObjectApplication) {
-    this.setX(this.stageObject.actualBounds.left + (this.stageObject.actualBounds.width / 2));
-    this.setY(this.stageObject.actualBounds.top + (this.stageObject.actualBounds.height / 2));
+    this.stageObject.center = new PIXI.Point(
+      this.stageObject.actualBounds.width / 2,
+      this.stageObject.actualBounds.height / 2
+    );
+    this.setX(this.stageObject.x);
+    this.setY(this.stageObject.y);
 
     this._onChangeForm();
   }
