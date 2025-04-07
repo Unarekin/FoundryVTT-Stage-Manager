@@ -536,7 +536,6 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       set(target, prop, value) {
         if (typeof prop === "string" && !prop.startsWith("_") && !temp.#ignoredProperties.includes(prop) && temp[prop as keyof typeof temp] !== value) {
           temp.dirty = true;
-          console.log("Property changed:", prop);
         }
 
         return Reflect.set(target, prop, value);
