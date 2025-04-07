@@ -333,6 +333,8 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
       if (typeof serialized.anchor.y !== "undefined") this.anchor.y = serialized.anchor.y;
     }
 
+    if (typeof serialized.tint !== "undefined") this.tint = serialized.tint;
+
     this.dirty = true;
   }
 
@@ -383,6 +385,13 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
     })
   }
 
+  public get tint() { return this.displayObject.tint; }
+  public set tint(val) {
+    if (this.tint != val) {
+      this.displayObject.tint = val;
+      this.dirty = true;
+    }
+  }
 
   public serialize(): SerializedImageStageObject {
     const serialized = super.serialize();
@@ -392,6 +401,7 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
       src: this.path,
       // playing: this.playing,
       loop: this.loop,
+      tint: new PIXI.Color(this.tint).toHex(),
       anchor: {
         x: this.anchor.x,
         y: this.anchor.y

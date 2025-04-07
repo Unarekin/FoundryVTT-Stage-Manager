@@ -42,6 +42,7 @@ export interface SerializedImageStageObject extends SerializedStageObject {
   src: string;
   // playing: boolean;
   loop: boolean;
+  tint: string;
   anchor: {
     x: number;
     y: number;
