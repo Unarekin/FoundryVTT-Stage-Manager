@@ -49,7 +49,8 @@ export class ImageStageObjectApplication extends StageObjectApplication<ImageSta
       0: `STAGEMANAGER.BLENDMODES.NORMAL`,
       1: `STAGEMANAGER.BLENDMODES.ADD`,
       2: `STAGEMANAGER.BLENDMODES.MULTIPLY`,
-      3: `STAGEMANAGER.BLENDMODES.SCREEN`
+      3: `STAGEMANAGER.BLENDMODES.SCREEN`,
+      28: `STAGEMANAGER.BLENDMODES.SUBTRACT`
     };
 
     return context as EmptyObject;

@@ -1,6 +1,12 @@
 {
   "STAGEMANAGER": {
-    "STAGEOBJECT": "Stage Object",
+    "BLENDMODES": {
+      "ADD": "Add",
+      "MULTIPLY": "Multiply",
+      "NORMAL": "Normal",
+      "SCREEN": "Screen",
+      "SUBTRACT": "Subtract"
+    },
     "IMAGE": "Image",
     "LAYERS": {
       "BACKGROUND": "Background",
@@ -14,12 +20,7 @@
       "TEMP": "Temporary",
       "USER": "User"
     },
-    "TEXT": "Text",
-    "BLENDMODES": {
-      "NORMAL": "Normal",
-      "ADD": "Add",
-      "MULTIPLY": "Multiply",
-      "SCREEN": "Screen"
-    }
+    "STAGEOBJECT": "Stage Object",
+    "TEXT": "Text"
   }
 }
