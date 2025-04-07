@@ -4,17 +4,9 @@
       "ACTOR": "Actor",
       "ADDTRIGGER": "Add Trigger",
       "ALPHA": "Opacity",
+      "ANCHOR": "Anchor",
       "ANGLE": "Rotation",
       "ANGLEHINT": "(In degrees)",
-      "RESOURCEPATH": "Resource Path",
-      "SELECTTOKEN": "Select Token",
-      "SELECTTOKENHINT": "Select a token to link its actor.  Press the 'Select Token' button again to cancel.",
-      "RESOURCETEXTMODE": "Text Display Mode",
-      "TEXTMODE": {
-        "NONE": "None",
-        "VALUES": "Values",
-        "PERCENTAGE": "Percentage"
-      },
       "BGTYPES": {
         "COLOR": "Color",
         "IMAGE": "Image"
@@ -124,8 +116,12 @@
       "OWNERS": "Owner(s)",
       "POSX": "X",
       "POSY": "Y",
+      "RESOURCEPATH": "Resource Path",
+      "RESOURCETEXTMODE": "Text Display Mode",
       "SCENES": "Scenes",
       "SCOPE": "Object scope",
+      "SELECTTOKEN": "Select Token",
+      "SELECTTOKENHINT": "Select a token to link its actor.  Press the 'Select Token' button again to cancel.",
       "SHOWPORTRAIT": "Show Portrait",
       "SIZE": "Size",
       "SKEW": "Skew",
@@ -138,15 +134,20 @@
         "IMAGE": "Image",
         "LABEL": "Label",
         "LOCATION": "Position",
-        "SRC": "Image Source",
-        "ZINDEXHINT": "A zIndex > 0 will place the speaker in front of the dialogue panel.",
+        "MAXHEIGHT": "Height",
         "MAXSIZE": "Maximum Size",
         "MAXWIDTH": "Width",
-        "MAXHEIGHT": "Height",
-        "SLOTWIDTH": "Slot Width"
+        "SLOTWIDTH": "Slot Width",
+        "SRC": "Image Source",
+        "ZINDEXHINT": "A zIndex > 0 will place the speaker in front of the dialogue panel."
       },
       "SRC": "Image source",
       "TEXT": "Text",
+      "TEXTMODE": {
+        "NONE": "None",
+        "PERCENTAGE": "Percentage",
+        "VALUES": "Values"
+      },
       "TITLE": "Edit {name}",
       "TRIGGERLABELS": {
         "MACRO": "Macro: {macro}"
