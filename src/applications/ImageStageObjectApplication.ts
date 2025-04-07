@@ -26,6 +26,11 @@ export class ImageStageObjectApplication extends StageObjectApplication<ImageSta
       height: (data.bounds as any).height / bounds.height
     }
 
+    if (typeof data.blendMode === "string") {
+      data.blendMode = parseInt(data.blendMode);
+      if (isNaN(data.blendMode)) data.blendMode = 0;
+    }
+
     return data;
   }
 

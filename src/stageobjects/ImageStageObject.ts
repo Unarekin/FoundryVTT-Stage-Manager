@@ -334,6 +334,7 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
     }
 
     if (typeof serialized.tint !== "undefined") this.tint = serialized.tint;
+    if (typeof serialized.blendMode !== "undefined") this.blendMode = serialized.blendMode;
 
     this.dirty = true;
   }
@@ -393,6 +394,14 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
     }
   }
 
+  public get blendMode() { return this.displayObject.blendMode; }
+  public set blendMode(val) {
+    if (this.blendMode !== val) {
+      this.displayObject.blendMode = val;
+      this.dirty = true;
+    }
+  }
+
   public serialize(): SerializedImageStageObject {
     const serialized = super.serialize();
     return {
@@ -402,6 +411,7 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
       // playing: this.playing,
       loop: this.loop,
       tint: new PIXI.Color(this.tint).toHex(),
+      blendMode: this.displayObject.blendMode,
       anchor: {
         x: this.anchor.x,
         y: this.anchor.y
