@@ -132,6 +132,12 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
       origCb.call(this.scale.scope);
     }
 
+    const origAnchorCb = this.anchor.cb;
+    this.anchor.cb = function (this: PIXI.Sprite) {
+      temp.updateMaskObject();
+      origAnchorCb.call(this.anchor.scope);
+    }
+
   }
 
   // #endregion Constructors (1)
@@ -183,7 +189,9 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
 
   public get anchor() { return this.displayObject.anchor; }
 
-  public set anchor(anchor) { this.displayObject.anchor = anchor; }
+  public set anchor(anchor) {
+    this.displayObject.anchor = anchor;
+  }
 
   public get animated() {
     return this.displayObject.texture.baseTexture.resource instanceof PIXI.VideoResource;
@@ -220,6 +228,7 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
       } else {
         this.displayObject.height = height;
         super.height = height;
+        this.updateMaskObject();
         this.dirty = true;
       }
     }
@@ -285,6 +294,7 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
       } else {
         this.displayObject.width = width;
         super.width = width;
+        this.updateMaskObject();
         this.dirty = true;
       }
     }
@@ -316,6 +326,14 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
     return sprite;
   }
 
+  protected updateMaskObject() {
+    super.updateMaskObject();
+    if (this._maskObj) {
+      this._maskObj.anchor.x = this.anchor.x;
+      this._maskObj.anchor.y = this.anchor.y;
+    }
+  }
+
   public deserialize(serialized: SerializedImageStageObject): void {
     super.deserialize(serialized);
     // If the texture isn't loaded into memory, wait for it to be then set the width/height
@@ -328,6 +346,7 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
         if (serialized.bounds.width < 0) this.scale.x *= -1;
         if (serialized.bounds.height < 0) this.scale.y *= -1;
       }
+      this.updateMaskObject();
     });
 
     if (typeof serialized.anchor !== "undefined") {

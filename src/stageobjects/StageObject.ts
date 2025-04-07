@@ -39,10 +39,13 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   //   height: 0
   // }
 
+  // private _lastSerialize: SerializedStageObject | undefined = undefined;
   private _dirty = false;
   public get dirty() { return this._dirty; }
   public set dirty(val) {
-    this._dirty = val;
+    if (this.dirty !== val) {
+      this._dirty = val;
+    }
   }
 
   public static readonly ApplicationType: typeof StageObjectApplication = StageObjectApplication;
@@ -431,7 +434,21 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   public get angle() { return this.displayObject.angle; }
 
   public set angle(angle) {
-    this.displayObject.angle = angle;
+    if (this.displayObject.angle !== angle) {
+      this.displayObject.angle = angle;
+      this.updateMaskObject();
+      this.dirty = true;
+    }
+  }
+
+  protected updateMaskObject() {
+    if (this._maskObj) {
+      // this._maskObj.x = this.x;
+      // this._maskObj.y = this.y;
+      this._maskObj.width = this.width;
+      this._maskObj.height = this.height;
+      this._maskObj.angle = this.angle;
+    }
   }
 
   // eslint-disable-next-line @typescript-eslint/class-literal-property-style
@@ -508,7 +525,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   }
 
 
-  #ignoredProperties = ["worldAlpha", "uvs", "dirty", "indices", "vertexDirty"];
+  #ignoredProperties = ["worldAlpha", "uvs", "dirty", "indices", "vertexDirty", "transform", "filterArea"];
 
   private proxyDisplayObject(val: t): t {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -519,6 +536,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       set(target, prop, value) {
         if (typeof prop === "string" && !prop.startsWith("_") && !temp.#ignoredProperties.includes(prop) && temp[prop as keyof typeof temp] !== value) {
           temp.dirty = true;
+          console.log("Property changed:", prop);
         }
 
         return Reflect.set(target, prop, value);
@@ -539,6 +557,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   public set height(height) {
     if (height !== this.height) {
       this.dirty = true;
+      this.updateMaskObject();
       this.updateUniforms();
       // this.updateScaledDimensions();
       this.updatePinLocations();
@@ -646,6 +665,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   public set width(width) {
     if (this.width !== width) {
       this.dirty = true;
+      this.updateMaskObject();
       this.updateUniforms();
       // this.updateScaledDimensions();
       this.updatePinLocations();
@@ -663,6 +683,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   public get x() { return this.displayObject.x; }
   public set x(x) {
     this.displayObject.x = x;
+    this.updateMaskObject();
     // this.updateScaledDimensions();
     this.updatePinLocations();
   }
@@ -670,6 +691,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   public get y() { return this.displayObject.y; }
   public set y(y) {
     this.displayObject.y = y;
+    this.updateMaskObject();
     // this.updateScaledDimensions();
     this.updatePinLocations();
   }
@@ -897,6 +919,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       }
     }
 
+    if (typeof serialized.mask === "string") this.mask = serialized.mask;
     this.dirty = false;
   }
 
@@ -907,6 +930,11 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       const apps = Object.values(this.apps);
       for (const app of apps)
         void app.close({})
+
+      if (this._maskObj && !this._maskObj.destroyed) {
+        this.displayObject.mask = null;
+        this._maskObj.destroy();
+      }
 
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       gsap.killTweensOf(this.displayObject);
@@ -1009,6 +1037,36 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     }
   }
 
+  protected _maskObj: PIXI.Sprite | undefined = undefined;
+  private _mask = "";
+  public get mask() { return this._mask; }
+  public set mask(val) {
+    try {
+      if (this.mask !== val) {
+        this._mask = val;
+        this.dirty = true;
+
+        if (this._maskObj) {
+          this.displayObject.mask = null;
+          this._maskObj.destroy();
+          this._maskObj = undefined;
+        }
+
+        if (val) {
+          this._maskObj = PIXI.Sprite.from(val);
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+          if ((this.displayObject as any).addChild) (this.displayObject as any).addChild(this._maskObj);
+          this._maskObj.width = this.width;
+          this._maskObj.height = this.height;
+          this.displayObject.mask = this._maskObj;
+        }
+      }
+    } catch (err) {
+      logError(err as Error);
+    }
+  }
+
+
   public serialize(): SerializedStageObject {
     return {
       id: this.id,
@@ -1020,6 +1078,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       locked: this.locked,
       clickThrough: this.clickThrough,
       visible: this.visible,
+      mask: this.mask,
       bounds: {
         x: this.x / this.actualBounds.width,
         y: this.y / this.actualBounds.height,
@@ -1181,7 +1240,6 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     // canvas.app.renderer.render(this._displayObject, { renderTexture: rt });
     // const pixels = Uint8ClampedArray.from(canvas.app.renderer.extract.pixels(rt, new PIXI.Rectangle(x, y, 1, 1)));
     const pixels = Uint8ClampedArray.from(canvas.app.renderer.extract.pixels(this._displayObject, new PIXI.Rectangle(x, y, 1, 1)));
-
     const color = new PIXI.Color(pixels)
     return color;
   }

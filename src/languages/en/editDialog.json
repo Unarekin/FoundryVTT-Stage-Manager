@@ -113,6 +113,7 @@
         "TOPLEFT": "Top left",
         "TOPRIGHT": "Top right"
       },
+      "MASK": "Masking",
       "NAME": "Name",
       "OWNERS": "Owner(s)",
       "POSX": "X",

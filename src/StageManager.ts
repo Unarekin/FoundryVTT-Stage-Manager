@@ -446,7 +446,6 @@ export class StageManager {
       if (!(game.user instanceof User)) throw new InvalidUserError(game.user);
 
       const promises: Promise<any>[] = [];
-      log("Persisting");
 
       // Global
       if (game.user.can("SETTINGS_MODIFY"))
@@ -465,7 +464,10 @@ export class StageManager {
         promises.push(setUserObjects(game.user, objects));
       }
 
-      await Promise.all(promises);
+      if (promises.length) {
+        log("Persisting");
+        await Promise.all(promises);
+      }
     } catch (err) {
       logError(err as Error);
     }

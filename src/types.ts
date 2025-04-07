@@ -31,6 +31,7 @@ export interface SerializedStageObject {
   skew: { x: number, y: number };
   angle: number;
   locked: boolean;
+  mask: string;
   effects: SerializedEffect[];
   effectsEnabled: boolean;
   restrictToVisualArea: boolean;
