@@ -844,34 +844,37 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   public deserialize(serialized: SerializedStageObject) {
 
 
-    this.id = serialized.id;
-    this.name = serialized.name;
+    this.id = serialized.id ?? foundry.utils.randomID();
+    this.name = serialized.name ?? this.id;
     // void StageManager.setOwners(this.id, serialized.owners);
 
-    this.restrictToVisualArea = serialized.restrictToVisualArea;
+    if (typeof serialized.restrictToVisualArea === "boolean") this.restrictToVisualArea = serialized.restrictToVisualArea;
 
     this.skew.x = serialized.skew?.x ?? 0;
     this.skew.y = serialized.skew?.y ?? 0;
-    this.angle = serialized.angle;
-    this.locked = serialized.locked;
-    this.zIndex = serialized.zIndex;
-    this.alpha = serialized.alpha;
+
+    this.angle = serialized.angle ?? 0;
+    this.locked = serialized.locked ?? false;
+    this.zIndex = serialized.zIndex ?? 0;
+    this.alpha = serialized.alpha ?? 1;
     this.scope = serialized.scope ?? "global";
     this.scopeOwners = serialized.scopeOwners ?? [];
     this.triggers = serialized.triggers ?? {};
-    this.clickThrough = serialized.clickThrough;
-    this.visible = serialized.visible;
+    this.clickThrough = serialized.clickThrough ?? false;
+    this.visible = serialized.visible ?? true;
 
     if (StageManager.canModifyStageObject(game?.user?.id ?? "", this.id)) {
       if (game?.ready) void StageManager.setOwners(this.id, serialized.owners);
       else Hooks.once("canvasReady", () => { void StageManager.setOwners(this.id, serialized.owners) });
     }
 
-    this.x = serialized.bounds?.x * this.actualBounds.width;
-    this.y = serialized.bounds?.y * this.actualBounds.height;
+    if (typeof serialized.bounds !== "undefined") {
+      this.x = serialized.bounds.x * this.actualBounds.width;
+      this.y = serialized.bounds.y * this.actualBounds.height;
 
-    if (serialized.bounds?.width) this.width = serialized.bounds.width * this.actualBounds.width;
-    if (serialized.bounds?.height) this.height = serialized.bounds.height * this.actualBounds.height;
+      this.width = serialized.bounds.width * this.actualBounds.width;
+      this.height = serialized.bounds.height * this.actualBounds.height;
+    }
 
     if (serialized.layer)
       this.setLayer(serialized.layer ?? "primary");
