@@ -120,7 +120,7 @@ export const StageLayers = ["primary", "foreground", "background", "text", "ui"]
 export type StageLayer = typeof StageLayers[number];
 */
 
-export const EffectTypes = ["outline", "dropshadow", "blur", "pixelate", "glow", "bevel", "chromakey"] as const;
+export const EffectTypes = ["outline", "dropshadow", "blur", "pixelate", "glow", "bevel", "chromakey", "hologram"] as const;
 export type EffectType = typeof EffectTypes[number];
 
 export interface SerializedEffect {
@@ -181,6 +181,15 @@ export interface SerializedChromaKeyEffect extends SerializedEffect {
   backgroundColor?: string;
 }
 
+export interface SerializedHologramEffect extends SerializedEffect {
+  type: "hologram";
+  noise: number;
+  alpha: number;
+  speed: number;
+  color1: string;
+  color2: string;
+  lines: number;
+}
 
 
 export interface SynchronizationMessage {

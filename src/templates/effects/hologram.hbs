@@ -1,0 +1,43 @@
+<section>
+  <input type="hidden" name="effect.id" id="effect.id" value="{{id}}" />
+  <input type="hidden" name="effect.type" id="effect.type" value="{{type}}" />
+  <input type="hidden" name="effect.serialized" id="effect.serialized" value="{{serialized}}" />
+  <div class="center">{{localize "STAGEMANAGER.EDITDIALOG.EFFECTS.HOLOGRAM"}}</div>
+
+  <div class="form-group">
+    <label for="effect.noise">{{localize "STAGEMANAGER.EDITDIALOG.EFFECTS.CONFIG.HOLOGRAM.NOISE"}}</label>
+    <input type="number" min="0" step="any" value="{{noise}}" name="effect.noise" id="effect.noise">
+  </div>
+  <br>
+
+  <div class="form-group">
+    <label for="effect.alpha">{{localize "STAGEMANAGER.EDITDIALOG.EFFECTS.CONFIG.HOLOGRAM.ALPHA"}}</label>
+    <range-picker value="{{alpha}}" min="0" max="1" name="effect.alpha" id="effect.alpha"></range-picker>
+  </div>
+  <br>
+
+  <div class="form-group">
+    <label for="effect.speed">{{localize "STAGEMANAGER.EDITDIALOG.EFFECTS.CONFIG.HOLOGRAM.SPEED"}}</label>
+    <input type="number" min="0" step="any" name="effect.speed" id="effect.speed" value="{{speed}}">
+  </div>
+  <br>
+
+  <div class="form-group">
+    <label for="effect.lines">{{localize "STAGEMANAGER.EDITDIALOG.EFFECTS.CONFIG.HOLOGRAM.LINES"}}</label>
+    <input type="number" min="0" step="1" name="effect.lines" id="effect.lines" value="{{lines}}">
+  </div>
+  <br>
+
+  <div class="form-group">
+    <label for="effect.color1">{{localize "STAGEMANAGER.EDITDIALOG.EFFECTS.CONFIG.HOLOGRAM.COLOR1"}}</label>
+    <input type="text" name="effect.color1" id="effect.color1" data-color-picker="{alphaChannel: false}" value="{{color1}}">
+  </div>
+  <br>
+
+  <div class="form-group">
+    <label for="effect.color2">{{localize "STAGEMANAGER.EDITDIALOG.EFFECTS.CONFIG.HOLOGRAM.COLOR2"}}</label>
+    <input type="text" name="effect.color2" id="effect.color2" data-color-picker="{alphaChannel: false}" value="{{color2}}">
+  </div>
+  <br>
+
+</section>

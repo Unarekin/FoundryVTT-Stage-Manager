@@ -70,6 +70,14 @@
             "OUTERSTRENGTH": "Outer Strength",
             "QUALITY": "Quality"
           },
+          "HOLOGRAM": {
+            "ALPHA": "Alpha",
+            "COLOR1": "First Color",
+            "COLOR2": "Second Color",
+            "LINES": "Scanlines",
+            "NOISE": "Noise",
+            "SPEED": "Animation Speed"
+          },
           "OUTLINE": {
             "COLOR": "Color",
             "OUTLINEONLY": "Outline Only",
@@ -84,6 +92,7 @@
         "DROPSHADOW": "Drop Shadow",
         "ENABLE": "Enable Effects",
         "GLOW": "Glow",
+        "HOLOGRAM": "Hologram",
         "OUTLINE": "Outline",
         "PIXELATE": "Pixelate"
       },

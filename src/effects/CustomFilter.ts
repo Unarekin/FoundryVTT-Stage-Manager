@@ -1,4 +1,14 @@
 
+const filters: CustomFilter<any>[] = [];
+const ticker = new PIXI.Ticker();
+
+ticker.add(() => {
+  for (const filter of filters) {
+    filter.updateTime();
+  }
+});
+ticker.start();
+
 // eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
 export class CustomFilter<u extends { [x: string]: unknown }> extends PIXI.Filter {
   constructor(vertex?: string, fragment?: string, uniforms?: u) {
@@ -10,11 +20,23 @@ export class CustomFilter<u extends { [x: string]: unknown }> extends PIXI.Filte
     if (!this.program.vertexSrc.includes("#version 300 es"))
       this.program.vertexSrc = this.#addGLESVersion(300, this.program.vertexSrc);
 
+    filters.push(this);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public setBgScale(width: number, height: number) {
     // empty
+  }
+
+  public updateTime() {
+    // empty
+  }
+
+  destroy(): void {
+    const index = filters.indexOf(this);
+    if (index !== -1) filters.splice(index, 1);
+
+    super.destroy();
   }
 
   #addGLESVersion(version: number, shader: string): string {

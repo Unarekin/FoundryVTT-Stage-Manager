@@ -8,5 +8,9 @@
   { "value": "pixelate", "label": "STAGEMANAGER.EDITDIALOG.EFFECTS.PIXELATE" },
   { "value": "glow", "label": "STAGEMANAGER.EDITDIALOG.EFFECTS.GLOW" },
   { "value": "bevel", "label": "STAGEMANAGER.EDITDIALOG.EFFECTS.BEVEL" },
-  { "value": "chromakey", "label": "STAGEMANAGER.EDITDIALOG.EFFECTS.CHROMAKEY" }
+  {
+    "value": "chromakey",
+    "label": "STAGEMANAGER.EDITDIALOG.EFFECTS.CHROMAKEY"
+  },
+  { "value": "hologram", "label": "STAGEMANAGER.EDITDIALOG.EFFECTS.HOLOGRAM" }
 ]

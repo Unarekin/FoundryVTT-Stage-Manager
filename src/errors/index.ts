@@ -4,6 +4,7 @@ export * from './CanvasNotInitializedError';
 export * from './InvalidActorError';
 export * from './InvalidActorTypeError';
 export * from './InvalidApplicationClassError';
+export * from './InvalidColorError';
 export * from './InvalidConversationActionType';
 export * from './InvalidExpressionError';
 export * from './InvalidMacroError';

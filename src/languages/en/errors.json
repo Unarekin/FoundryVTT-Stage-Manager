@@ -9,6 +9,7 @@
       "INVALIDACTOR": "Actor not found: {name}",
       "INVALIDACTORTYPE": "Invalid actor type: {type}",
       "INVALIDAPPLICATIONCLASS": "Invalid application class: {name}",
+      "INVALIDCOLOR": "Invalid color: {color}",
       "INVALIDCONVERSATIONACTIONTYPE": "Invalid action type: {type}",
       "INVALIDEXPRESSION": "Invalid expression: {expression}",
       "INVALIDFORMELMEENT": "Invalid form element",

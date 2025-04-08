@@ -155,6 +155,7 @@ export function parseEffectFormData(form: HTMLFormElement): SerializedEffect | u
 
 
 export function setEffectOption(parent: HTMLElement, effect: SerializedEffect) {
+  if (!effect.id) return;
   const select = parent.querySelector(`select[name="effectsList"]`);
   if (!(select instanceof HTMLSelectElement)) throw new LocalizedError("NOEFFECTELEMENT");
 
