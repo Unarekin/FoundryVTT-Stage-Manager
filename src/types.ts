@@ -86,11 +86,8 @@ export interface SerializedDialogueStageObject extends SerializedStageObject {
 
 export type SerializedSpeaker = SerializedImageStageObject | SerializedActorStageObject;
 
-export const ResourceTextModes = ["none", "values", "percentage"] as const;
-export type ResourceTextMode = typeof ResourceTextModes[number];
-
-export const ResourceFGSizeModes = ["clip", "stretch"] as const;
-export type ResourceFGSizeMode = typeof ResourceFGSizeModes[number];
+export const ProgressTextModes = ["none", "values", "percentage"] as const;
+export type ProgressTextMode = typeof ProgressTextModes[number];
 
 export interface Border {
   left: number;
