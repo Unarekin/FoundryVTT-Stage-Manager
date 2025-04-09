@@ -88,6 +88,13 @@ export class ActorStageObject extends ImageStageObject {
     // if (serialized.src) this.path = serialized.src;
   }
 
+  public macroArguments(): { label: string; value: string; key: string; }[] {
+    return [
+      ...super.macroArguments(),
+      { label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR", value: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.AUTO", key: "actor" }
+    ]
+  }
+
   constructor(actor: Actor)
   constructor(id: string)
   constructor(name: string)

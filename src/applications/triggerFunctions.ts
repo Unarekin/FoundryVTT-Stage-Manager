@@ -240,7 +240,7 @@ async function setMacroArgs(parent: HTMLElement, stageObject?: StageObject) {
       // Event-specific
       ...event.addlArgs.map(arg => ({ key: arg.name, label: arg.name, value: `STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.AUTO` }))
     ]
-      .filter((arg, i, arr) => arr.indexOf(arg) === i)
+      .filter((arg, i, arr) => arr.findIndex(elem => elem.key === arg.key) === i)
       .sort((a, b) => a.key.localeCompare(b.key))
       ;
 
