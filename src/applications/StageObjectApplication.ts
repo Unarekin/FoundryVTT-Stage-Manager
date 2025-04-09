@@ -334,6 +334,8 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
       y: (data.bounds as any).y / bounds.height
     }
 
+    if (typeof data.alpha === "number") data.alpha /= 100;
+
     data.triggers = {};
 
     // Parse triggers
@@ -426,6 +428,8 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
       x: serialized.bounds.x * bounds.width,
       y: serialized.bounds.y * bounds.height
     }
+
+    serialized.alpha *= 100;
 
     context.layerSelect = {
       primary: "STAGEMANAGER.LAYERS.PRIMARY",
