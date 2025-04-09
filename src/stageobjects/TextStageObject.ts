@@ -1,10 +1,14 @@
 import { HTMLText } from "pixi.js";
 import { StageObject } from "./StageObject";
 import { SerializedTextStageObject } from "../types";
+import { StageObjectApplication, TextStageObjectApplication } from "applications";
 
 export class TextStageObject extends StageObject<PIXI.HTMLText> {
   public static readonly type: string = "text";
   public readonly type: string = "text";
+
+  public static readonly ApplicationType = TextStageObjectApplication as typeof StageObjectApplication;
+  public readonly ApplicationType = TextStageObject.ApplicationType;
 
   public get text() { return postpareText(this.displayObject.text); }
   public set text(val) {

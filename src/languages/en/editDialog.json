@@ -19,6 +19,7 @@
         "TITLE": "Border Sizes",
         "TOP": "Top"
       },
+      "BREAKWORDS": "Wrap on Whitespace",
       "CLICKTHROUGH": "Ignore Mouse Events",
       "DELETE": "Delete {name}",
       "DELETEEFFECT": {
@@ -154,6 +155,13 @@
       },
       "SRC": "Image source",
       "TEXT": "Text",
+      "TEXTALIGN": {
+        "CENTER": "Center",
+        "JUSTIFY": "Justified",
+        "LABEL": "Alignment",
+        "LEFT": "Left",
+        "RIGHT": "Right"
+      },
       "TEXTMODE": {
         "NONE": "None",
         "PERCENTAGE": "Percentage",
@@ -172,7 +180,15 @@
       "VISUALBOUNDSHIDE": "Hide Visual Bounds",
       "VISUALBOUNDSHINT": "The 'visual bounds' is an area of the screen calculated to ensure that elements placed will not be covered by Foundry's standard UI.",
       "VISUALBOUNDSSHOW": "Show Visual Bounds",
+      "WHITESPACE": {
+        "LABEL": "Whitespace Handling",
+        "NORMAL": "Normal",
+        "PRE": "Preserve",
+        "PRELINE": "Preserve Lines"
+      },
       "WIDTH": "Width",
+      "WORDWRAP": "Word Wrap",
+      "WORDWRAPWIDTH": "Word Wrap Width",
       "ZINDEX": "Sort Index"
     }
   }
