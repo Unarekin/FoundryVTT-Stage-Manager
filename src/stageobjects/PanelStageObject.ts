@@ -1,10 +1,14 @@
 import { SerializedPanelStageObject } from "../types";
 import { StageObject } from "./StageObject";
 import { ObservableBorder } from "./ObservableBorder";
+import { PanelStageObjectApplication, StageObjectApplication } from "applications";
 
 export class PanelStageObject extends StageObject<PIXI.NineSlicePlane> {
   public static readonly type: string = "panel";
   public readonly type: string = "panel";
+
+  public static readonly ApplicationType = PanelStageObjectApplication as typeof StageObjectApplication;
+  public readonly ApplicationType = PanelStageObject.ApplicationType;
 
 
   private _borders: ObservableBorder;
@@ -47,6 +51,9 @@ export class PanelStageObject extends StageObject<PIXI.NineSlicePlane> {
 
     this.src = serialized.src;
 
+    if (typeof serialized.blendMode !== "undefined") this.blendMode = serialized.blendMode;
+    if (typeof serialized.tint !== "undefined") this.tint = serialized.tint;
+
     void this.textureLoaded().then(() => {
       this.width = Math.abs(this.width);
       this.height = Math.abs(this.height);
@@ -61,6 +68,22 @@ export class PanelStageObject extends StageObject<PIXI.NineSlicePlane> {
     });
   }
 
+  public get blendMode() { return this.displayObject.blendMode; }
+  public set blendMode(val) {
+    if (this.blendMode !== val) {
+      this.displayObject.blendMode = val;
+      this.dirty = true;
+    }
+  }
+
+  public get tint() { return this.displayObject.tint; }
+  public set tint(val) {
+    if (this.tint !== val) {
+      this.displayObject.tint = val;
+      this.dirty = true;
+    }
+  }
+
   public serialize(): SerializedPanelStageObject {
     const serialized = super.serialize();
     return {
@@ -72,6 +95,8 @@ export class PanelStageObject extends StageObject<PIXI.NineSlicePlane> {
         width: (this.width * this.scale.x) / this.actualBounds.width,
         height: (this.height * this.scale.y) / this.actualBounds.height
       },
+      blendMode: this.blendMode,
+      tint: new PIXI.Color(this.tint).toHexa(),
       borders: {
         left: this.borders.left,
         right: this.borders.right,

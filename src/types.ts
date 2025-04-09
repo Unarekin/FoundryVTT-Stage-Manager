@@ -67,6 +67,8 @@ export interface SerializedTextStageObject extends SerializedStageObject {
 export interface SerializedPanelStageObject extends SerializedStageObject {
   borders: Border;
   src: string;
+  blendMode: number;
+  tint: string;
 }
 
 export interface SerializedDialogueStageObject extends SerializedStageObject {

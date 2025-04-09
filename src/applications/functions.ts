@@ -1,4 +1,5 @@
-import { UnknownDocumentTypeError } from "errors";
+import { CanvasNotInitializedError, UnknownDocumentTypeError } from "errors";
+import { PanelStageObject } from "stageobjects";
 
 interface SectionSpec {
   pack: string;
@@ -60,4 +61,47 @@ export function getDocuments(documentName: string, selected?: string): SectionSp
   }
 
   return documents;
+}
+
+export function drawPanelPreview(parent: HTMLElement, panel: PanelStageObject) {
+  if (!canvas?.app?.renderer) throw new CanvasNotInitializedError();
+  const previewCanvas = parent.querySelector(`canvas#PanelPreview`);
+  if (!(previewCanvas instanceof HTMLCanvasElement)) throw new CanvasNotInitializedError();
+
+  const { width, height } = panel.displayObject.texture;
+  previewCanvas.width = width;
+  previewCanvas.height = height;
+
+  const ctx = previewCanvas.getContext("2d");
+  if (!ctx) throw new CanvasNotInitializedError();
+
+  const sprite = new PIXI.Sprite(panel.displayObject.texture.clone());
+  const rt = PIXI.RenderTexture.create({ width: sprite.width, height: sprite.height });
+  canvas.app.renderer.render(sprite, { renderTexture: rt, skipUpdateTransform: true, clear: false });
+  const pixels = Uint8ClampedArray.from(canvas.app.renderer.extract.pixels(rt));
+
+  rt.destroy();
+  sprite.destroy();
+
+  const imageData = new ImageData(pixels, width, height);
+  ctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+  ctx.putImageData(imageData, 0, 0);
+
+  const { left, right, top, bottom } = panel.borders;
+
+  ctx.beginPath();
+  ctx.moveTo(left, 0);
+  ctx.lineTo(left, height);
+
+  ctx.moveTo(0, top);
+  ctx.lineTo(width, top);
+
+  ctx.moveTo(width - right, 0);
+  ctx.lineTo(width - right, height);
+
+  ctx.moveTo(0, height - bottom);
+  ctx.lineTo(width, height - bottom);
+
+  ctx.strokeStyle = "red";
+  ctx.stroke();
 }
