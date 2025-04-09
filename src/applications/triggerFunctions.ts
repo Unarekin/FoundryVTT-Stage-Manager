@@ -45,6 +45,13 @@ export function setTriggerOption(parent: HTMLElement, trigger: SerializedTrigger
   } else {
     optGroup.appendChild(option);
   }
+
+  // Check for empty optgroups
+  const optGroups = select.querySelectorAll(`optgroup`);
+  for (const group of optGroups) {
+    if (group.childElementCount === 0) group.remove();
+  }
+
 }
 
 export function parseTriggerList(parent: HTMLElement): Record<string, SerializedTrigger[]> {
