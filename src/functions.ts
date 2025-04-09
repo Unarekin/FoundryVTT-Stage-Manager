@@ -205,3 +205,18 @@ export async function confirm(title: string, content: string) {
     rejectOnClose: false
   });
 }
+
+export function getStyleDiff(style: PIXI.HTMLTextStyle): Record<string, unknown> {
+  // Generate diffed style
+  const serialized = JSON.parse(JSON.stringify(style)) as Record<string, unknown>;
+  for (const key in serialized) {
+    if (key.startsWith("_")) {
+      serialized[key.substring(1)] = serialized[key];
+      delete serialized[key];
+    }
+  }
+
+  const diffed = foundry.utils.diffObject(PIXI.HTMLTextStyle.defaultStyle, style) as Record<string, unknown>;
+  delete diffed.styleID;
+  return diffed;
+}

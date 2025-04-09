@@ -114,6 +114,40 @@ export interface SerializedResourceStageObject extends SerializedStageObject {
   fgBorders: Border;
 }
 
+export interface SerializedProgressStageObject extends SerializedStageObject {
+  max: number;
+  value: number;
+  textMode: ProgressTextMode;
+  textStyle: Record<string, unknown>;
+  lerpEasing: Easing;
+  primaryLerpTime: number;
+  secondaryLerpTime: number;
+  clamp: boolean;
+  animateValueChanges: boolean;
+}
+
+export interface SerializedProgressBarStageObject extends SerializedProgressStageObject {
+  bgSprite: string;
+  fgSprite: string;
+  lerpSprite: string;
+
+  fgBorder: Border;
+  bgBorder: Border;
+  lerpBorder: Border;
+
+  fgBlendMode: number;
+  bgBlendMode: number;
+  lerpBlendMode: number;
+
+  fgTint: string;
+  bgTint: string;
+  lerpTint: string;
+
+  fgPadding: Border;
+
+  textAlignment: "left" | "right" | "center"
+}
+
 /*
 export const StageLayers = ["primary", "foreground", "background", "text", "ui"] as const;
 export type StageLayer = typeof StageLayers[number];

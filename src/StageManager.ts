@@ -1,9 +1,9 @@
 import { ScreenSpaceCanvasGroup } from './ScreenSpaceCanvasGroup';
-import { ActorStageObject, ImageStageObject, PanelStageObject, StageObject, TextStageObject, DialogueStageObject, ResourceStageObject } from './stageobjects';
+import { ActorStageObject, ImageStageObject, PanelStageObject, StageObject, TextStageObject, DialogueStageObject, ProgressBarStageObject } from './stageobjects';
 import { PartialWithRequired, SerializedStageObject, StageLayer } from './types';
-import { coerceActor, coerceStageObject, coerceUser } from './coercion';
+import { coerceStageObject, coerceUser } from './coercion';
 import { StageObjects } from './StageObjectCollection';
-import { CannotDeserializeError, CanvasNotInitializedError, InvalidActorError, InvalidApplicationClassError, InvalidStageObjectError, InvalidUserError, PermissionDeniedError } from './errors';
+import { CannotDeserializeError, CanvasNotInitializedError, InvalidApplicationClassError, InvalidStageObjectError, InvalidUserError, PermissionDeniedError } from './errors';
 import * as stageObjectTypes from "./stageobjects";
 import { addSceneObject, addUserObject, getGlobalObjects, getSceneObjects, getSetting, getUserObjects, removeSceneObject, removeUserObject, setGlobalObjects, setSceneObjects, setSetting, setUserObjects } from './Settings';
 import { CUSTOM_HOOKS } from './hooks';
@@ -142,32 +142,30 @@ export class StageManager {
 
 
 
-
   /**
-   * 
+   * Adds a progress bar
+   * @param {max} max - Maximum value
+   * @param {PIXI.ColorSource | PIXI.TextureSource} fg - {@link PIXI.ColorSource} or {@link PIXI.TextureSource} representing foreground object (bar fill)
+   * @param {PIXI.ColorSource | PIXI.TextureSource} bg - {@link PIXI.ColorSource} or {@link PIXI.TextureSource} representing the background image
+   * @param {PIXI.ColorSource | PIXI.TextureSource} lerp - {@link PIXI.ColorSource} or {@link PIXI.TextureSource} for the temporary bar shown during value change animation
+   * @param {number} x 
+   * @param {number} y 
+   * @param {StageLayer} layer - {@link StageLayer}
+   * @returns 
    */
-  public static addResourceBar(actor: Actor | string, path: string, bg: PIXI.ColorSource | PIXI.TextureSource, fg: PIXI.ColorSource | PIXI.TextureSource, x?: number, y?: number, layer: StageLayer = "primary"): ResourceStageObject | undefined {
+  public static addProgressBar(max: number, fg: PIXI.ColorSource | PIXI.TextureSource, bg: PIXI.ColorSource | PIXI.TextureSource, lerp: PIXI.ColorSource | PIXI.TextureSource = "transparent", x?: number, y?: number, layer: StageLayer = "primary"): ProgressBarStageObject | undefined {
     try {
-
       if (!StageManager.canAddStageObjects(game.user?.id ?? "")) throw new PermissionDeniedError();
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      const actorObj = coerceActor(actor as any);
-      if (!(actorObj instanceof Actor)) throw new InvalidActorError(actor);
-      const obj = new ResourceStageObject(actorObj, path, bg, fg);
+      const obj = new ProgressBarStageObject(0, max, fg, bg, lerp);
       if (typeof x === "number") obj.x = x;
       if (typeof y === "number") obj.y = y;
-      if (typeof x !== "number" || typeof y !== "number") {
-        if (!obj.bgObject.texture.valid) {
-          obj.bgObject.texture.baseTexture.once("loaded", () => {
-            if (typeof x !== "number") obj.x = (window.innerWidth - obj.width) / 2;
-            if (typeof y !== "number") obj.y = (window.innerHeight - obj.height) / 2;
-          });
-        } else {
-          if (typeof x !== "number") obj.x = (window.innerWidth - obj.width) / 2;
-          if (typeof y !== "number") obj.y = (window.innerHeight - obj.height) / 2;
-        }
+      if (typeof x !== "number" && typeof y !== "number") {
+        obj.x = (window.innerWidth - obj.width) / 2;
+        obj.y = (window.innerHeight - obj.height) / 2;
       }
-      StageManager.addStageObject(obj, layer);
+
+      StageManager.addStageObject(obj, layer ?? "primary");
+
       return obj;
     } catch (err) {
       logError(err as Error);
