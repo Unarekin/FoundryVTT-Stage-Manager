@@ -326,6 +326,13 @@ export class ResourceStageObject extends StageObject<PIXI.Container> {
     this.updateValue();
   }
 
+  public macroArguments(): { label: string; value: string; key: string; }[] {
+    return [
+      ...super.macroArguments(),
+      { label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.RESOURCE", key: "resource", value: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.AUTO" }
+    ];
+  }
+
   public createDragGhost(): PIXI.Container<PIXI.DisplayObject> {
     const container = new PIXI.Container();
     const bg = this.coerceSprite(this.bg);
@@ -384,7 +391,7 @@ export class ResourceStageObject extends StageObject<PIXI.Container> {
     }
   }
 
-  constructor(actor: Actor, resourcePath: string, bg: string, fg: string, lerp="transparent") {
+  constructor(actor: Actor, resourcePath: string, bg: string, fg: string, lerp = "transparent") {
     const container = new PIXI.Container();
     super(container);
 

@@ -15,6 +15,7 @@
         "MODKEYS": "modifierKeys",
         "NAME": "Name",
         "POS": "position",
+        "RESOURCE": "Resource",
         "SCENE": "scene",
         "STAGEOBJECT": "stageObject",
         "STATUSEFFECT": "statusEffect",
@@ -32,19 +33,19 @@
     },
     "TABS": {
       "ACTOR": "Actor",
+      "BACKGROUND": "Background",
       "BASICS": "Basics",
       "EFFECTS": "Effects",
       "FONT": "Font Style",
+      "FOREGROUND": "Foreground",
       "IMAGE": "Image",
       "PANEL": "Panel",
+      "PERMISSIONS": "Permissions",
       "RESOURCE": "Resource",
       "SPEAKERS": "Speakers",
       "TEXT": "Text",
       "TRIGGERS": "Triggers",
-      "VIDEO": "Video",
-      "FOREGROUND": "Foreground",
-      "BACKGROUND": "Background",
-      "PERMISSIONS": "Permissions"
+      "VIDEO": "Video"
     },
     "VIEWASUSER": {
       "TITLE": "View As User"
