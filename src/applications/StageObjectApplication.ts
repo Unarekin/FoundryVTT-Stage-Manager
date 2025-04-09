@@ -4,7 +4,7 @@ import { log, logError } from '../logging';
 import { AnyObject, DeepPartial, EmptyObject } from 'Foundry-VTT/src/types/utils.mjs';
 import { localize } from 'functions';
 import { addEventListeners } from "./functions";
-import { InvalidTriggerError, LocalizedError } from 'errors';
+import { InvalidMacroError, InvalidTriggerError, LocalizedError } from 'errors';
 import { StageManager } from 'StageManager';
 import { addTrigger, deleteTrigger, editTrigger, parseTriggerFormData, parseTriggerList, setTriggerOption } from "./triggerFunctions";
 import { addEffect, deleteEffect, parseEffectFormData, parseEffectList, selectEffect, setEffectOption } from "./effectFunctions";
@@ -228,7 +228,7 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
       if (!(option instanceof HTMLOptionElement)) return;
       if (!option.dataset.serialized) return;
 
-      void editTrigger(this.element, JSON.parse(option.dataset.serialized) as SerializedTrigger);
+      void editTrigger(this.element, JSON.parse(option.dataset.serialized) as SerializedTrigger, this.stageObject);
     } catch (err) {
       logError(err as Error);
     }
@@ -258,7 +258,7 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
 
   public static async AddTrigger(this: StageObjectApplication) {
     try {
-      await addTrigger(this.element);
+      await addTrigger(this.element, this.stageObject);
     } catch (err) {
       logError(err as Error);
     }
@@ -352,7 +352,12 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
         triggers[triggerForm.event] = [triggerForm];
       }
 
-      setTriggerOption(this.element, triggerForm);
+      try {
+        setTriggerOption(this.element, triggerForm);
+      } catch (err) {
+        // Ignore InvalidMacroError, since we could be processing this before one is selected
+        if (!(err instanceof InvalidMacroError)) throw err;
+      }
     }
 
 

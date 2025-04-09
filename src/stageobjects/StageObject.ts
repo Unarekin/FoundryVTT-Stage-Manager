@@ -862,6 +862,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     }
   }
 
+
   public deserialize(serialized: SerializedStageObject) {
 
 
@@ -1064,6 +1065,11 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     }
   }
 
+  public macroArguments(): { label: string, value: string, key: string }[] {
+    return [
+      { key: "stageObject", label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.STAGEOBJECT", value: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.AUTO" }
+    ];
+  }
 
   public serialize(): SerializedStageObject {
     return {
@@ -1178,7 +1184,6 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
         logError(err);
       });
   }
-
   public get visible() { return this.displayObject.renderable; }
   public set visible(val) {
     if (val !== this.displayObject.renderable) {

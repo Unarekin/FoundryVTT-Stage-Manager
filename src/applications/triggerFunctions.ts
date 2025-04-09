@@ -3,6 +3,7 @@ import { InvalidTriggerError, LocalizedError } from 'errors';
 import { getTriggerActionType, triggerActions } from 'triggeractions';
 import triggerEvents from "./triggerEvents.json";
 import { localize, confirm } from 'functions';
+import { StageObject } from 'stageobjects';
 
 const TRIGGER_LIST_SELECTOR = `select[name="triggerList"]`
 const TRIGGER_FORM_SELECTOR = `[data-role="trigger-config"]`
@@ -81,11 +82,11 @@ export function parseTriggerFormData(data: Record<string, unknown>): SerializedT
   }
 }
 
-export async function addTrigger(parent: HTMLElement): Promise<void> {
-  await injectTriggerForm(parent);
+export async function addTrigger(parent: HTMLElement, stageObject: StageObject): Promise<void> {
+  await injectTriggerForm(parent, undefined, stageObject);
 }
 
-async function injectTriggerForm(parent: HTMLElement, trigger?: SerializedTrigger): Promise<void> {
+async function injectTriggerForm(parent: HTMLElement, trigger?: SerializedTrigger, stageObject?: StageObject): Promise<void> {
   const section = parent.querySelector(TRIGGER_FORM_SELECTOR);
   if (!(section instanceof HTMLElement)) throw new LocalizedError("NOTRIGGERELEMENT");
 
@@ -96,6 +97,7 @@ async function injectTriggerForm(parent: HTMLElement, trigger?: SerializedTrigge
 
   const context = {
     trigger: trigger ? trigger : { id: foundry.utils.randomID() },
+    stageObject: stageObject ? stageObject.serialize() : undefined,
     triggerActionSelect: getTriggerActionSelect(),
     triggerEventSelect: getTriggerEventSelect(trigger)
   };
@@ -111,13 +113,27 @@ async function injectTriggerForm(parent: HTMLElement, trigger?: SerializedTrigge
 
   const triggerSelectors = parent.querySelectorAll(`select[name="trigger.action"], select[name="trigger.event"]`);
   for (const selector of triggerSelectors)
-    selector.addEventListener("change", () => { setSelectedConfig(parent); });
+    selector.addEventListener("change", () => { setSelectedConfig(parent, stageObject); });
 
-  setSelectedConfig(parent);
+  // Add type-specific
+  const autoSection = parent.querySelector(`[data-role="autoArguments"]`);
+  if (autoSection instanceof HTMLElement) {
+    autoSection.innerHTML = "";
+
+    if (trigger?.action) {
+      const actionClass = getTriggerActionType(trigger);
+      if (actionClass?.customArgumentTemplate) {
+        const customArgs = await renderTemplate(actionClass.customArgumentTemplate, context);
+        autoSection.innerHTML = customArgs;
+      }
+    }
+  }
+
+  setSelectedConfig(parent, stageObject);
 }
 
-export async function editTrigger(parent: HTMLElement, trigger: SerializedTrigger) {
-  await injectTriggerForm(parent, trigger);
+export async function editTrigger(parent: HTMLElement, trigger: SerializedTrigger, stageObject: StageObject) {
+  await injectTriggerForm(parent, trigger, stageObject);
 }
 
 export async function deleteTrigger(parent: HTMLElement) {
@@ -173,7 +189,7 @@ function hideElements(parent: HTMLElement, selector: string) {
     if (elem instanceof HTMLElement) elem.style.display = "none";
 }
 
-function setSelectedConfig(parent: HTMLElement) {
+function setSelectedConfig(parent: HTMLElement, stageObject?: StageObject) {
   const eventSelect = parent.querySelector(`select[name="trigger.event"]`);
   if (!(eventSelect instanceof HTMLSelectElement)) throw new LocalizedError("NOTRIGGERELEMENT");
 
@@ -199,11 +215,12 @@ function setSelectedConfig(parent: HTMLElement) {
   hideElements(parent, `[data-role="action-configs"] [data-type]:not([data-type="${selectedAction}"])`);
 
   if (selectedAction === "macro")
-    void setMacroArgs(parent);
+    void setMacroArgs(parent, stageObject);
 }
 
-async function setMacroArgs(parent: HTMLElement) {
-  const eventElem = parent.querySelector("#event");
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function setMacroArgs(parent: HTMLElement, stageObject?: StageObject) {
+  const eventElem = parent.querySelector(`select[name="trigger.event"]`);
   if (!(eventElem instanceof HTMLSelectElement)) return;
 
   const selected = eventElem.value;
@@ -212,18 +229,42 @@ async function setMacroArgs(parent: HTMLElement) {
 
   if (!event) return;
 
-  const container = parent.querySelector(`[data-role="autoArguments"]`);
-  if (!(container instanceof HTMLElement)) throw new LocalizedError("NOTRIGGERELEMENT");
+  const autoArgs = parent.querySelector(`[data-role="autoArguments"]`);
+  if (autoArgs instanceof HTMLElement) {
 
-  container.replaceChildren();
-  if (Array.isArray(event.addlArgs)) {
-    for (const arg of event.addlArgs) {
+    autoArgs.innerHTML = "";
+
+    const args: { key: string, label: string, value: string }[] = [
+      // Object-specific
+      ...(stageObject ? stageObject.macroArguments() : []),
+      // Event-specific
+      ...event.addlArgs.map(arg => ({ key: arg.name, label: arg.name, value: `STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.AUTO` }))
+    ]
+      .filter((arg, i, arr) => arr.indexOf(arg) === i)
+      .sort((a, b) => a.key.localeCompare(b.key))
+      ;
+
+    for (const arg of args) {
       const content = await renderTemplate(`modules/${__MODULE_ID__}/templates/editObject/additional-arg.hbs`, arg);
-      const elem = document.createElement("section");
-      elem.innerHTML = content;
-      container.appendChild(elem);
+      autoArgs.innerHTML += content;
+    }
+
+    const argElems = parent.querySelectorAll(`[data-role="autoArguments"] input`);
+    for (const elem of argElems) {
+      if (elem instanceof HTMLInputElement) elem.disabled = true;
     }
   }
+
+  // const customArgs = parent.querySelector(`[data-role="customArguments"]`);
+  // if (customArgs instanceof HTMLElement) {
+  //   customArgs.innerHTML = "";
+  //   if (Array.isArray(event.addlArgs)) {
+  //     for (const arg of event.addlArgs) {
+  //       const content = await renderTemplate(`modules/${__MODULE_ID__}/templates/editObject/additional-arg.hbs`, arg);
+  //       customArgs.innerHTML += content;
+  //     }
+  //   }
+  // }
 }
 
 function getTriggerActionSelect(): Record<string, string> {

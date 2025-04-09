@@ -71,7 +71,6 @@ Hooks.on("createActiveEffect", (effect: ActiveEffect) => {
 });
 
 Hooks.on("deleteActiveEffect", (effect: ActiveEffect) => {
-  log("Parent:", effect.parent);
   if (effect.parent instanceof Actor) {
     const objs = ActorStageObject.GetActorObjects(effect.parent);
     for (const obj of objs) {
