@@ -1,3 +1,4 @@
+import { ActorStageObjectApplication, StageObjectApplication } from 'applications';
 import { coerceActor } from '../coercion';
 import { InvalidActorError } from '../errors';
 import { localize } from '../functions';
@@ -10,6 +11,9 @@ export class ActorStageObject extends ImageStageObject {
 
   public static readonly type: string = "actor";
   public readonly type: string = "actor";
+
+  public static readonly ApplicationType = ActorStageObjectApplication as typeof StageObjectApplication;
+  public readonly ApplicationType = ActorStageObject.ApplicationType;
 
   public static GetActorObjects(id: string): ActorStageObject[]
   public static GetActorObjects(name: string): ActorStageObject[]
