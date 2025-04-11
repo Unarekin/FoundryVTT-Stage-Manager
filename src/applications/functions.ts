@@ -56,7 +56,8 @@ export function getDocuments(documentName: string, selected?: string): SectionSp
     game.packs.forEach(pack => {
       if (pack.documentName === documentName) {
 
-        documents.push(...pack.index.map(item => ({ uuid: item.uuid, name: item.name ?? item.uuid, pack: pack.metadata.label, selected: item.uuid === selected })));
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+        documents.push(...pack.index.map((item: any) => ({ uuid: item.uuid, name: item.name ?? item.uuid, pack: pack.metadata.label, selected: item.uuid === selected })));
       }
     })
   }

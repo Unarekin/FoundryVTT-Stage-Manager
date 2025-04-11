@@ -115,8 +115,8 @@ export class ProgressBarStageObjectApplication extends StageObjectApplication<Pr
     return {
       settings: {
         label: "STAGEMANAGER.TABS.PROGRESSBAR.SETTINGS",
-        active: false,
-        cssClass: "",
+        active: true,
+        cssClass: "active",
         group: "progressBar",
         icon: "fas fa-cubes",
         id: "settings"
@@ -187,6 +187,8 @@ export class ProgressBarStageObjectApplication extends StageObjectApplication<Pr
   protected _onRender(context: Record<string, undefined>, options: { force?: boolean | undefined; position?: { top?: number | undefined; left?: number | undefined; width?: number | "auto" | undefined; height?: number | "auto" | undefined; scale?: number | undefined; zIndex?: number | undefined; } | undefined; window?: { title?: string | undefined; icon?: string | false | undefined; controls?: boolean | undefined; } | undefined; parts?: string[] | undefined; isFirstRender?: boolean | undefined; }): void {
     try {
       super._onRender(context, options);
+      this.tabGroups.primary = "basics";
+      this.tabGroups.progressBar = "settings";
       void this.drawPreviews(true);
     } catch (err) {
 
@@ -221,11 +223,11 @@ export class ProgressBarStageObjectApplication extends StageObjectApplication<Pr
     const promises: Promise<void>[] = [];
 
     if (override || !foundry.utils.objectsEqual(obj.fgBorder, this._lastFgBorder) || this._lastFgSource !== obj.fgSprite || this._lastFgGuides !== fgGuides)
-      promises.push(this.drawPreview("#FgPanelPreview", obj.fgSprite, obj.fgBorder, `[id="fg.showBorderGuides"]`), this.position.width);
+      promises.push(this.drawPreview("#FgPanelPreview", obj.fgSprite, obj.fgBorder, `[id="fg.showBorderGuides"]`, typeof this.position.width === "number" ? this.position.width : 0));
     if (override || !foundry.utils.objectsEqual(obj.bgBorder, this._lastBgBorder) || this._lastBgSource !== obj.bgSprite || this._lastBgGuides !== bgGuides)
-      promises.push(this.drawPreview("#BgPanelPreview", obj.bgSprite, obj.bgBorder, `[id="bg.showBorderGuides"]`), this.position.width);
+      promises.push(this.drawPreview("#BgPanelPreview", obj.bgSprite, obj.bgBorder, `[id="bg.showBorderGuides"]`, typeof this.position.width === "number" ? this.position.width : 0));
     if (override || !foundry.utils.objectsEqual(obj.lerpBorder, this._lastLerpBorder) || this._lastLerpSource !== obj.lerpSprite || this._lastLerpGuides !== lerpGuides)
-      promises.push(this.drawPreview("#LerpPanelPreview", obj.lerpSprite, obj.lerpBorder, `[id="lerp.showBorderGuides"]`), this.position.width);
+      promises.push(this.drawPreview("#LerpPanelPreview", obj.lerpSprite, obj.lerpBorder, `[id="lerp.showBorderGuides"]`, typeof this.position.width === "number" ? this.position.width : 0));
 
     this._lastFgBorder = { ...obj.fgBorder };
     this._lastBgBorder = { ...obj.bgBorder };
