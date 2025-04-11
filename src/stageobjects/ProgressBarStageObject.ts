@@ -4,15 +4,69 @@ import { InvalidTextureError } from "errors";
 import { ObservableBorder } from "./ObservableBorder";
 import { SerializedProgressBarStageObject, Border } from "types";
 import { serializeTexture } from "lib/textureSerialization";
+import { log } from "logging";
 
 export class ProgressBarStageObject extends ProgressStageObject {
 
   public static readonly type = "progressBar";
   public readonly type = ProgressBarStageObject.type;
 
-  public readonly bgObject: PIXI.NineSlicePlane;
-  public readonly fgObject: PIXI.NineSlicePlane;
-  public readonly lerpObject: PIXI.NineSlicePlane;
+  private _bgObject: PIXI.NineSlicePlane;
+  private _fgObject: PIXI.NineSlicePlane;
+  private _lerpObject: PIXI.NineSlicePlane;
+
+  public get bgObject() { return this._bgObject; }
+  public set bgObject(val) {
+    const { leftWidth, rightWidth, topHeight, bottomHeight } = this.bgObject ?? { leftWidth: 0, rightWidth: 0, topHeight: 0, bottomHeight: 0 };
+    if (this.bgObject) this.bgObject.destroy();
+
+    this._bgObject = val;
+    // this._bgObject = this.proxyDisplayObject(val) as PIXI.NineSlicePlane;
+    this._bgObject.leftWidth = leftWidth;
+    this._bgObject.rightWidth = rightWidth;
+    this._bgObject.topHeight = topHeight;
+    this._bgObject.bottomHeight = bottomHeight;
+
+    this.displayObject.addChild(this._bgObject);
+    this.dirty = true;
+    this.updateSprites();
+  }
+
+
+  public get fgObject() { return this._fgObject; }
+  public set fgObject(val) {
+
+    const { leftWidth, rightWidth, topHeight, bottomHeight } = this.fgObject ?? { leftWidth: 0, rightWidth: 0, topHeight: 0, bottomHeight: 0 };
+    if (this.fgObject) this.fgObject.destroy();
+
+    // this._fgObject = this.proxyDisplayObject(val) as PIXI.NineSlicePlane;
+    this._fgObject = val;
+    this._fgObject.leftWidth = leftWidth;
+    this._fgObject.rightWidth = rightWidth;
+    this._fgObject.topHeight = topHeight;
+    this._fgObject.bottomHeight = bottomHeight;
+
+    this.displayObject.addChild(this._fgObject);
+    this.dirty = true;
+    this.updateSprites();
+  }
+
+  public get lerpObject() { return this._lerpObject; }
+  public set lerpObject(val) {
+    const { leftWidth, rightWidth, topHeight, bottomHeight } = this.lerpObject ?? { leftWidth: 0, rightWidth: 0, topHeight: 0, bottomHeight: 0 };
+    if (this.lerpObject) this.lerpObject.destroy();
+
+    // this._lerpObject = this.proxyDisplayObject(val) as PIXI.NineSlicePlane;
+    this._lerpObject = val;
+    this._lerpObject.leftWidth = leftWidth;
+    this._lerpObject.rightWidth = rightWidth;
+    this._lerpObject.topHeight = topHeight;
+    this._lerpObject.bottomHeight = bottomHeight;
+
+    this.displayObject.addChild(this._lerpObject);
+    this.dirty = true;
+    this.updateSprites();
+  }
 
   protected bgSource = "";
   protected fgSource = "";
@@ -84,16 +138,16 @@ export class ProgressBarStageObject extends ProgressStageObject {
 
   public deserialize(serialized: SerializedProgressBarStageObject) {
     super.deserialize(serialized);
-    if (serialized.bgSprite) {
-      this.bgObject.texture = PIXI.Texture.from(serialized.bgSprite);
+    if (serialized.bgSprite && this.bgSource !== serialized.bgSprite) {
+      this.bgObject = this.coerceSprite(serialized.bgSprite);
       this.bgSource = serialized.bgSprite;
     }
-    if (serialized.fgSprite) {
-      this.fgObject.texture = PIXI.Texture.from(serialized.fgSprite);
+    if (serialized.fgSprite && this.fgSource !== serialized.fgSprite) {
+      this.fgObject = this.coerceSprite(serialized.fgSprite);
       this.fgSource = serialized.fgSprite;
     }
-    if (serialized.lerpSprite) {
-      this.lerpObject.texture = PIXI.Texture.from(serialized.lerpSprite);
+    if (serialized.lerpSprite && this.lerpSource !== serialized.lerpSprite) {
+      this.lerpObject = this.coerceSprite(serialized.lerpSprite);
       this.lerpSource = serialized.lerpSprite;
     }
 
@@ -186,6 +240,7 @@ export class ProgressBarStageObject extends ProgressStageObject {
   }
 
   private _bgBorder = new ObservableBorder(0, 0, 0, 0, (left, right, top, bottom) => {
+    log("Setting bgBorder:", this.bgObject);
     this.bgObject.leftWidth = left;
     this.bgObject.rightWidth = right;
     this.bgObject.topHeight = top;
@@ -298,6 +353,7 @@ export class ProgressBarStageObject extends ProgressStageObject {
     }
   }
 
+
   private _barUpdateTween: Record<string, unknown> | undefined = undefined;
   protected animateSpriteUpdate(start: number, end: number): Promise<void> {
     if (this._barUpdateTween && typeof this._barUpdateTween.kill === "function") this._barUpdateTween.kill();
@@ -356,7 +412,18 @@ export class ProgressBarStageObject extends ProgressStageObject {
     const perc = (overrideValue ?? this.value) / this.max;
     this.fgObject.width = (this.bgObject.width - this.fgPadding.right - this.fgPadding.left) * perc;
     if (!ignoreLerpBar) this.lerpObject.width = this.fgObject.width;
+
+    this.orderSpriteObjects();
   }
+
+  protected orderSpriteObjects(): void {
+    // Order
+    if (this.bgObject) this.bgObject.zIndex = 0;
+    if (this.fgObject) this.fgObject.zIndex = 20;
+    if (this.lerpObject) this.lerpObject.zIndex = 10;
+    if (this.textObject) this.textObject.zIndex = 30;
+  }
+
 
   public get width() { return this.bgObject?.width ?? 0; }
   public set width(val) {
@@ -408,53 +475,47 @@ export class ProgressBarStageObject extends ProgressStageObject {
   protected coerceSprite(source: PIXI.ColorSource | PIXI.TextureSource): PIXI.NineSlicePlane {
     const texture = coerceTexture(source);
     if (!(texture instanceof PIXI.Texture)) throw new InvalidTextureError();
-
-    return new PIXI.NineSlicePlane(texture);
+    return new PIXI.NineSlicePlane(texture, 0, 0, 0, 0);
   }
 
-  protected cloneNineSlice(obj: PIXI.NineSlicePlane): PIXI.NineSlicePlane {
-    const newObj = new PIXI.NineSlicePlane(obj.texture.clone());
-    newObj.leftWidth = obj.leftWidth;
-    newObj.rightWidth = obj.rightWidth;
-    newObj.topHeight = obj.topHeight;
-    newObj.bottomHeight = obj.bottomHeight;
-
-    return obj;
-  }
 
   public createDragGhost(): PIXI.Container {
     const container = new PIXI.Container();
-    const bg = this.cloneNineSlice(this.bgObject);
-    const fg = this.cloneNineSlice(this.fgObject);
+
+    const bg = new PIXI.NineSlicePlane(PIXI.Texture.from(this.bgSource), this.bgBorder.left, this.bgBorder.top, this.bgBorder.right, this.bgBorder.bottom);
+    const fg = new PIXI.NineSlicePlane(PIXI.Texture.from(this.fgSource), this.fgBorder.left, this.fgBorder.top, this.fgBorder.right, this.fgBorder.bottom);
 
     const text = new PIXI.HTMLText(this.textObject.text);
     text.style = this.textStyle.clone();
-    text.anchor.x = this.textObject.anchor.x;
-    text.anchor.y = this.textObject.anchor.y;
 
     container.addChild(bg);
     container.addChild(fg);
     container.addChild(text);
 
-    fg.x = this.fgPadding.left;
-    fg.y = this.fgPadding.top;
-    fg.height = this.height - this.fgPadding.top - this.fgPadding.bottom;
-    fg.width = (this.value / this.max) * (this.width - this.fgPadding.left - this.fgPadding.right);
+    container.x = this.x;
+    container.y = this.y;
 
-    switch (this.textAlignment) {
-      case "left":
-        text.anchor.x = 0;
-        text.x = 0;
-        break;
-      case "right":
-        text.anchor.x = 1;
-        text.x = bg.width;
-        break;
-      case "center":
-        text.anchor.x = 0.5;
-        text.x = bg.width / 2;
-        break;
-    }
+    bg.width = this.width;
+    bg.height = this.height;
+
+    fg.x = this.fgObject.x;
+    fg.y = this.fgObject.y;
+    fg.width = this.fgObject.width;
+
+    fg.leftWidth = this.fgBorder.left;
+    fg.rightWidth = this.fgBorder.right;
+    fg.topHeight = this.fgBorder.top;
+    fg.bottomHeight = this.fgBorder.bottom;
+
+    bg.leftWidth = this.bgBorder.left;
+    bg.rightWidth = this.bgBorder.right;
+    bg.topHeight = this.bgBorder.top
+    bg.bottomHeight = this.bgBorder.bottom;
+
+    text.anchor.x = this.textObject.anchor.x;
+    text.anchor.y = this.textObject.anchor.y;
+    text.x = this.textObject.x;
+    text.y = this.textObject.y;
 
     return container;
   }
@@ -473,6 +534,8 @@ export class ProgressBarStageObject extends ProgressStageObject {
   constructor(value: number, max: number, fg: PIXI.TextureSource | PIXI.ColorSource, bg: PIXI.TextureSource | PIXI.ColorSource, lerp: PIXI.TextureSource | PIXI.ColorSource = "transparent") {
     super();
 
+    this.displayObject.sortableChildren = true;
+
     this.bgSource = this.coerceSpriteSource(bg) ?? "";
     if (!this.bgSource) throw new InvalidTextureError();
     this.fgSource = this.coerceSpriteSource(fg) ?? "";
@@ -481,12 +544,11 @@ export class ProgressBarStageObject extends ProgressStageObject {
     if (!this.lerpSource) throw new InvalidTextureError();
 
     this.bgObject = this.coerceSprite(bg);
+    this._bgObject = this.bgObject;
     this.fgObject = this.coerceSprite(fg);
+    this._fgObject = this.fgObject;
     this.lerpObject = this.coerceSprite(lerp);
-
-    this.displayObject.addChild(this.bgObject);
-    this.displayObject.addChild(this.lerpObject);
-    this.displayObject.addChild(this.fgObject);
+    this._lerpObject = this.lerpObject;
 
     this.displayObject.removeChild(this.textObject);
     this.displayObject.addChild(this.textObject);

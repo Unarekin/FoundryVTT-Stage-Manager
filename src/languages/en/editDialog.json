@@ -126,14 +126,23 @@
       "MASK": "Masking",
       "NAME": "Name",
       "OWNERS": "Owner(s)",
+      "PADDING": {
+        "BOTTOM": "Bottom",
+        "LEFT": "Left",
+        "RIGHT": "Right",
+        "TITLE": "Padding Sizes",
+        "TOP": "Top"
+      },
       "POSX": "X",
       "POSY": "Y",
+      "PREVIEW": "Preview:",
       "RESOURCEPATH": "Resource Path",
       "RESOURCETEXTMODE": "Text Display Mode",
       "SCENES": "Scenes",
       "SCOPE": "Object scope",
       "SELECTTOKEN": "Select Token",
       "SELECTTOKENHINT": "Select a token to link its actor.  Press the 'Select Token' button again to cancel.",
+      "SHOWBORDERGUIDES": "Show Border Guides",
       "SHOWPORTRAIT": "Show Portrait",
       "SIZE": "Size",
       "SKEW": "Skew",
@@ -163,6 +172,7 @@
         "RIGHT": "Right"
       },
       "TEXTMODE": {
+        "LABEL": "Text Mode",
         "NONE": "None",
         "PERCENTAGE": "Percentage",
         "VALUES": "Values"
@@ -189,7 +199,15 @@
       "WIDTH": "Width",
       "WORDWRAP": "Word Wrap",
       "WORDWRAPWIDTH": "Word Wrap Width",
-      "ZINDEX": "Sort Index"
+      "ZINDEX": "Sort Index",
+      "VALUE": "Value",
+      "MAX": "Max",
+      "CLAMP": "Clamp Values",
+      "ANIMATEVALUECHANGES": "Animate Value Changes",
+      "TEXTALIGNMENT": "Text Alignment",
+      "PRIMARYLERP": "Primary Lerp Time",
+      "SECONDARYLERP": "Secondary Lerp Time",
+      "LERPEASING": "Lerp Easing"
     }
   }
 }

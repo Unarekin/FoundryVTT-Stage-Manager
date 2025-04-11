@@ -52,7 +52,9 @@ export class PanelStageObjectApplication extends StageObjectApplication<PanelSta
   _onChangeForm(): void {
     try {
       super._onChangeForm();
-      drawPanelPreview(this.element, this.stageObject);
+      const previewCanvas = this.element.querySelector(`#PanelPreview`);
+      if (previewCanvas instanceof HTMLCanvasElement)
+        drawPanelPreview(previewCanvas, this.stageObject.src, this.stageObject.borders);
     } catch (err) {
       logError(err as Error);
     }
@@ -61,7 +63,9 @@ export class PanelStageObjectApplication extends StageObjectApplication<PanelSta
   protected _onRender(context: Record<string, undefined>, options: { force?: boolean | undefined; position?: { top?: number | undefined; left?: number | undefined; width?: number | "auto" | undefined; height?: number | "auto" | undefined; scale?: number | undefined; zIndex?: number | undefined; } | undefined; window?: { title?: string | undefined; icon?: string | false | undefined; controls?: boolean | undefined; } | undefined; parts?: string[] | undefined; isFirstRender?: boolean | undefined; }): void {
     try {
       super._onRender(context, options);
-      drawPanelPreview(this.element, this.stageObject);
+      const previewCanvas = this.element.querySelector(`#PanelPreview`);
+      if (previewCanvas instanceof HTMLCanvasElement)
+        drawPanelPreview(previewCanvas, this.stageObject.src, this.stageObject.borders);
     } catch (err) {
       logError(err as Error);
     }

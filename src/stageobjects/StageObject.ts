@@ -527,7 +527,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
   #ignoredProperties = ["worldAlpha", "uvs", "dirty", "indices", "vertexDirty", "transform", "filterArea"];
 
-  private proxyDisplayObject(val: t): t {
+  protected proxyDisplayObject(val: t): t {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const temp = this;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access

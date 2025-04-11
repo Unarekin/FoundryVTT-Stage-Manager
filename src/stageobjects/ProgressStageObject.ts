@@ -1,11 +1,15 @@
 import { Easing, ProgressTextMode, SerializedProgressStageObject } from 'types';
 import { StageObject } from './StageObject';
 import { getStyleDiff } from 'functions';
+import { ProgressBarStageObjectApplication, StageObjectApplication } from 'applications';
 
 export abstract class ProgressStageObject extends StageObject<PIXI.Container> {
   public abstract bgObject: PIXI.DisplayObject;
   public abstract fgObject: PIXI.DisplayObject;
   public abstract lerpObject: PIXI.DisplayObject;
+
+  public static readonly ApplicationType = ProgressBarStageObjectApplication as typeof StageObjectApplication;
+  public readonly ApplicationType = ProgressStageObject.ApplicationType;
 
   public lerpEasing: Easing = "sine.inOut";
   public primaryLerpTime = 1000;
@@ -42,6 +46,11 @@ export abstract class ProgressStageObject extends StageObject<PIXI.Container> {
   public set max(val) {
     if (this.max !== val) {
       this._max = val;
+      if (val < this.value && this.clamp) {
+        this._value = val;
+        this.updateText();
+        this.updateSprites();
+      }
       this.dirty = true;
       this.updateText();
       this.updateSprites();
@@ -51,14 +60,14 @@ export abstract class ProgressStageObject extends StageObject<PIXI.Container> {
   private _value = 0;
   public get value() { return this._value; }
   public set value(val) {
-    const actualVal = this.clamp ? Math.min(Math.max(val, 0), this.max) : val;
+    const actualVal = this.clamp ? Math.min(Math.max(val, 0), this.max) : Math.max(val, 0);
     if (this.value !== actualVal) {
       const oldVal = this.value;
-      this._value = val;
+      this._value = actualVal;
       this.dirty = true;
       if (this.animateValueChanges) {
-        void this.animateTextUpdate(oldVal, val);
-        void this.animateSpriteUpdate(oldVal, val);
+        void this.animateTextUpdate(oldVal, actualVal);
+        void this.animateSpriteUpdate(oldVal, actualVal);
       } else {
         this.updateText();
         this.updateSprites();
@@ -84,7 +93,10 @@ export abstract class ProgressStageObject extends StageObject<PIXI.Container> {
       default:
         this.textObject.visible = false
     }
+    this.orderSpriteObjects();
   }
+
+  protected orderSpriteObjects() { /* empty */ }
 
   private _textUpdateTween: Record<string, unknown> | undefined = undefined;
   protected animateTextUpdate(start: number, end: number): Promise<void> {

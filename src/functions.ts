@@ -206,17 +206,20 @@ export async function confirm(title: string, content: string) {
   });
 }
 
-export function getStyleDiff(style: PIXI.HTMLTextStyle): Record<string, unknown> {
-  // Generate diffed style
+export function serializeTextStyle(style: PIXI.HTMLTextStyle): Record<string, unknown> {
   const serialized = JSON.parse(JSON.stringify(style)) as Record<string, unknown>;
-  for (const key in serialized) {
-    if (key.startsWith("_")) {
-      serialized[key.substring(1)] = serialized[key];
-      delete serialized[key];
-    }
+  const keys = Object.keys(serialized).filter(key => key.startsWith("_"));
+  for (const key of keys) {
+    serialized[key.substring(1)] = serialized[key];
+    delete serialized[key];
   }
+  return serialized;
+}
 
-  const diffed = foundry.utils.diffObject(PIXI.HTMLTextStyle.defaultStyle, style) as Record<string, unknown>;
+export function getStyleDiff(style: PIXI.HTMLTextStyle): Record<string, unknown> {
+  const serialized = serializeTextStyle(style);
+  const defaultStyle = serializeTextStyle(PIXI.HTMLTextStyle.defaultStyle as unknown as PIXI.HTMLTextStyle);
+  const diffed = foundry.utils.diffObject(defaultStyle, serialized) as Record<string, unknown>;
   delete diffed.styleID;
   return diffed;
 }

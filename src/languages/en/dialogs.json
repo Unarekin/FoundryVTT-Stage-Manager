@@ -45,7 +45,14 @@
       "SPEAKERS": "Speakers",
       "TEXT": "Text",
       "TRIGGERS": "Triggers",
-      "VIDEO": "Video"
+      "VIDEO": "Video",
+      "PROGRESSBAR": {
+        "TAB": "Progress Bar",
+        "SETTINGS": "Settings",
+        "FG": "Foreground",
+        "BG": "Background",
+        "LERP": "Lerp"
+      }
     },
     "VIEWASUSER": {
       "TITLE": "View As User"
