@@ -86,11 +86,8 @@ export interface SerializedDialogueStageObject extends SerializedStageObject {
 
 export type SerializedSpeaker = SerializedImageStageObject | SerializedActorStageObject;
 
-export const ResourceTextModes = ["none", "values", "percentage"] as const;
-export type ResourceTextMode = typeof ResourceTextModes[number];
-
-export const ResourceFGSizeModes = ["clip", "stretch"] as const;
-export type ResourceFGSizeMode = typeof ResourceFGSizeModes[number];
+export const ProgressTextModes = ["none", "values", "percentage"] as const;
+export type ProgressTextMode = typeof ProgressTextModes[number];
 
 export interface Border {
   left: number;
@@ -115,6 +112,40 @@ export interface SerializedResourceStageObject extends SerializedStageObject {
   fgPadding: Border;
   bgBorders: Border;
   fgBorders: Border;
+}
+
+export interface SerializedProgressStageObject extends SerializedStageObject {
+  max: number;
+  value: number;
+  textMode: ProgressTextMode;
+  textStyle: Record<string, unknown>;
+  lerpEasing: Easing;
+  primaryLerpTime: number;
+  secondaryLerpTime: number;
+  clamp: boolean;
+  animateValueChanges: boolean;
+}
+
+export interface SerializedProgressBarStageObject extends SerializedProgressStageObject {
+  bgSprite: string;
+  fgSprite: string;
+  lerpSprite: string;
+
+  fgBorder: Border;
+  bgBorder: Border;
+  lerpBorder: Border;
+
+  fgBlendMode: number;
+  bgBlendMode: number;
+  lerpBlendMode: number;
+
+  fgTint: string;
+  bgTint: string;
+  lerpTint: string;
+
+  fgPadding: Border;
+
+  textAlignment: "left" | "right" | "center"
 }
 
 /*

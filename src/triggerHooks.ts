@@ -3,7 +3,7 @@
 import { log } from "./logging";
 import { coerceActor } from "./coercion";
 import { StageManager } from "./StageManager";
-import { ActorStageObject, ResourceStageObject, StageObject } from "./stageobjects";
+import { ActorStageObject, StageObject } from "./stageobjects";
 import { TriggerEventSignatures } from "./types";
 
 function triggerEvent<k extends keyof TriggerEventSignatures>(event: k, arg: TriggerEventSignatures[k]) {
@@ -137,10 +137,6 @@ Hooks.on("updateActor", (actor: Actor) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (triggers.some(trigger => (trigger as any).actor === actor.uuid))
       objs.push(obj);
-
-    if (obj instanceof ResourceStageObject && obj.actor === actor) {
-      obj.updateValue();
-    }
   });
 
   const filtered = objs.filter((obj, i, arr) => arr.indexOf(obj) === i);

@@ -1,0 +1,68 @@
+<section class="tab {{cssClass}}" data-group="progressBar" data-tab="fg">
+  {{#with stageObject}}
+    <div class="form-group">
+      <label for="{{../formPrefix}}fgSprite">{{localize "STAGEMANAGER.EDITDIALOG.SRC"}}</label>
+      <file-picker type="imagevideo" value="{{fgSprite}}" name="{{../formPrefix}}src" id="{{../formPrefix}}fgSprite"></file-picker>
+    </div>
+
+    <div class="form-group">
+      <label>{{localize "STAGEMANAGER.EDITDIALOG.PREVIEW"}}</label>
+    </div>
+    <div class="form-group">
+      <canvas id="FgPanelPreview">
+    </div>
+    <div class="form-group">
+      <label>{{localize "STAGEMANAGER.EDITDIALOG.BORDERS.TITLE"}}</label>
+    </div>
+
+    <div class="form-group">
+      <label for="fg.showBorderGuides">{{localize "STAGEMANAGER.EDITDIALOG.SHOWBORDERGUIDES"}}</label>
+      <input type="checkbox" checked id="fg.showBorderGuides">
+    </div>
+
+    <div class="form-group slim">
+      <label for="{{../formPrefix}}fgBorder.left">{{localize "STAGEMANAGER.EDITDIALOG.BORDERS.LEFT"}}</label>
+      <input type="number" min="0" step="1" name="{{../formPrefix}}fgBorder.left" id="{{../formPrefix}}fgBorder.left" value="{{fgBorder.left}}">
+      
+      <label for="{{../formPrefix}}fgBorder.right">{{localize "STAGEMANAGER.EDITDIALOG.BORDERS.RIGHT"}}</label>
+      <input type="number" min="0" step="1" name="{{../formPrefix}}fgBorder.right" id="{{../formPrefix}}fgBorder.right" value="{{fgBorder.right}}">
+    </div>
+
+    <div class="form-group">
+      <label for="{{../formPrefix}}fgBorder.top">{{localize "STAGEMANAGER.EDITDIALOG.BORDERS.TOP"}}</label>
+      <input type="number" min="0" step="1" name="{{../formPrefix}}fgBorder.top" id="{{../formPrefix}}fgBorder.top" value="{{fgBorder.top}}">
+      <label for="{{../formPrefix}}fgBorder.bottom">{{localize "STAGEMANAGER.EDITDIALOG.BORDERS.BOTTOM"}}</label>
+      <input type="number" min="0" step="1" name="{{../formPrefix}}fgBorder.bottom" id="{{../formPrefix}}fgBorder.bottom" value="{{fgBorder.bottom}}">
+    </div>
+
+    <div class="form-group">
+      <label>{{localize "STAGEMANAGER.EDITDIALOG.PADDING.TITLE"}}</label>
+    </div>
+    <div class="form-group">
+      <label for ="{{../formPrefix}}fgPadding.left">{{localize "STAGEMANAGER.EDITDIALOG.PADDING.LEFT"}}</label>
+      <input type="number" min="0" step="1" name="{{../formPrefix}}fgPadding.left" id="{{../formPrefix}}fgPadding.left" value="{{fgPadding.left}}">
+      <label for="{{../formPrefix}}fgPadding.right">{{localize "STAGEMANAGER.EDITDIALOG.PADDING.RIGHT"}}</label>
+      <input type="number" min="0" step="1" name="{{../formPrefix}}fgPadding.right" id="{{../formPrefix}}fgPadding.right" value="{{fgPadding.right}}">
+    </div>
+
+    <div class="form-group">
+      <label for="{{../formPrefix}}fgPadding.top">{{localize "STAGEMANAGER.EDITDIALOG.PADDING.TOP"}}</label>
+      <input type="number" min="0" step="1" name="{{../formPrefix}}fgPadding.top" id="{{../formPrefix}}fgPadding.top" value="{{fgPadding.top}}">
+      <label for="{{../formPrefix}}fgPadding.bottom">{{localize "STAGEMANAGER.EDITDIALOG.PADDING.BOTTOM"}}</label>
+      <input type="number" min="0" step="1" name="{{../formPrefix}}fgPadding.bottom" id="{{../formPrefix}}fgPadding.bottom" value="{{fgPadding.bottom}}">
+    </div>
+
+    <div class="form-group">
+      <label for="{{../formPrefix}}fgBlendMode">{{localize "STAGEMANAGER.EDITDIALOG.BLENDMODE"}}</label>
+      <select name="{{../formPrefix}}fgBlendMode" id="{{../formPrefix}}fgBlendMode">
+        {{selectOptions ../blendModeSelect localize=true selected=fgBlendMode}}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="{{../formPrefix}}fgTint">{{localize "STAGEMANAGER.EDITDIALOG.TINT"}}</label>
+      <input type="text" name="{{../formPrefix}}fgTint" id="{{../formPrefix}}fgTint" value="{{fgTint}}" data-color-picker="{alphaChannel: false}">
+    </div>
+
+  {{/with}}
+</section>

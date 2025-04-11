@@ -1,0 +1,51 @@
+<section class="tab {{cssClass}}" data-group="progressBar" data-tab="lerp">
+  {{#with stageObject}}
+    <div class="form-group">
+      <label for="{{../formPrefix}}lerpSprite">{{localize "STAGEMANAGER.EDITDIALOG.SRC"}}</label>
+      <file-picker type="imagevideo" value="{{src}}" name="{{../formPrefix}}lerpSprite" id="{{../formPrefix}}lerpSprite"></file-picker>
+    </div>
+    
+    <div class="form-group">
+      <label>{{localize "STAGEMANAGER.EDITDIALOG.PREVIEW"}}</label>
+    </div>
+    <div class="form-group">
+      <canvas id="LerpPanelPreview">
+    </div>
+    <div class="form-group">
+      <label>{{localize "STAGEMANAGER.EDITDIALOG.BORDERS.TITLE"}}</label>
+    </div>
+
+    <div class="form-group">
+      <label for="lerp.showBorderGuides">{{localize "STAGEMANAGER.EDITDIALOG.SHOWBORDERGUIDES"}}</label>
+      <input type="checkbox" checked id="lerp.showBorderGuides">
+    </div>
+
+    <div class="form-group slim">
+      <label for="{{../formPrefix}}lerpBorder.left">{{localize "STAGEMANAGER.EDITDIALOG.BORDERS.LEFT"}}</label>
+      <input type="number" min="0" step="1" name="{{../formPrefix}}lerpBorder.left" id="{{../formPrefix}}lerpBorder.left" value="{{lerpBorder.left}}">
+      
+      <label for="{{../formPrefix}}lerpBorder.right">{{localize "STAGEMANAGER.EDITDIALOG.BORDERS.RIGHT"}}</label>
+      <input type="number" min="0" step="1" name="{{../formPrefix}}lerpBorder.right" id="{{../formPrefix}}lerpBorder.right" value="{{lerpBorder.right}}">
+    </div>
+
+    <div class="form-group">
+      <label for="{{../formPrefix}}lerpBorder.top">{{localize "STAGEMANAGER.EDITDIALOG.BORDERS.TOP"}}</label>
+      <input type="number" min="0" step="1" name="{{../formPrefix}}lerpBorder.top" id="{{../formPrefix}}lerpBorder.top" value="{{lerpBorder.top}}">
+      <label for="{{../formPrefix}}lerpBorder.bottom">{{localize "STAGEMANAGER.EDITDIALOG.BORDERS.BOTTOM"}}</label>
+      <input type="number" min="0" step="1" name="{{../formPrefix}}lerpBorder.bottom" id="{{../formPrefix}}lerpBorder.bottom" value="{{lerpBorder.bottom}}">
+    </div>
+
+    <div class="form-group">
+      <label for="{{../formPrefix}}lerpBlendMode">{{localize "STAGEMANAGER.EDITDIALOG.BLENDMODE"}}</label>
+      <select name="{{../formPrefix}}lerpBlendMode" id="{{../formPrefix}}lerpBlendMode">
+        {{selectOptions ../blendModeSelect localize=true selected=lerpBlendMode}}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="{{../formPrefix}}lerpTint">{{localize "STAGEMANAGER.EDITDIALOG.TINT"}}</label>
+      <input type="text" name="{{../formPrefix}}lerpTint" id="{{../formPrefix}}lerpTint" value="{{tint}}" data-color-picker="{alphaChannel: false}">
+    </div>
+
+  {{/with}}
+</section>

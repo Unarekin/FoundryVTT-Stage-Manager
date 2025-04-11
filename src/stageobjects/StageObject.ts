@@ -193,7 +193,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   // #endregion Properties (15)
 
 
-  protected dblClickDelay = 500;
+  protected dblClickDelay = 250;
 
   protected _clickHandle: NodeJS.Timeout | null = null;
 
@@ -208,7 +208,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
         const { x, y } = this.displayObject.toLocal(e);
         this._clickHandle = null;
         void this.triggerEvent("click", { pos: { x, y, clientX: e.clientX, clientY: e.clientY }, modKeys: { ctrl: e.ctrlKey, alt: e.altKey, shift: e.shiftKey }, user: game.user as User });
-      }, 500);
+      }, this.dblClickDelay);
     } else {
       clearTimeout(this._clickHandle);
       this._clickHandle = null;
@@ -527,7 +527,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
   #ignoredProperties = ["worldAlpha", "uvs", "dirty", "indices", "vertexDirty", "transform", "filterArea"];
 
-  private proxyDisplayObject(val: t): t {
+  protected proxyDisplayObject(val: t): t {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const temp = this;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access

@@ -403,7 +403,7 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
 
 
       if (!this.submitted && this.original) {
-        log("reverting");
+        log("reverting", this.original);
         this.stageObject.deserialize(this.original);
       }
 
@@ -416,6 +416,8 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
     }
   }
 
+
+
   protected getTabs(): Record<string, foundry.applications.api.ApplicationV2.Tab> {
     return {}
   }
@@ -426,6 +428,7 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
 
     const serialized = this.stageObject.serialize();
     context.stageObject = serialized;
+    context.originalStageObject = serialized;
 
     // De-normalize
     serialized.bounds = {
@@ -440,42 +443,6 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
       primary: "STAGEMANAGER.LAYERS.PRIMARY",
       foreground: "STAGEMANAGER.LAYERS.FOREGROUND",
       background: "STAGEMANAGER.LAYERS.BACKGROUND"
-    }
-
-    context.tabs = {
-      basics: {
-        id: "basics",
-        cssClass: "active",
-        group: "primary",
-        active: false,
-        icon: "fas fa-cubes",
-        label: "STAGEMANAGER.TABS.BASICS"
-      },
-      ...this.getTabs(),
-      effects: {
-        id: "effects",
-        group: "primary",
-        active: false,
-        cssClass: "",
-        icon: "fas fa-fire",
-        label: "STAGEMANAGER.TABS.EFFECTS"
-      },
-      triggers: {
-        id: "triggers",
-        group: "primary",
-        active: false,
-        cssClass: "",
-        icon: "fas fa-forward",
-        label: "STAGEMANAGER.TABS.TRIGGERS"
-      },
-      permissions: {
-        id: "permissions",
-        group: "primary",
-        active: false,
-        cssClass: "",
-        icon: "fas fa-shield",
-        label: "STAGEMANAGER.TABS.PERMISSIONS"
-      }
     }
 
     context.effects = serialized.effects.map(effect => {
@@ -515,6 +482,42 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
     const context = await super._preparePartContext(partId, ctx, options) as Record<string, unknown>;
 
 
+    context.tabs = {
+      basics: {
+        id: "basics",
+        cssClass: "active",
+        group: "primary",
+        active: false,
+        icon: "fas fa-cubes",
+        label: "STAGEMANAGER.TABS.BASICS"
+      },
+      ...this.getTabs(),
+      effects: {
+        id: "effects",
+        group: "primary",
+        active: false,
+        cssClass: "",
+        icon: "fas fa-fire",
+        label: "STAGEMANAGER.TABS.EFFECTS"
+      },
+      triggers: {
+        id: "triggers",
+        group: "primary",
+        active: false,
+        cssClass: "",
+        icon: "fas fa-forward",
+        label: "STAGEMANAGER.TABS.TRIGGERS"
+      },
+      permissions: {
+        id: "permissions",
+        group: "primary",
+        active: false,
+        cssClass: "",
+        icon: "fas fa-shield",
+        label: "STAGEMANAGER.TABS.PERMISSIONS"
+      }
+    }
+
     context.tab = (context.tabs as Record<string, foundry.applications.api.ApplicationV2.Tab>)[partId];
     // switch (partId) {
 
@@ -547,6 +550,7 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
         addEventListeners(this.element);
 
       // loadTriggers(this.element, this.stageObject);
+      this._original = this.stageObject.serialize() as v;
 
       const ghost = this.stageObject.createDragGhost();
       this._ghost = ghost;
@@ -560,7 +564,6 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
       ghost.interactive = false;
       ghost.interactiveChildren = false;
 
-      this._original = this.stageObject.serialize() as v;
 
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       ColorPicker.install();
