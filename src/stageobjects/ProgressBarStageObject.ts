@@ -8,8 +8,8 @@ import { log } from "logging";
 
 export class ProgressBarStageObject extends ProgressStageObject {
 
-  public static readonly type = "progressBar";
-  public readonly type = ProgressBarStageObject.type;
+  public static readonly type: string = "progressBar";
+  public readonly type: string = ProgressBarStageObject.type;
 
   private _bgObject: PIXI.NineSlicePlane;
   private _fgObject: PIXI.NineSlicePlane;

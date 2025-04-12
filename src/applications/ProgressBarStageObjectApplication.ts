@@ -6,7 +6,7 @@ import { StageManager } from "StageManager";
 import { logError } from "logging";
 import { drawPanelPreview, easingSelectOptions, fontSelectContext } from "./functions";
 
-export class ProgressBarStageObjectApplication extends StageObjectApplication<ProgressBarStageObject, SerializedProgressBarStageObject> {
+export class ProgressBarStageObjectApplication<t extends ProgressBarStageObject, v extends SerializedProgressBarStageObject> extends StageObjectApplication<t, v> {
   public static readonly PARTS: Record<string, foundry.applications.api.HandlebarsApplicationMixin.HandlebarsTemplatePart> = {
     ...ProgressBarStageObjectApplication.FRONT_PARTS,
     progressBar: {
@@ -27,6 +27,9 @@ export class ProgressBarStageObjectApplication extends StageObjectApplication<Pr
     lerp: {
       template: `modules/${__MODULE_ID__}/templates/editObject/progressBar.lerp.hbs`
     },
+    animation: {
+      template: `modules/${__MODULE_ID__}/templates/editObject/progressBar.animation.hbs`
+    },
     ...ProgressBarStageObjectApplication.BACK_PARTS
   }
 
@@ -43,7 +46,7 @@ export class ProgressBarStageObjectApplication extends StageObjectApplication<Pr
     }
   }
 
-  protected parseForm(form: HTMLFormElement): SerializedProgressBarStageObject {
+  protected parseForm(form: HTMLFormElement): v {
     const data = super.parseForm(form);
 
     const bounds = data.restrictToVisualArea ? StageManager.VisualBounds : StageManager.ScreenBounds;
@@ -122,12 +125,20 @@ export class ProgressBarStageObjectApplication extends StageObjectApplication<Pr
         id: "settings"
       },
       font: {
-        label: "STAGEMANAGER.TABS.FONT",
+        label: "STAGEMANAGER.TABS.TEXT",
         active: false,
         cssClass: "",
         group: "progressBar",
         icon: "fas fa-font",
         id: "font"
+      },
+      animation: {
+        label: "STAGEMANAGER.TABS.ANIMATION",
+        active: false,
+        cssClass: "",
+        group: "progressBar",
+        icon: "fas fa-person-running",
+        id: "animation"
       },
       bg: {
         label: "STAGEMANAGER.TABS.PROGRESSBAR.BG",

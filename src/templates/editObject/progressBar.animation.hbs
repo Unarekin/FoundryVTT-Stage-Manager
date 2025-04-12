@@ -1,0 +1,25 @@
+<section class="tab {{cssClass}}" data-group="progressBar" data-tab="animation">
+  {{#with stageObject}}
+    <div class="form-group">
+      <label for="animateValueChanges">{{localize "STAGEMANAGER.EDITDIALOG.ANIMATEVALUECHANGES"}}</label>
+      <input type="checkbox" name="{{../formPrefix}}animateValueChanges" id="{{../formPrefix}}animateValueChanges" {{checked animateValueChanges}}>
+    </div>
+
+    <div class="form-group">
+      <label for="primaryLerpTime">{{localize "STAGEMANAGER.EDITDIALOG.PRIMARYLERP"}}</label>
+      <input type="number" min="0" step="1" required name="{{../formPrefix}}primaryLerpTime" id="{{../formPrefix}}primaryLerpTime" value="{{primaryLerpTime}}">
+    </div>
+
+    <div class="form-group">
+      <label for="secondaryLerpTime">{{localize "STAGEMANAGER.EDITDIALOG.SECONDARYLERP"}}</label>
+      <input type="number" min="0" step="1" required name="{{../formPrefix}}secondaryLerpTime" id="{{../formPrefix}}secondaryLerpTime" value="{{secondaryLerpTime}}">
+    </div>
+
+    <div class="form-group">
+      <label for="lerpEasing">{{localize "STAGEMANAGER.EDITDIALOG.LERPEASING"}}</label>
+      <select id="{{../formPrefix}}lerpEasing" id="{{../formPrefix}}lerpEasing">
+        {{selectOptions ../lerpEasingSelect localize=true selected=lerpEasing}}
+      </select>
+    </div>
+  {{/with}}
+</section>

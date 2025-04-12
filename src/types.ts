@@ -96,24 +96,6 @@ export interface Border {
   bottom: number;
 }
 
-export interface SerializedResourceStageObject extends SerializedStageObject {
-  bg: string;
-  fg: string;
-  lerpTexture: string;
-  primaryLerpTime?: number;
-  primaryLerpEasing?: Easing;
-  secondaryLerpTime?: number;
-  secondaryLerpEasing?: Easing;
-  textMode: ResourceTextMode;
-  resourcePath: string;
-  textStyle: Record<string, unknown>;
-  fgSizeMode: ResourceFGSizeMode;
-  actor: string;
-  fgPadding: Border;
-  bgBorders: Border;
-  fgBorders: Border;
-}
-
 export interface SerializedProgressStageObject extends SerializedStageObject {
   max: number;
   value: number;
@@ -146,6 +128,12 @@ export interface SerializedProgressBarStageObject extends SerializedProgressStag
   fgPadding: Border;
 
   textAlignment: "left" | "right" | "center"
+}
+
+export interface SerializedResourceBarStageObject extends SerializedProgressBarStageObject {
+  object: string;
+  maxPath: string;
+  valuePath: string;
 }
 
 /*

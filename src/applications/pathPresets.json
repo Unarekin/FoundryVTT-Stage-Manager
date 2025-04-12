@@ -1,0 +1,112 @@
+{
+  "projectfu": {
+    "hp": {
+      "max": "system.resources.hp.max",
+      "value": "system.resources.hp.value"
+    },
+    "mp": {
+      "max": "system.resources.mp.max",
+      "value": "system.resources.mp.value"
+    },
+    "ip": {
+      "max": "system.resources.ip.max",
+      "value": "system.resources.ip.value"
+    },
+    "zeroPower": {
+      "max": "system.data.progress.max",
+      "value": "system.data.progress.current"
+    },
+    "ritual": {
+      "max": "system.progress.max",
+      "value": "system.progress.value"
+    },
+    "project": {
+      "max": "system.progress.max",
+      "value": "system.progress.value"
+    },
+    "quirk": {
+      "max": "system.data.progress.max",
+      "value": "system.data.progress.current"
+    },
+    "garden": {
+      "max": "system.data.clock.max",
+      "value": "system.data.clock.value"
+    },
+    "skill": {
+      "max": "system.rp.max",
+      "value": "system.rp.value"
+    }
+  },
+  "pf2e": {
+    "hp": {
+      "value": "system.attributes.hp.value",
+      "max": "system.attributes.hp.max"
+    },
+    "heroPoints": {
+      "value": "system.resources.heroPoints.value",
+      "max": "system.resources.heroPoints.max"
+    },
+    "mythicPoints": {
+      "value": "system.resources.mythicPoints.value",
+      "max": "system.resources.mythicPoints.max"
+    }
+  },
+  "dnd5e": {
+    "hp": {
+      "value": "system.attributes.hp.value",
+      "max": "system.attributes.hp.max"
+    }
+  },
+  "lancer": {
+    "hp": {
+      "max": "system.hp.max",
+      "value": "system.hp.value"
+    },
+    "overshield": {
+      "max": "system.overshield.max",
+      "value": "system.overshield.value"
+    },
+    "heat": {
+      "max": "system.heat.max",
+      "value": "system.heat.value"
+    },
+    "structure": {
+      "max": "system.structure.max",
+      "value": "system.structure.value"
+    },
+    "stress": {
+      "max": "system.stress.max",
+      "value": "system.stress.value"
+    }
+  },
+  "exaltedthird": {
+    "health": {
+      "value": "system.health.value",
+      "max": "system.health.max"
+    },
+    "personalMotes": {
+      "value": "system.motes.personal.value",
+      "max": "system.motes.personal.max"
+    },
+    "peripheralMotes": {
+      "value": "system.motes.peripheral.value",
+      "max": "system.motes.peripheral.max"
+    },
+    "sorcerousMotes": {
+      "value": "system.sorcery.motes.value",
+      "max": "system.sorcery.motes.max"
+    },
+    "personalXP": {
+      "value": "system.experience.standard.value",
+      "max": "system.experience.standard.max"
+    },
+    "exaltXP": {
+      "value": "system.experience.exalt.value",
+      "max": "system.experience.exalt.max"
+    },
+    "willpower": {
+      "value": "system.willpower.value",
+      "max": "system.willpower.max"
+    }
+  }
+}

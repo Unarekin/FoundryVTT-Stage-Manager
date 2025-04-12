@@ -13,6 +13,7 @@ export * from './InvalidSpeakerType';
 export * from './InvalidStageObjectError';
 export * from './InvalidTextureError';
 export * from './InvalidTriggerError';
+export * from './InvalidUUIDError';
 export * from './InvalidUserError';
 export * from './LocalizedError';
 export * from './MacroPermDeniedError';

@@ -1,5 +1,5 @@
 import { ScreenSpaceCanvasGroup } from './ScreenSpaceCanvasGroup';
-import { ActorStageObject, ImageStageObject, PanelStageObject, StageObject, TextStageObject, DialogueStageObject, ProgressBarStageObject } from './stageobjects';
+import { ActorStageObject, ImageStageObject, PanelStageObject, StageObject, TextStageObject, DialogueStageObject, ProgressBarStageObject, ResourceBarStageObject } from './stageobjects';
 import { PartialWithRequired, SerializedStageObject, StageLayer } from './types';
 import { coerceStageObject, coerceUser } from './coercion';
 import { StageObjects } from './StageObjectCollection';
@@ -140,6 +140,37 @@ export class StageManager {
     }
   }
 
+
+  /**
+   * 
+   * @param {string} uuid 
+   * @param {string} valuePath 
+   * @param {string} maxPath 
+   * @param {PIXI.ColorSource | PIXI.TextureSource} fg - {@link PIXI.ColorSource} or {@link PIXI.TextureSource} representing foreground object (bar fill)
+   * @param {PIXI.ColorSource | PIXI.TextureSource} bg - {@link PIXI.ColorSource} or {@link PIXI.TextureSource} representing the background image
+   * @param {PIXI.ColorSource | PIXI.TextureSource} lerp - {@link PIXI.ColorSource} or {@link PIXI.TextureSource} for the temporary bar shown during value change animation
+   * @param {number} x 
+   * @param {number} y 
+   * @param {StageLayer} layer - {@link StageLayer}
+   * @returns 
+   */
+  public static addResourceBar(uuid: string, valuePath: string, maxPath: string, fg: PIXI.ColorSource | PIXI.TextureSource, bg: PIXI.ColorSource | PIXI.TextureSource, lerp: PIXI.ColorSource | PIXI.TextureSource = "transparent", x?: number, y?: number, layer: StageLayer = "primary"): ResourceBarStageObject | undefined {
+    try {
+      if (!StageManager.canAddStageObjects(game.user?.id ?? "")) throw new PermissionDeniedError();
+      const obj = new ResourceBarStageObject(uuid, valuePath, maxPath, fg, bg, lerp);
+      if (typeof x === "number") obj.x = x;
+      if (typeof y === "number") obj.y = y;
+      if (typeof x !== "number" && typeof y !== "number") {
+        obj.x = (window.innerWidth - obj.width) / 2;
+        obj.y = (window.innerHeight - obj.height) / 2;
+      }
+
+      StageManager.addStageObject(obj, layer ?? "primary");
+      return obj;
+    } catch (err) {
+      logError(err as Error);
+    }
+  }
 
 
   /**

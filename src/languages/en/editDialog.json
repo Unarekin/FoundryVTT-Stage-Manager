@@ -7,6 +7,8 @@
       "ANCHOR": "Anchor",
       "ANGLE": "Rotation",
       "ANGLEHINT": "(In degrees)",
+      "ANIMATEVALUECHANGES": "Animate Value Changes",
+      "ANIMATION": "Animation",
       "BGTYPES": {
         "COLOR": "Color",
         "IMAGE": "Image"
@@ -20,6 +22,7 @@
         "TOP": "Top"
       },
       "BREAKWORDS": "Wrap on Whitespace",
+      "CLAMP": "Clamp Values",
       "CLICKTHROUGH": "Ignore Mouse Events",
       "DELETE": "Delete {name}",
       "DELETEEFFECT": {
@@ -110,6 +113,7 @@
       },
       "HEIGHT": "Height",
       "LAYER": "Layer",
+      "LERPEASING": "Lerp Easing",
       "LOCATION": "Screen Location",
       "LOCATIONPRESET": "Screen location presets",
       "LOCATIONPRESETS": {
@@ -124,6 +128,8 @@
         "TOPRIGHT": "Top right"
       },
       "MASK": "Masking",
+      "MAX": "Max",
+      "MAXPATH": "Maximum Path",
       "NAME": "Name",
       "OWNERS": "Owner(s)",
       "PADDING": {
@@ -133,13 +139,17 @@
         "TITLE": "Padding Sizes",
         "TOP": "Top"
       },
+      "PATHPRESETS": "Path Preset",
       "POSX": "X",
       "POSY": "Y",
       "PREVIEW": "Preview:",
+      "PRIMARYLERP": "Primary Lerp Time",
+      "RESOURCE": "Resource",
       "RESOURCEPATH": "Resource Path",
       "RESOURCETEXTMODE": "Text Display Mode",
       "SCENES": "Scenes",
       "SCOPE": "Object scope",
+      "SECONDARYLERP": "Secondary Lerp Time",
       "SELECTTOKEN": "Select Token",
       "SELECTTOKENHINT": "Select a token to link its actor.  Press the 'Select Token' button again to cancel.",
       "SHOWBORDERGUIDES": "Show Border Guides",
@@ -171,6 +181,7 @@
         "LEFT": "Left",
         "RIGHT": "Right"
       },
+      "TEXTALIGNMENT": "Text Alignment",
       "TEXTMODE": {
         "LABEL": "Text Mode",
         "NONE": "None",
@@ -185,6 +196,9 @@
       "TRIGGERS": "Triggers",
       "TRIGGERSENABLED": "Enable triggers",
       "USERS": "Users",
+      "UUID": "Object UUID",
+      "VALUE": "Value",
+      "VALUEPATH": "Current Value Path",
       "VISIBLE": "Visible",
       "VISUALBOUNDS": "Relative to Visual Bounds",
       "VISUALBOUNDSHIDE": "Hide Visual Bounds",
@@ -199,15 +213,44 @@
       "WIDTH": "Width",
       "WORDWRAP": "Word Wrap",
       "WORDWRAPWIDTH": "Word Wrap Width",
-      "ZINDEX": "Sort Index",
-      "VALUE": "Value",
-      "MAX": "Max",
-      "CLAMP": "Clamp Values",
-      "ANIMATEVALUECHANGES": "Animate Value Changes",
-      "TEXTALIGNMENT": "Text Alignment",
-      "PRIMARYLERP": "Primary Lerp Time",
-      "SECONDARYLERP": "Secondary Lerp Time",
-      "LERPEASING": "Lerp Easing"
+      "ZINDEX": "Sort Index"
+    },
+    "PATHPRESETS": {
+      "DND5E": {
+        "HP": "HP"
+      },
+      "EXALTEDTHIRD": {
+        "EXALTXP": "Exalt XP",
+        "HEALTH": "Health Levels",
+        "PERIPHERALMOTES": "Peripheral Motes",
+        "PERSONALMOTES": "Personal Motes",
+        "PERSONALXP": "Personal XP",
+        "SORCEROUSMOTES": "Sorcerous Motes",
+        "WILLPOWER": "Willpower"
+      },
+      "LANCER": {
+        "HEAT": "Heat",
+        "HP": "HP",
+        "OVERSHIELD": "Overshield",
+        "STRESS": "Stress",
+        "STRUCTURE": "Structure"
+      },
+      "PF2E": {
+        "HEROPOINTS": "Hero Points",
+        "HP": "HP",
+        "MYTHICPOINTS": "Mythic Points"
+      },
+      "PROJECTFU": {
+        "GARDEN": "Magiseed Garden",
+        "HP": "HP",
+        "IP": "IP",
+        "MP": "MP",
+        "PROJECT": "Project",
+        "QUIRK": "Quirk",
+        "RITUAL": "Ritual",
+        "SKILL": "Skill",
+        "ZEROPOWER": "Zero Power"
+      }
     }
   }
 }

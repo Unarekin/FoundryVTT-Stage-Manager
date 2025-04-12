@@ -4,5 +4,6 @@ export * from './ImageStageObject';
 export * from './PanelStageObject';
 export * from './ProgressStageObject';
 export * from './ProgressBarStageObject';
+export * from './ResourceBarStageObject';
 export * from './StageObject';
 export * from './TextStageObject';

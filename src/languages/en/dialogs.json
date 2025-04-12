@@ -33,6 +33,7 @@
     },
     "TABS": {
       "ACTOR": "Actor",
+      "ANIMATION": "Animation",
       "BACKGROUND": "Background",
       "BASICS": "Basics",
       "EFFECTS": "Effects",
