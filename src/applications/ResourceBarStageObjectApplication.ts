@@ -26,9 +26,6 @@ export class ResourceBarStageObjectApplication extends ProgressBarStageObjectApp
     lerp: {
       template: `modules/${__MODULE_ID__}/templates/editObject/progressBar.lerp.hbs`
     },
-    animation: {
-      template: `modules/${__MODULE_ID__}/templates/editObject/progressBar.animation.hbs`
-    },
     ...ResourceBarStageObjectApplication.BACK_PARTS
   }
 

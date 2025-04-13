@@ -47,6 +47,13 @@
       "TEXT": "Text",
       "TRIGGERS": "Triggers",
       "VIDEO": "Video",
+      "PROGRESSCLOCK": {
+        "TAB": "Progress Clock",
+        "SETTINGS": "Settings",
+        "FG": "Foreground",
+        "BG": "Background",
+        "LERP": "Lerp"
+      },
       "PROGRESSBAR": {
         "TAB": "Progress Bar",
         "SETTINGS": "Settings",

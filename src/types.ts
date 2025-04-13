@@ -136,6 +136,26 @@ export interface SerializedResourceBarStageObject extends SerializedProgressBarS
   valuePath: string;
 }
 
+export interface SerializedProgressClockStageObject extends SerializedProgressStageObject {
+  bgSprite: string;
+  fgSprite: string;
+  lerpSprite: string;
+
+  fgBlendMode: number;
+  bgBlendMode: number;
+  lerpBlendMode: number;
+
+  fgTint: string;
+  bgTint: string;
+  lerpTint: string;
+
+  fgPadding: Border;
+  textHAlignment: "left" | "center" | "right";
+  textVAlignment: "top" | "center" | "bottom";
+
+  swapLayers: boolean;
+}
+
 /*
 export const StageLayers = ["primary", "foreground", "background", "text", "ui"] as const;
 export type StageLayer = typeof StageLayers[number];

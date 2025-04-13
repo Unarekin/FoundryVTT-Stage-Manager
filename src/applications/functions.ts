@@ -178,9 +178,9 @@ export function easingSelectOptions(): Record<string, string> {
     "sine.in": "STAGEMANAGER.EASINGS.SINEIN",
     "sine.out": "STAGEMANAGER.EASINGS.SINEOUT",
     "sine.inOut": "STAGEMANAGER.EASINGS.SINEINOUT",
-    "steps": "STAGEMANAGER.EASINGS.STEPS",
-    "rough": "STAGEMANAGER.EASINGS.ROUGH",
-    "slow": "STAGEMANAGER.EASINGS.SLOW",
-    "expoScale": "STAGEMANAGER.EASINGS.EXPOSCALE"
+    // "steps": "STAGEMANAGER.EASINGS.STEPS",
+    // "rough": "STAGEMANAGER.EASINGS.ROUGH",
+    // "slow": "STAGEMANAGER.EASINGS.SLOW",
+    // "expoScale": "STAGEMANAGER.EASINGS.EXPOSCALE"
   }
 }

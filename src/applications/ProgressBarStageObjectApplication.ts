@@ -27,9 +27,6 @@ export class ProgressBarStageObjectApplication<t extends ProgressBarStageObject,
     lerp: {
       template: `modules/${__MODULE_ID__}/templates/editObject/progressBar.lerp.hbs`
     },
-    animation: {
-      template: `modules/${__MODULE_ID__}/templates/editObject/progressBar.animation.hbs`
-    },
     ...ProgressBarStageObjectApplication.BACK_PARTS
   }
 
@@ -131,14 +128,6 @@ export class ProgressBarStageObjectApplication<t extends ProgressBarStageObject,
         group: "progressBar",
         icon: "fas fa-font",
         id: "font"
-      },
-      animation: {
-        label: "STAGEMANAGER.TABS.ANIMATION",
-        active: false,
-        cssClass: "",
-        group: "progressBar",
-        icon: "fas fa-person-running",
-        id: "animation"
       },
       bg: {
         label: "STAGEMANAGER.TABS.PROGRESSBAR.BG",

@@ -1,5 +1,5 @@
 import { ScreenSpaceCanvasGroup } from './ScreenSpaceCanvasGroup';
-import { ActorStageObject, ImageStageObject, PanelStageObject, StageObject, TextStageObject, DialogueStageObject, ProgressBarStageObject, ResourceBarStageObject } from './stageobjects';
+import { ActorStageObject, ImageStageObject, PanelStageObject, StageObject, TextStageObject, DialogueStageObject, ProgressBarStageObject, ResourceBarStageObject, ProgressClockStageObject } from './stageobjects';
 import { PartialWithRequired, SerializedStageObject, StageLayer } from './types';
 import { coerceStageObject, coerceUser } from './coercion';
 import { StageObjects } from './StageObjectCollection';
@@ -141,6 +141,8 @@ export class StageManager {
   }
 
 
+
+
   /**
    * 
    * @param {string} uuid 
@@ -173,6 +175,25 @@ export class StageManager {
   }
 
 
+  public static addProgressClock(max: number, fg: PIXI.ColorSource | PIXI.TextureSource, bg: PIXI.ColorSource | PIXI.TextureSource, lerp: PIXI.ColorSource | PIXI.TextureSource = "transparent", x?: number, y?: number, layer: StageLayer = "primary"): ProgressClockStageObject | undefined {
+    try {
+      if (!StageManager.canAddStageObjects(game.user?.id ?? "")) throw new PermissionDeniedError();
+      const obj = new ProgressClockStageObject(max, max, fg, bg, lerp);
+      if (typeof x === "number") obj.x = x;
+      if (typeof y === "number") obj.y = y;
+      if (typeof x !== "number" && typeof y !== "number") {
+        obj.x = (window.innerWidth - obj.width) / 2;
+        obj.y = (window.innerHeight - obj.height) / 2;
+      }
+
+      StageManager.addStageObject(obj, layer ?? "primary");
+
+      return obj;
+    } catch (err) {
+      logError(err as Error);
+    }
+  }
+
   /**
    * Adds a progress bar
    * @param {max} max - Maximum value
@@ -187,7 +208,7 @@ export class StageManager {
   public static addProgressBar(max: number, fg: PIXI.ColorSource | PIXI.TextureSource, bg: PIXI.ColorSource | PIXI.TextureSource, lerp: PIXI.ColorSource | PIXI.TextureSource = "transparent", x?: number, y?: number, layer: StageLayer = "primary"): ProgressBarStageObject | undefined {
     try {
       if (!StageManager.canAddStageObjects(game.user?.id ?? "")) throw new PermissionDeniedError();
-      const obj = new ProgressBarStageObject(0, max, fg, bg, lerp);
+      const obj = new ProgressBarStageObject(max, max, fg, bg, lerp);
       if (typeof x === "number") obj.x = x;
       if (typeof y === "number") obj.y = y;
       if (typeof x !== "number" && typeof y !== "number") {

@@ -8,11 +8,18 @@
       </select>
     </div>
 
-    <div class="form-group">
-      <label for="textAlignment">{{localize "STAGEMANAGER.EDITDIALOG.TEXTALIGN.LABEL"}}</label>
-      <select name="{{../formPrefix}}textAlignment" id="{{../formPrefix}}textAlignment">
-        {{selectOptions ../textAlignmentSelect localize=true selected=textAlignment}}
-      </select>
+    <div class="form-group slim">
+      <label>{{localize "STAGEMANAGER.EDITDIALOG.TEXTALIGN.LABEL"}}</label>
+      <div class="form-fields">
+        <label for="{{../formPrefix}}textHAlignment">{{localize "STAGEMANAGER.EDITDIALOG.TEXTALIGN.HORIZONTAL"}}</label>
+        <select name="{{../formPrefix}}textHAlignment" id="{{../formPrefix}}textHAlignment">
+          {{selectOptions ../textHAlignmentSelect localize=true selected=textHAlignment}}
+        </select>
+        <label for="{{../formPrefix}}textVAlignment">{{localize "STAGEMANAGER.EDITDIALOG.TEXTALIGN.VERTICAL"}}</label>
+        <select name="{{../formPrefix}}textVAlignment" id="{{../formPrefix}}textVAlignment">
+          {{selectOptions ../textVAlignmentSelect localize=true selected=textVAlignment}}
+        </select>
+      </div>
     </div>
 
     <div class="form-group">

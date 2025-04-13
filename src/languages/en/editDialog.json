@@ -179,7 +179,11 @@
         "JUSTIFY": "Justified",
         "LABEL": "Alignment",
         "LEFT": "Left",
-        "RIGHT": "Right"
+        "RIGHT": "Right",
+        "HORIZONTAL": "Horizontal",
+        "VERTICAL": "Vertical",
+        "TOP": "Top",
+        "BOTTOM": "Bottom"
       },
       "TEXTALIGNMENT": "Text Alignment",
       "TEXTMODE": {
