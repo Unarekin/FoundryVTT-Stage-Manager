@@ -552,17 +552,17 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
       // loadTriggers(this.element, this.stageObject);
       this._original = this.stageObject.serialize() as v;
 
-      const ghost = this.stageObject.createDragGhost();
-      this._ghost = ghost;
-      ghost.alpha = 0.5;
-      ghost.zIndex = this.stageObject.zIndex - 1;
+      // const ghost = this.stageObject.createDragGhost();
+      // this._ghost = ghost;
+      // ghost.alpha = 0.5;
+      // ghost.zIndex = this.stageObject.zIndex - 1;
 
-      // ghost.alpha = this.stageObject.alpha;
-      // this.stageObject.alpha = .5;
-      this.stageObject.displayObject.parent.addChild(ghost);
+      // // ghost.alpha = this.stageObject.alpha;
+      // // this.stageObject.alpha = .5;
+      // this.stageObject.displayObject.parent.addChild(ghost);
 
-      ghost.interactive = false;
-      ghost.interactiveChildren = false;
+      // ghost.interactive = false;
+      // ghost.interactiveChildren = false;
 
 
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
