@@ -156,6 +156,12 @@ export interface SerializedProgressClockStageObject extends SerializedProgressSt
   swapLayers: boolean;
 }
 
+export interface SerializedResourceClockStageObject extends SerializedProgressClockStageObject {
+  object: string;
+  maxPath: string;
+  valuePath: string;
+}
+
 /*
 export const StageLayers = ["primary", "foreground", "background", "text", "ui"] as const;
 export type StageLayer = typeof StageLayers[number];

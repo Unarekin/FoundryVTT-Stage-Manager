@@ -4,5 +4,6 @@ export * from './PanelStageObjectApplication';
 export * from './ProgressBarStageObjectApplication';
 export * from './ProgressClockStageObjectApplication';
 export * from './ResourceBarStageObjectApplication';
+export * from './ResourceClockStageObjectApplication';
 export * from './StageObjectApplication';
 export * from './TextStageObjectApplication';

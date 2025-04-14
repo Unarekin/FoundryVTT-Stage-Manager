@@ -6,5 +6,6 @@ export * from './ProgressStageObject';
 export * from './ProgressBarStageObject';
 export * from './ProgressClockStageObject';
 export * from './ResourceBarStageObject';
+export * from './ResourceClockStageObject';
 export * from './StageObject';
 export * from './TextStageObject';

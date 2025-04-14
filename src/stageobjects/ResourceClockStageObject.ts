@@ -1,18 +1,17 @@
-import { InvalidResourcePathError, InvalidUUIDError } from 'errors';
-import { ProgressBarStageObject } from './ProgressBarStageObject';
-import { SerializedResourceBarStageObject } from 'types';
-import { ResourceBarStageObjectApplication, StageObjectApplication } from 'applications';
+import { InvalidResourcePathError, InvalidUUIDError } from "errors";
+import { ProgressClockStageObject } from "./ProgressClockStageObject";
+import { SerializedResourceClockStageObject } from "types";
+import { ResourceClockStageObjectApplication, StageObjectApplication } from "applications";
 
-export class ResourceBarStageObject extends ProgressBarStageObject {
-
+export class ResourceClockStageObject extends ProgressClockStageObject {
   private _valuePath = "";
   private _maxPath = "";
 
-  public static readonly type = "resourceBar";
-  public readonly type: string = ResourceBarStageObject.type;
+  public static readonly type: string = "resourceClock";
+  public readonly type: string = ResourceClockStageObject.type;
 
-  public static readonly ApplicationType = ResourceBarStageObjectApplication as typeof StageObjectApplication;
-  public readonly ApplicationType = ResourceBarStageObject.ApplicationType;
+  public static readonly ApplicationType = ResourceClockStageObjectApplication as typeof StageObjectApplication;
+  public readonly ApplicationType = ResourceClockStageObject.ApplicationType;
 
   public get valuePath() { return this._valuePath; }
   public set valuePath(val) {
@@ -32,13 +31,13 @@ export class ResourceBarStageObject extends ProgressBarStageObject {
     }
   }
 
+
   private _object: foundry.abstract.Document<any, any, any> | undefined = undefined;
   public get object() { return this._object; }
 
-
   private _hookId = 0;
 
-  public get uuid() { return this.object?.uuid ?? ""; }
+  public get uuid() { return this.object?.uuid ?? "" }
   public set uuid(val) {
     if (this.uuid !== val) {
       const obj = fromUuidSync(val);
@@ -48,6 +47,7 @@ export class ResourceBarStageObject extends ProgressBarStageObject {
       if (this._hookId) this.unhookUpdate();
       this.hookUpdate();
       this.updateValues();
+
     }
   }
 
@@ -59,14 +59,13 @@ export class ResourceBarStageObject extends ProgressBarStageObject {
     return this.object ? foundry.utils.getProperty(this.object, `system.${this.maxPath}`) as number : 0;
   }
 
+
   protected updateValues() {
     if (!(this.object instanceof foundry.abstract.Document)) return;
-    if (!this.valuePath) return;
-    if (!this.maxPath) return;
+    if (!this.valuePath || !this.maxPath) return;
 
     const value = this.getValue();
     const max = this.getMax();
-
     if (typeof max === "number") this.max = max;
     if (typeof value === "number") this.value = value;
 
@@ -75,8 +74,8 @@ export class ResourceBarStageObject extends ProgressBarStageObject {
   }
 
   public get updateHookName() {
-    if (!this._object) return "";
-    return `update${this.object?.documentName}`;
+    if (!this.object) return "";
+    return `update${this.object.documentName}`;
   }
 
   protected unhookUpdate() {
@@ -84,15 +83,17 @@ export class ResourceBarStageObject extends ProgressBarStageObject {
     Hooks.off(this.updateHookName, this._hookId);
   }
 
+  protected isValidPath(obj: object, path: string): boolean {
+    return typeof foundry.utils.getProperty(obj, `system.${path}`) === "number";
+  }
+
   protected hookUpdate() {
     if (this._hookId) this.unhookUpdate();
     Hooks.on(this.updateHookName, (obj: foundry.abstract.Document<any, any, any>, delta: Record<string, unknown>, options: any, userId: string) => {
-
       if (obj.uuid === this.uuid && (this.isValidPath(delta, this.valuePath) || this.isValidPath(delta, this.maxPath)))
         this.onObjectUpdate(obj, delta, options, userId);
-    });
+    })
   }
-
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected onObjectUpdate(obj: foundry.abstract.Document<any, any, any>, delta: Record<string, unknown>, options: any, userId: string) {
@@ -103,7 +104,7 @@ export class ResourceBarStageObject extends ProgressBarStageObject {
     if (typeof value === "number") this.value = value;
   }
 
-  public serialize(): SerializedResourceBarStageObject {
+  public serialize(): SerializedResourceClockStageObject {
     return {
       ...super.serialize(),
       type: this.type,
@@ -113,43 +114,36 @@ export class ResourceBarStageObject extends ProgressBarStageObject {
     }
   }
 
-  public deserialize(serialized: SerializedResourceBarStageObject) {
+  public deserialize(serialized: SerializedResourceClockStageObject) {
     super.deserialize(serialized);
-    if (typeof serialized.object === "string") this.uuid = serialized.object
+    if (typeof serialized.object === "string") this.uuid = serialized.object;
     if (typeof serialized.maxPath === "string") this.maxPath = serialized.maxPath;
     if (typeof serialized.valuePath === "string") this.valuePath = serialized.valuePath;
   }
 
-  public static deserialize(serialized: SerializedResourceBarStageObject): ResourceBarStageObject {
-    const obj = new ResourceBarStageObject(serialized.object, serialized.valuePath, serialized.maxPath, serialized.fgSprite, serialized.bgSprite, serialized.lerpSprite);
+  public static deserialize(serialized: SerializedResourceClockStageObject): ResourceClockStageObject {
+    const obj = new ResourceClockStageObject(serialized.object, serialized.valuePath, serialized.maxPath, serialized.fgSprite, serialized.bgSprite, serialized.lerpSprite);
     obj.deserialize(serialized);
     return obj;
   }
 
-  protected isValidPath(obj: object, path: string): boolean {
-    return typeof foundry.utils.getProperty(obj, `system.${path}`) === "number";
-  }
 
-  //const obj = new ProgressBarStageObject(0, max, fg, bg, lerp);
-  // constructor(value: number, max: number, fg: PIXI.TextureSource | PIXI.ColorSource, bg: PIXI.TextureSource | PIXI.ColorSource, lerp: PIXI.TextureSource | PIXI.ColorSource = "transparent") {
   constructor(uuid: string, valuePath: string, maxPath: string, fg: PIXI.TextureSource | PIXI.ColorSource, bg: PIXI.TextureSource | PIXI.ColorSource, lerp?: PIXI.TextureSource | PIXI.ColorSource)
   constructor(obj: foundry.abstract.Document<any, any, any>, valuePath: string, maxPath: string, fg: PIXI.TextureSource | PIXI.ColorSource, bg: PIXI.TextureSource | PIXI.ColorSource, lerp?: PIXI.TextureSource | PIXI.ColorSource)
   constructor(arg: unknown, valuePath: string, maxPath: string, fg: PIXI.TextureSource | PIXI.ColorSource, bg: PIXI.TextureSource | PIXI.ColorSource, lerp?: PIXI.TextureSource | PIXI.ColorSource) {
-    const obj = typeof arg == "string" ? fromUuidSync(arg) : arg;
+    const obj = typeof arg === "string" ? fromUuidSync(arg) : arg;
     if (!(obj instanceof foundry.abstract.Document)) throw new InvalidUUIDError(arg);
 
     super(0, 0, fg, bg, lerp);
-
     if (!this.isValidPath(obj, valuePath)) throw new InvalidResourcePathError(valuePath);
     if (!this.isValidPath(obj, maxPath)) throw new InvalidResourcePathError(maxPath);
 
     this.uuid = obj.uuid;
-
-
     this.maxPath = maxPath;
     this.valuePath = valuePath;
 
     this.updateText();
     this.updateSprites();
   }
+
 }

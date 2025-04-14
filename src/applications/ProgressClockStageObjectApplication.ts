@@ -37,7 +37,7 @@ export class ProgressClockStageObjectApplication<t extends ProgressClockStageObj
         cssClass: "",
         active: false,
         label: "STAGEMANAGER.TABS.PROGRESSCLOCK.TAB",
-        icon: "fas fa-bars-progress",
+        icon: "fas fa-bars-clock",
         group: "primary"
       }
     }
@@ -150,9 +150,6 @@ export class ProgressClockStageObjectApplication<t extends ProgressClockStageObj
       width: serialized.bounds.width * bounds.width,
       height: serialized.bounds.height * bounds.height
     }
-
-
-    log("BG Tint:", context.bgTint);
 
     context.blendModeSelect = {
       0: `STAGEMANAGER.BLENDMODES.NORMAL`,
