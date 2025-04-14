@@ -1,16 +1,38 @@
 [
-  { "value": "outline", "label": "STAGEMANAGER.EDITDIALOG.EFFECTS.OUTLINE" },
   {
-    "value": "dropshadow",
-    "label": "STAGEMANAGER.EDITDIALOG.EFFECTS.DROPSHADOW"
+    "label": "STAGEMANAGER.EDITDIALOG.EFFECTS.OUTLINE",
+    "value": "outline"
   },
-  { "value": "blur", "label": "STAGEMANAGER.EDITDIALOG.EFFECTS.BLUR" },
-  { "value": "pixelate", "label": "STAGEMANAGER.EDITDIALOG.EFFECTS.PIXELATE" },
-  { "value": "glow", "label": "STAGEMANAGER.EDITDIALOG.EFFECTS.GLOW" },
-  { "value": "bevel", "label": "STAGEMANAGER.EDITDIALOG.EFFECTS.BEVEL" },
   {
-    "value": "chromakey",
-    "label": "STAGEMANAGER.EDITDIALOG.EFFECTS.CHROMAKEY"
+    "label": "STAGEMANAGER.EDITDIALOG.EFFECTS.DROPSHADOW",
+    "value": "dropshadow"
   },
-  { "value": "hologram", "label": "STAGEMANAGER.EDITDIALOG.EFFECTS.HOLOGRAM" }
+  {
+    "label": "STAGEMANAGER.EDITDIALOG.EFFECTS.BLUR",
+    "value": "blur"
+  },
+  {
+    "label": "STAGEMANAGER.EDITDIALOG.EFFECTS.PIXELATE",
+    "value": "pixelate"
+  },
+  {
+    "label": "STAGEMANAGER.EDITDIALOG.EFFECTS.GLOW",
+    "value": "glow"
+  },
+  {
+    "label": "STAGEMANAGER.EDITDIALOG.EFFECTS.BEVEL",
+    "value": "bevel"
+  },
+  {
+    "label": "STAGEMANAGER.EDITDIALOG.EFFECTS.CHROMAKEY",
+    "value": "chromakey"
+  },
+  {
+    "label": "STAGEMANAGER.EDITDIALOG.EFFECTS.HOLOGRAM",
+    "value": "hologram"
+  },
+  {
+    "label": "STAGEMANAGER.EDITDIALOG.EFFECTS.INVERT",
+    "value": "invert"
+  }
 ]

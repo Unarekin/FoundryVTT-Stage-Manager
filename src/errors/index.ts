@@ -6,6 +6,7 @@ export * from './InvalidActorTypeError';
 export * from './InvalidApplicationClassError';
 export * from './InvalidColorError';
 export * from './InvalidConversationActionType';
+export * from './InvalidEffectError';
 export * from './InvalidExpressionError';
 export * from './InvalidMacroError';
 export * from './InvalidResourcePathError';

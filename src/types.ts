@@ -167,7 +167,7 @@ export const StageLayers = ["primary", "foreground", "background", "text", "ui"]
 export type StageLayer = typeof StageLayers[number];
 */
 
-export const EffectTypes = ["outline", "dropshadow", "blur", "pixelate", "glow", "bevel", "chromakey", "hologram"] as const;
+export const EffectTypes = ["outline", "dropshadow", "blur", "pixelate", "glow", "bevel", "chromakey", "hologram", "invert"] as const;
 export type EffectType = typeof EffectTypes[number];
 
 export interface SerializedEffect {
@@ -238,6 +238,8 @@ export interface SerializedHologramEffect extends SerializedEffect {
   lines: number;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface SerializedInvertEffect extends SerializedEffect { }
 
 export interface SynchronizationMessage {
   timestamp: number;

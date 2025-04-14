@@ -11,6 +11,7 @@
       "INVALIDAPPLICATIONCLASS": "Invalid application class: {name}",
       "INVALIDCOLOR": "Invalid color: {color}",
       "INVALIDCONVERSATIONACTIONTYPE": "Invalid action type: {type}",
+      "INVALIDEFFECT": "Invalid effect type: {effect}",
       "INVALIDEXPRESSION": "Invalid expression: {expression}",
       "INVALIDFORMELMEENT": "Invalid form element",
       "INVALIDMACRO": "Invalid macro: {name}",

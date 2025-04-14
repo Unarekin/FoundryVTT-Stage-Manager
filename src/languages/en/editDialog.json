@@ -41,6 +41,7 @@
         "BLUR": "Blur",
         "CHROMAKEY": "Chroma Key",
         "CONFIG": {
+          "NOOPTIONS": "No configurable options.",
           "BACKGROUND": "Background",
           "BEVEL": {
             "LIGHTCOLOR": "Light Color",
@@ -97,6 +98,7 @@
         "ENABLE": "Enable Effects",
         "GLOW": "Glow",
         "HOLOGRAM": "Hologram",
+        "INVERT": "Invert",
         "OUTLINE": "Outline",
         "PIXELATE": "Pixelate"
       },
@@ -175,15 +177,15 @@
       "SRC": "Image source",
       "TEXT": "Text",
       "TEXTALIGN": {
+        "BOTTOM": "Bottom",
         "CENTER": "Center",
+        "HORIZONTAL": "Horizontal",
         "JUSTIFY": "Justified",
         "LABEL": "Alignment",
         "LEFT": "Left",
         "RIGHT": "Right",
-        "HORIZONTAL": "Horizontal",
-        "VERTICAL": "Vertical",
         "TOP": "Top",
-        "BOTTOM": "Bottom"
+        "VERTICAL": "Vertical"
       },
       "TEXTALIGNMENT": "Text Alignment",
       "TEXTMODE": {
