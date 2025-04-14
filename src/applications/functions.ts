@@ -1,6 +1,18 @@
 import { coerceTexture } from "coercion";
 import { CanvasNotInitializedError, InvalidTextureError, UnknownDocumentTypeError } from "errors";
 import { Border } from "types";
+import presetData from "./pathPresets.json";
+
+const presetPaths: Record<string, Record<string, Record<string, string>>> = presetData;
+/*
+{
+  "system": {
+    "type": {
+      "path": "i18n"
+    }
+  }
+}
+*/
 
 interface SectionSpec {
   pack: string;
@@ -182,5 +194,42 @@ export function easingSelectOptions(): Record<string, string> {
     // "rough": "STAGEMANAGER.EASINGS.ROUGH",
     // "slow": "STAGEMANAGER.EASINGS.SLOW",
     // "expoScale": "STAGEMANAGER.EASINGS.EXPOSCALE"
+  }
+}
+
+export function pathPresetSelect(uuid?: string): Record<string, string> {
+  const context: Record<string, string> = {};
+
+  if (uuid) {
+    const obj = fromUuidSync(uuid) as foundry.abstract.Document<any, any, any>;
+
+    if (game?.system && presetPaths[game.system.id]?.[obj.documentName as string]) {
+      foundry.utils.mergeObject(context, presetPaths[game.system.id][obj.documentName as string]);
+    }
+
+
+    if (obj instanceof Actor) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      const attrs = TokenDocument.getTrackedAttributes(obj.type as any);
+      if (attrs?.bar) {
+        const tracked = Object.fromEntries(attrs.bar.map(elem => [elem.join("."), elem.join(".")]));
+        foundry.utils.mergeObject(context, tracked);
+      }
+    }
+  }
+  return foundry.utils.flattenObject(context) as Record<string, string>;
+}
+
+export function setPresetValues(parent: HTMLElement) {
+  const presetSelect = parent.querySelector(`#pathPreset`);
+  if (presetSelect instanceof HTMLSelectElement) {
+    // If empty, return
+    if (!presetSelect.value) return;
+
+    const value = parent.querySelector(`#valuePath`);
+    const max = parent.querySelector(`#maxPath`);
+
+    if (value instanceof HTMLInputElement) value.value = `${presetSelect.value}.value`;
+    if (max instanceof HTMLInputElement) max.value = `${presetSelect.value}.max`;
   }
 }

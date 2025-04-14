@@ -51,13 +51,21 @@ export class ResourceBarStageObject extends ProgressBarStageObject {
     }
   }
 
+  protected getValue() {
+    return this.object ? foundry.utils.getProperty(this.object, `system.${this.valuePath}`) as number : 0;
+  }
+
+  protected getMax() {
+    return this.object ? foundry.utils.getProperty(this.object, `system.${this.maxPath}`) as number : 0;
+  }
+
   protected updateValues() {
     if (!(this.object instanceof foundry.abstract.Document)) return;
     if (!this.valuePath) return;
     if (!this.maxPath) return;
 
-    const value = foundry.utils.getProperty(this.object, this.valuePath) as unknown;
-    const max = foundry.utils.getProperty(this.object, this.maxPath) as unknown;
+    const value = this.getValue();
+    const max = this.getMax();
 
     if (typeof max === "number") this.max = max;
     if (typeof value === "number") this.value = value;
@@ -79,8 +87,8 @@ export class ResourceBarStageObject extends ProgressBarStageObject {
   protected hookUpdate() {
     if (this._hookId) this.unhookUpdate();
     Hooks.on(this.updateHookName, (obj: foundry.abstract.Document<any, any, any>, delta: Record<string, unknown>, options: any, userId: string) => {
-      const keys = Object.keys(foundry.utils.flattenObject(delta));
-      if (obj.uuid === this.uuid && (keys.includes(this.valuePath) || keys.includes(this.maxPath)))
+
+      if (obj.uuid === this.uuid && (this.isValidPath(delta, this.valuePath) || this.isValidPath(delta, this.maxPath)))
         this.onObjectUpdate(obj, delta, options, userId);
     });
   }
@@ -88,12 +96,11 @@ export class ResourceBarStageObject extends ProgressBarStageObject {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected onObjectUpdate(obj: foundry.abstract.Document<any, any, any>, delta: Record<string, unknown>, options: any, userId: string) {
-    const flattened = foundry.utils.flattenObject(delta) as Record<string, unknown>;
-    const valPath = this.valuePath;
-    const maxPath = this.maxPath;
+    const value = foundry.utils.getProperty(delta, `system.${this.valuePath}`) as number;
+    const max = foundry.utils.getProperty(delta, `system.${this.maxPath}`) as number;
 
-    if (typeof flattened[maxPath] === "number") this.max = flattened[maxPath];
-    if (typeof flattened[valPath] === "number") this.value = flattened[valPath];
+    if (typeof max === "number") this.max = max;
+    if (typeof value === "number") this.value = value;
   }
 
   public serialize(): SerializedResourceBarStageObject {
@@ -119,6 +126,13 @@ export class ResourceBarStageObject extends ProgressBarStageObject {
     return obj;
   }
 
+  protected isValidPath(obj: object, path: string): boolean {
+    return !!foundry.utils.getProperty(obj, `system.${path}`);
+    // const flattened = foundry.utils.flattenObject(obj) as Record<string, unknown>;
+    // const keys = Object.keys(flattened);
+    // return keys.includes(`system.${path}`);
+  }
+
   //const obj = new ProgressBarStageObject(0, max, fg, bg, lerp);
   // constructor(value: number, max: number, fg: PIXI.TextureSource | PIXI.ColorSource, bg: PIXI.TextureSource | PIXI.ColorSource, lerp: PIXI.TextureSource | PIXI.ColorSource = "transparent") {
   constructor(uuid: string, valuePath: string, maxPath: string, fg: PIXI.TextureSource | PIXI.ColorSource, bg: PIXI.TextureSource | PIXI.ColorSource, lerp?: PIXI.TextureSource | PIXI.ColorSource)
@@ -127,13 +141,13 @@ export class ResourceBarStageObject extends ProgressBarStageObject {
     const obj = typeof arg == "string" ? fromUuidSync(arg) : arg;
     if (!(obj instanceof foundry.abstract.Document)) throw new InvalidUUIDError(arg);
 
-    const flattened = foundry.utils.flattenObject(obj) as Record<string, unknown>;
-    const keys = Object.keys(flattened);
-    if (!keys.includes(valuePath)) throw new InvalidResourcePathError(valuePath);
-    if (!keys.includes(maxPath)) throw new InvalidResourcePathError(maxPath);
-
     super(0, 0, fg, bg, lerp);
+
+    if (!this.isValidPath(obj, valuePath)) throw new InvalidResourcePathError(valuePath);
+    if (!this.isValidPath(obj, maxPath)) throw new InvalidResourcePathError(maxPath);
+
     this.uuid = obj.uuid;
+
 
     this.maxPath = maxPath;
     this.valuePath = valuePath;

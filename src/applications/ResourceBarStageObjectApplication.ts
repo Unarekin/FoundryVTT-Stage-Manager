@@ -2,8 +2,8 @@ import { SerializedResourceBarStageObject } from 'types';
 import { ResourceBarStageObject } from 'stageobjects';
 import { ProgressBarStageObjectApplication } from './ProgressBarStageObjectApplication';
 import { EmptyObject } from 'Foundry-VTT/src/types/utils.mjs';
-import pathPresets from "./pathPresets.json";
 import { logError } from 'logging';
+import { pathPresetSelect, setPresetValues } from './functions';
 
 export class ResourceBarStageObjectApplication extends ProgressBarStageObjectApplication<ResourceBarStageObject, SerializedResourceBarStageObject> {
   public static readonly PARTS: Record<string, foundry.applications.api.HandlebarsApplicationMixin.HandlebarsTemplatePart> = {
@@ -38,6 +38,12 @@ export class ResourceBarStageObjectApplication extends ProgressBarStageObjectApp
     if (uuidElem instanceof HTMLInputElement) {
       uuidElem.addEventListener("input", () => { this.loadUUIDPreview(); });
     }
+
+    const presetSelect = this.element.querySelector(`#pathPreset`);
+    if (presetSelect instanceof HTMLSelectElement) {
+      setPresetValues(this.element);
+      presetSelect.addEventListener("input", () => { setPresetValues(this.element); });
+    }
   }
 
   protected loadUUIDPreview() {
@@ -57,14 +63,11 @@ export class ResourceBarStageObjectApplication extends ProgressBarStageObjectApp
   protected async _prepareContext(options: { force?: boolean | undefined; position?: { top?: number | undefined; left?: number | undefined; width?: number | 'auto' | undefined; height?: number | 'auto' | undefined; scale?: number | undefined; zIndex?: number | undefined; } | undefined; window?: { title?: string | undefined; icon?: string | false | undefined; controls?: boolean | undefined; } | undefined; parts?: string[] | undefined; isFirstRender?: boolean | undefined; }): Promise<EmptyObject> {
     const context = await super._prepareContext(options) as Record<string, unknown>;
 
-    // Check for system preset
-    const systemId = game?.system?.id ?? "";
-    const hasPresets = Object.keys(pathPresets).includes(systemId);
-    context.hasPresets = hasPresets;
+    const serialized = context.stageObject as SerializedResourceBarStageObject;
 
-    const presets = (pathPresets as Record<string, unknown>)[systemId] as Record<string, unknown>;
-
-    context.pathPresetSelect = !hasPresets ? {} : Object.fromEntries(Object.keys(presets).map(key => [key, `STAGEMANAGER.PATHPRESETS.${systemId.toUpperCase()}.${key.toUpperCase()}`]));
+    const presets = pathPresetSelect(serialized.object);
+    context.pathPresetSelect = presets;
+    context.hasPresets = Object.keys(presets).length > 0;
 
     return context as EmptyObject;
   }
