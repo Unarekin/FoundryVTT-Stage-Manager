@@ -376,5 +376,21 @@
         "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR"
       }
     ]
+  },
+  {
+    "value": "itemRoll",
+    "label": "STAGEMANAGER.TRIGGERS.EVENTS.ITEMROLL",
+    "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
+    "category": "misc",
+    "addlArgs": [
+      {
+        "name": "actor",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR"
+      },
+      {
+        "name": "item",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ITEM"
+      }
+    ]
   }
 ]

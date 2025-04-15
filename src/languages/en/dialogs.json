@@ -1,29 +1,31 @@
 {
   "STAGEMANAGER": {
-    "ADDTEXT": {
-      "CONTENT": "Enter text to add:",
-      "TITLE": "Add Text"
-    },
     "ADDPROGRESSBAR": {
-      "TITLE": "Add Progress Bar",
-      "TYPE": "Type",
       "BG": "Background Image",
       "FG": "Foreground Image",
       "MANUAL": "Manual Values",
-      "RESOURCE": "Automatic from Object"
+      "RESOURCE": "Automatic from Object",
+      "TITLE": "Add Progress Bar",
+      "TYPE": "Type"
+    },
+    "ADDTEXT": {
+      "CONTENT": "Enter text to add:",
+      "TITLE": "Add Text"
     },
     "ADDTRIGGERDIALOG": {
       "ARGS": {
         "ACTIVEEFFECT": "activeEffect",
         "ACTOR": "actor",
-        "REGION": "region",
         "ADD": "Add Argument",
         "AUTO": "Automatic",
         "COMBAT": "combat",
         "COMBATANT": "combatant",
+        "DATA": "data",
+        "ITEM": "item",
         "MODKEYS": "modifierKeys",
         "NAME": "Name",
         "POS": "position",
+        "REGION": "region",
         "RESOURCE": "Resource",
         "SCENE": "scene",
         "STAGEOBJECT": "stageObject",
@@ -51,25 +53,25 @@
       "IMAGE": "Image",
       "PANEL": "Panel",
       "PERMISSIONS": "Permissions",
+      "PROGRESSBAR": {
+        "BG": "Background",
+        "FG": "Foreground",
+        "LERP": "Lerp",
+        "SETTINGS": "Settings",
+        "TAB": "Progress Bar"
+      },
+      "PROGRESSCLOCK": {
+        "BG": "Background",
+        "FG": "Foreground",
+        "LERP": "Lerp",
+        "SETTINGS": "Settings",
+        "TAB": "Progress Clock"
+      },
       "RESOURCE": "Resource",
       "SPEAKERS": "Speakers",
       "TEXT": "Text",
       "TRIGGERS": "Triggers",
-      "VIDEO": "Video",
-      "PROGRESSCLOCK": {
-        "TAB": "Progress Clock",
-        "SETTINGS": "Settings",
-        "FG": "Foreground",
-        "BG": "Background",
-        "LERP": "Lerp"
-      },
-      "PROGRESSBAR": {
-        "TAB": "Progress Bar",
-        "SETTINGS": "Settings",
-        "FG": "Foreground",
-        "BG": "Background",
-        "LERP": "Lerp"
-      }
+      "VIDEO": "Video"
     },
     "VIEWASUSER": {
       "TITLE": "View As User"

@@ -5,6 +5,9 @@ import { coerceActor } from "./coercion";
 import { StageManager } from "./StageManager";
 import { ActorStageObject, StageObject } from "./stageobjects";
 import { TriggerEventSignatures } from "./types";
+import { CUSTOM_HOOKS } from "./hooks";
+import * as triggerHooks from "./triggers"
+import { localize } from "functions";
 
 function triggerEvent<k extends keyof TriggerEventSignatures>(event: k, arg: TriggerEventSignatures[k]) {
   log("Event triggered:", event, arg);
@@ -151,3 +154,21 @@ Hooks.on("pauseGame", paused => {
   else
     triggerEvent("unpause", undefined);
 });
+
+Hooks.on(CUSTOM_HOOKS.ITEM_ROLLED, (actor: Actor, item: Item, data: Record<string, unknown>) => {
+  log("Item rolled:", actor, item, data);
+  triggerEvent("itemRoll", { actor, item, data });
+});
+
+// Set up item roll hooks
+if (triggerHooks.itemRoll) {
+  const itemRoll = triggerHooks.itemRoll as Record<string, { hook: () => void }>;
+  Hooks.on("ready", () => {
+    if (itemRoll[game.system?.id ?? ""]) {
+      log("Hooking item roll event.");
+      itemRoll[game.system?.id ?? ""].hook();
+    } else {
+      log(localize("STAGEMANAGER.WARNINGS.UNABLETOHOOKROLL", { system: game.system?.id ?? typeof undefined }));
+    }
+  })
+}

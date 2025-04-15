@@ -291,6 +291,8 @@ export interface TriggerEventSignatures {
   untargetToken: { user: User, token: Token, actor: Actor };
   worldTimeChange: { time: number };
   actorChange: { actor: Actor };
+
+  itemRoll: { actor: Actor, item: Item, data: Record<string, unknown> }
 }
 
 
