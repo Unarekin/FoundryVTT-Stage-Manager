@@ -131,16 +131,21 @@ export class ResourceClockStageObject extends ProgressClockStageObject {
   constructor(uuid: string, valuePath: string, maxPath: string, fg: PIXI.TextureSource | PIXI.ColorSource, bg: PIXI.TextureSource | PIXI.ColorSource, lerp?: PIXI.TextureSource | PIXI.ColorSource)
   constructor(obj: foundry.abstract.Document<any, any, any>, valuePath: string, maxPath: string, fg: PIXI.TextureSource | PIXI.ColorSource, bg: PIXI.TextureSource | PIXI.ColorSource, lerp?: PIXI.TextureSource | PIXI.ColorSource)
   constructor(arg: unknown, valuePath: string, maxPath: string, fg: PIXI.TextureSource | PIXI.ColorSource, bg: PIXI.TextureSource | PIXI.ColorSource, lerp?: PIXI.TextureSource | PIXI.ColorSource) {
-    const obj = typeof arg === "string" ? fromUuidSync(arg) : arg;
-    if (!(obj instanceof foundry.abstract.Document)) throw new InvalidUUIDError(arg);
-
     super(0, 0, fg, bg, lerp);
-    if (!this.isValidPath(obj, valuePath)) throw new InvalidResourcePathError(valuePath);
-    if (!this.isValidPath(obj, maxPath)) throw new InvalidResourcePathError(maxPath);
 
-    this.uuid = obj.uuid;
-    this.maxPath = maxPath;
-    this.valuePath = valuePath;
+    if (arg && typeof arg === "string") {
+      const obj = typeof arg === "string" ? fromUuidSync(arg) : arg;
+      if (!(obj instanceof foundry.abstract.Document)) throw new InvalidUUIDError(arg);
+      this.uuid = arg;
+    } else if (arg instanceof foundry.abstract.Document) {
+      this.uuid = arg.uuid;
+    }
+
+
+    if (this.object) {
+      if (!this.isValidPath(this.object, valuePath)) throw new InvalidResourcePathError(valuePath);
+      if (!this.isValidPath(this.object, maxPath)) throw new InvalidResourcePathError(maxPath);
+    }
 
     this.updateText();
     this.updateSprites();

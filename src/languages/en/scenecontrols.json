@@ -5,6 +5,7 @@
       "IMAGE": "Add Image",
       "PANEL": "Add Panel",
       "PROGRESSBAR": "Add Progress Bar",
+      "PROGRESSCLOCK": "Add Progress Clock",
       "SELECTBACKGROUND": "Select Background Objects",
       "SELECTFOREGROUND": "Select Foreground Objects",
       "SELECTPRIMARY": "Select Primary Layer Objects",
