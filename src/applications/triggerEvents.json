@@ -376,43 +376,5 @@
         "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR"
       }
     ]
-  },
-  {
-    "value": "regionEnter",
-    "label": "STAGEMANAGER.TRIGGERS.EVENTS.REGIONENTER",
-    "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.REGION",
-    "addlArgs": [
-      {
-        "name": "region",
-        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.REGION"
-      },
-      {
-        "name": "token",
-        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.TOKEN"
-      },
-      {
-        "name": "actor",
-        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR"
-      }
-    ]
-  },
-  {
-    "value": "regionExit",
-    "label": "STAGEMANAGER.TRIGGERS.EVENTS.REGIONEXIT",
-    "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.REGION",
-    "addlArgs": [
-      {
-        "name": "region",
-        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.REGION"
-      },
-      {
-        "name": "token",
-        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.TOKEN"
-      },
-      {
-        "name": "actor",
-        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR"
-      }
-    ]
   }
 ]
