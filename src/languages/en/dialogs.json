@@ -4,6 +4,14 @@
       "CONTENT": "Enter text to add:",
       "TITLE": "Add Text"
     },
+    "ADDPROGRESSBAR": {
+      "TITLE": "Add Progress Bar",
+      "TYPE": "Type",
+      "BG": "Background Image",
+      "FG": "Foreground Image",
+      "MANUAL": "Manual Values",
+      "RESOURCE": "Automatic from Object"
+    },
     "ADDTRIGGERDIALOG": {
       "ARGS": {
         "ACTIVEEFFECT": "activeEffect",

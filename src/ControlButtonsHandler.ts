@@ -3,8 +3,8 @@ import { localize, inputPrompt } from "./functions";
 import { InputManager } from "./InputManager";
 import { log, logError } from "./logging";
 import { StageManager } from "./StageManager";
-import { DialogueStageObject, ImageStageObject, PanelStageObject, TextStageObject } from "./stageobjects";
-import { PartialWithRequired, SerializedImageStageObject, SerializedPanelStageObject, SerializedTextStageObject, TOOL_LAYERS } from "./types";
+import { DialogueStageObject, ImageStageObject, PanelStageObject, ProgressBarStageObject, ResourceBarStageObject, TextStageObject } from "./stageobjects";
+import { PartialWithRequired, SerializedImageStageObject, SerializedPanelStageObject, SerializedProgressBarStageObject, SerializedResourceBarStageObject, SerializedTextStageObject, TOOL_LAYERS } from "./types";
 // import { StageManager } from "./StageManager";
 
 let controlsInitialized = false;
@@ -114,6 +114,17 @@ export class ControlButtonsHandler {
         onClick: () => {
           StageManager.DeselectAll();
           void addDialogue();
+        }
+      },
+      {
+        name: "add-progress-bar",
+        title: "STAGEMANAGER.SCENECONTROLS.PROGRESSBAR",
+        icon: "fas fa-bars-progress",
+        button: true,
+        visible: StageManager.canAddStageObjects(game?.user?.id ?? ""),
+        onClick: () => {
+          StageManager.DeselectAll();
+          void addProgressBar();
         }
       },
       {
@@ -358,3 +369,85 @@ async function viewAsUser() {
   }
 }
 
+async function addProgressBar() {
+  try {
+
+    const layer = TOOL_LAYERS[game?.activeTool ?? ""];
+    if (!layer) return;
+
+    const input = await foundry.applications.api.DialogV2.wait({
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      window: ({ title: localize("STAGEMANAGER.ADDPROGRESSBAR.TITLE") }) as any,
+      content: await renderTemplate(`modules/${__MODULE_ID__}/templates/addProgressBar.hbs`, {}),
+      rejectClose: false,
+      buttons: [
+        {
+          icon: "fas fa-check",
+          label: localize("Confirm"),
+          action: "confirm",
+          callback: (e, button, dialog) => {
+            const form = dialog.querySelector(`form`);
+            if (!(form instanceof HTMLFormElement)) return Promise.resolve();
+            const data = new FormDataExtended(form);
+
+            const { type, fg, bg } = data.object as Record<string, string>;
+            return Promise.resolve(type && fg && bg ? { type, fg, bg } : undefined);
+          }
+        },
+        {
+          icon: "fas fa-times",
+          label: localize("Cancel"),
+          action: "cancel"
+        }
+      ]
+    });
+
+    if (!input) return;
+    if (typeof input === "string") return;
+    if (!(input.type && input.fg && input.bg)) return;
+
+
+    const sprite = PIXI.Sprite.from(input.bg);
+    sprite.anchor.x = sprite.anchor.y = 0.5;
+
+    const displayObject = await InputManager.PlaceDisplayObject(sprite, layer) as PIXI.Sprite;
+
+    // Ensure texture is loaded.
+    if (!displayObject.texture.valid)
+      await new Promise<void>(resolve => { displayObject.texture.baseTexture.once("loaded", () => { resolve(); }) })
+
+    const bar: PartialWithRequired<SerializedProgressBarStageObject, "type"> | PartialWithRequired<SerializedResourceBarStageObject, "type"> = {
+      version: __MODULE_VERSION__,
+      fgSprite: input.fg,
+      bgSprite: input.bg,
+      lerpSprite: "transparent",
+      ...(
+        input.type === "manual" ? {
+          type: "progressBar",
+          value: 0,
+          max: 0
+        } : {
+          type: "resourceBar",
+          valuePath: "",
+          maxPath: "",
+          object: ""
+        }
+      ),
+      bounds: {
+        x: displayObject.x / window.innerWidth,
+        y: displayObject.y / window.innerHeight,
+        width: displayObject.width / window.innerWidth,
+        height: displayObject.height / window.innerHeight
+      },
+      layer,
+      ...((StageManager.ViewingAs instanceof User && StageManager.ViewingAs !== game.user) ? { scope: "user", scopeOwners: [StageManager.ViewingAs.uuid] } : {})
+    };
+
+    displayObject.destroy();
+
+    const obj = await StageManager.CreateStageObject(bar, true);
+    if ((input.type === "manual" && obj instanceof ProgressBarStageObject) || (input.type === "resource" && obj instanceof ResourceBarStageObject)) StageManager.addStageObject(obj, layer);
+  } catch (err) {
+    logError(err as Error);
+  }
+}
