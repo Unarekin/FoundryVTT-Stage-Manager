@@ -174,7 +174,7 @@ Hooks.on("updateToken", (doc: TokenDocument, delta: any, options: unknown, userI
       const newRegions = delta._regions as string[];
 
       const enteredRegions = newRegions.filter(id => !currentRegions.includes(id));
-      // const exitedRegions = currentRegions.filter(id => !newRegions.includes(id));
+      const exitedRegions = currentRegions.filter(id => !newRegions.includes(id));
 
       for (const id of enteredRegions) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
@@ -183,7 +183,14 @@ Hooks.on("updateToken", (doc: TokenDocument, delta: any, options: unknown, userI
         if (region) triggerEvent("regionEnter", { region, actor, token });
       }
 
-      // TODO: Region exited
+
+      for (const id of exitedRegions) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+        const region = (canvas?.scene as any).regions.get(id);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        if (region) triggerEvent("regionExit", { region, actor, token });
+      }
+
 
       TOKEN_REGIONS.set(token, [...newRegions]);
     }

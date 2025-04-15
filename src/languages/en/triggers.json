@@ -1,50 +1,51 @@
 {
   "STAGEMANAGER": {
     "TRIGGERS": {
-      "TYPE": "Trigger Type",
+      "ACTION": "Triggered Action",
       "ACTIONS": {
         "MACRO": "Execute Macro"
       },
-      "UNKNOWN": "(Unknown Trigger)",
-      "ACTION": "Triggered Action",
-      "EVENT": "Triggering Event",
       "CATEGORIES": {
-        "NONE": "None",
-        "MOUSE": "Mouse",
         "ACTOR": "Actor",
         "COMBAT": "Combat",
         "MISC": "Miscellaneous",
-        "TOKEN": "Token",
-        "REGION": "Region"
+        "MOUSE": "Mouse",
+        "NONE": "None",
+        "REGION": "Region",
+        "TOKEN": "Token"
       },
+      "EVENT": "Triggering Event",
       "EVENTS": {
-        "HOVERIN": "Mouse Enter",
-        "HOVEROUT": "Mouse Leave",
+        "ACTORCHANGE": "Actor Changed",
+        "ADDACTIVEEFFECT": "Add ActiveEffect",
+        "ADDSTATUSEFFECT": "Add Status Effect",
         "CLICK": "Left Click",
-        "RIGHTCLICK": "Right Click",
-        "DOUBLECLICK": "Double Click",
-        "COMBATSTART": "Combat Start",
         "COMBATEND": "Combat End",
         "combatRound": "Combat Round",
-        "COMBATTURNSTART": "Combat Turn Start",
+        "COMBATSTART": "Combat Start",
         "COMBATTURNEND": "Combat Turn End",
-        "SCENECHANGE": "Scene Change",
+        "COMBATTURNSTART": "Combat Turn Start",
+        "DESELECTTOKEN": "Deselect Token",
+        "DOUBLECLICK": "Double Click",
+        "HOVERIN": "Mouse Enter",
+        "HOVEROUT": "Mouse Leave",
         "PAUSE": "Pause",
+        "REGIONENTER": "Region Entered",
+        "REGIONEXIT": "Region Exited",
+        "REMOVEACTIVEEFFECT": "Remove ActiveEffect",
+        "REMOVESTATUSEFFECT": "Remove Status Effect",
+        "RIGHTCLICK": "Right Click",
+        "SCENECHANGE": "Scene Change",
+        "SELECTTOKEN": "Select Token",
+        "TARGETTOKEN": "Target Token",
         "UNPAUSE": "Unpause",
+        "UNTARGETTOKEN": "Untarget Token",
         "USERCONNECTED": "User Connected",
         "USERDISCONNECTED": "User Disconnected",
-        "ADDACTIVEEFFECT": "Add ActiveEffect",
-        "REMOVEACTIVEEFFECT": "Remove ActiveEffect",
-        "ADDSTATUSEFFECT": "Add Status Effect",
-        "REMOVESTATUSEFFECT": "Remove Status Effect",
-        "SELECTTOKEN": "Select Token",
-        "DESELECTTOKEN": "Deselect Token",
-        "TARGETTOKEN": "Target Token",
-        "UNTARGETTOKEN": "Untarget Token",
-        "WORLDTIMECHANGE": "World Time Change",
-        "ACTORCHANGE": "Actor Changed",
-        "REGIONENTER": "Region Entered"
-      }
+        "WORLDTIMECHANGE": "World Time Change"
+      },
+      "TYPE": "Trigger Type",
+      "UNKNOWN": "(Unknown Trigger)"
     }
   }
 }

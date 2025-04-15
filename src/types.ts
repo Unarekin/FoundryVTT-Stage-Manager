@@ -292,7 +292,8 @@ export interface TriggerEventSignatures {
   worldTimeChange: { time: number };
   actorChange: { actor: Actor };
 
-  regionEnter: { region: any, actor: Actor, token: Token }
+  regionEnter: { region: any, actor: Actor, token: Token },
+  regionExit: { region: any, actor: Actor, token: Token }
 }
 
 
