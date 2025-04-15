@@ -3,8 +3,8 @@ import { localize, inputPrompt } from "./functions";
 import { InputManager } from "./InputManager";
 import { log, logError } from "./logging";
 import { StageManager } from "./StageManager";
-import { DialogueStageObject, ImageStageObject, TextStageObject } from "./stageobjects";
-import { PartialWithRequired, SerializedImageStageObject, SerializedTextStageObject, TOOL_LAYERS } from "./types";
+import { DialogueStageObject, ImageStageObject, PanelStageObject, TextStageObject } from "./stageobjects";
+import { PartialWithRequired, SerializedImageStageObject, SerializedPanelStageObject, SerializedTextStageObject, TOOL_LAYERS } from "./types";
 // import { StageManager } from "./StageManager";
 
 let controlsInitialized = false;
@@ -93,6 +93,17 @@ export class ControlButtonsHandler {
         },
         visible: StageManager.canAddStageObjects(game?.user?.id ?? ""),
         button: true
+      },
+      {
+        name: "add-panel",
+        title: "STAGEMANAGER.SCENECONTROLS.PANEL",
+        icon: "fas fa-window-maximize",
+        button: true,
+        visible: StageManager.canAddStageObjects(game?.user?.id ?? ""),
+        onClick: () => {
+          StageManager.DeselectAll();
+          void addPanel();
+        }
       },
       {
         name: "add-dialogue",
@@ -193,18 +204,69 @@ async function addText() {
   }
 }
 
+async function pickImage(): Promise<string | undefined> {
+  return new Promise<string | undefined>(resolve => {
+    new FilePicker({
+      type: "imagevideo",
+      displayMode: "tiles",
+      callback: result => { resolve(result); }
+    }).render(true);
+  });
+}
+
+async function addPanel() {
+  try {
+    const layer = TOOL_LAYERS[game?.activeTool ?? ""];
+    if (!layer) return;
+
+    const image = await pickImage();
+    if (!image) return;
+
+    const sprite = PIXI.Sprite.from(image);
+    sprite.anchor.x = sprite.anchor.y = 0.5;
+
+    const displayObject = await InputManager.PlaceDisplayObject(sprite, layer) as PIXI.Sprite;
+
+    // Ensure texture is loaded.
+    if (!displayObject.texture.valid)
+      await new Promise<void>(resolve => { displayObject.texture.baseTexture.once("loaded", () => { resolve(); }) })
+
+    const panel: PartialWithRequired<SerializedPanelStageObject, "type"> = {
+      id: foundry.utils.randomID(),
+      type: "panel",
+      version: __MODULE_VERSION__,
+      src: image,
+      bounds: {
+        x: sprite.x / window.innerWidth,
+        y: sprite.y / window.innerHeight,
+        width: sprite.width / window.innerWidth,
+        height: sprite.height / window.innerHeight
+      },
+      borders: {
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0
+      },
+      layer,
+      ...((StageManager.ViewingAs instanceof User && StageManager.ViewingAs !== game.user) ? { scope: "user", scopeOwners: [StageManager.ViewingAs.uuid] } : {})
+    };
+
+    displayObject.destroy();
+
+    const obj = await StageManager.CreateStageObject(panel, true);
+    if (obj instanceof PanelStageObject) StageManager.addStageObject(obj, layer);
+  } catch (err) {
+    logError(err as Error);
+  }
+}
+
 async function addImage() {
   try {
     const layer = TOOL_LAYERS[game?.activeTool ?? ""];
     if (!layer) return;
 
-    const result = await new Promise<string | undefined>(resolve => {
-      new FilePicker({
-        type: "imagevideo",
-        displayMode: "tiles",
-        callback: result => { resolve(result); }
-      }).render(true);
-    });
+    const result = await pickImage();
 
     if (!result) return;
 
@@ -237,7 +299,7 @@ async function addImage() {
     displayObject.destroy();
 
     const obj = await StageManager.CreateStageObject(img, true);
-    if (obj instanceof ImageStageObject) StageManager.addStageObject(obj);
+    if (obj instanceof ImageStageObject) StageManager.addStageObject(obj, layer);
   } catch (err) {
     logError(err as Error);
   }
@@ -295,3 +357,4 @@ async function viewAsUser() {
     }
   }
 }
+
