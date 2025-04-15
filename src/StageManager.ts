@@ -337,52 +337,65 @@ export class StageManager {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/require-await
-  public static async CreateStageObject<t extends StageObject = StageObject>(serialized: PartialWithRequired<SerializedStageObject, "type">): Promise<t | undefined> {
+  public static async CreateStageObject<t extends StageObject = StageObject>(serialized: PartialWithRequired<SerializedStageObject, "type">, removeOnCancel = false): Promise<t | undefined> {
     try {
-      // empty
-      return Promise.resolve();
+      const obj = StageManager.deserialize(serialized as SerializedStageObject);
+      if (!obj) throw new InvalidStageObjectError(serialized);
+
+      const app = Object.values(obj.apps)[0];
+      if (app instanceof StageObjectApplication) {
+        await app.render(!app.rendered);
+        app.bringToFront();
+        return (app.closed as Promise<t | undefined>)
+          .then(obj => {
+            if (removeOnCancel && !obj) {
+              delete app.stageObject.apps[app.appId];
+              app.stageObject.destroy();
+            }
+            return obj;
+          })
+      } else if (!obj.ApplicationType) {
+        throw new InvalidStageObjectError(obj);
+      } else {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        const app = new (obj.ApplicationType as any)(obj) as StageObjectApplication;
+        await app.render(true);
+        return (app.closed as Promise<t | undefined>)
+          .then(obj => {
+            if (removeOnCancel && !obj) {
+              delete app.stageObject.apps[app.appId];
+              app.stageObject.destroy();
+            }
+            return obj;
+          })
+      }
     } catch (err) {
       logError(err as Error);
     }
-    // if (!ApplicationHash[serialized.type]) throw new InvalidStageObjectError(serialized.type);
-
-    // const obj = StageManager.deserialize(serialized as SerializedStageObject);
-    // if (!(obj instanceof StageObject)) throw new InvalidStageObjectError(serialized.type);
-
-    // // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-    // const app = (new (ApplicationHash[serialized.type] as any)(obj) as StageObjectApplication);
-    // void app.render(true);
-    // return app.closed
-    //   .then(data => {
-    //     if (data) return StageManager.deserialize(data) as t;
-    //   })
   }
 
-  public static async EditStageObject(id: string): Promise<SerializedStageObject | undefined>
-  public static async EditStageObject(name: string): Promise<SerializedStageObject | undefined>
-  public static async EditStageObject(stageObject: StageObject): Promise<SerializedStageObject | undefined>
-  public static async EditStageObject(arg: unknown): Promise<SerializedStageObject | undefined> {
+  public static async EditStageObject<t extends StageObject = StageObject>(id: string): Promise<t | undefined>
+  public static async EditStageObject<t extends StageObject = StageObject>(name: string): Promise<t | undefined>
+  public static async EditStageObject<t extends StageObject = StageObject>(stageObject: StageObject): Promise<t | undefined>
+  public static async EditStageObject<t extends StageObject = StageObject>(arg: unknown): Promise<t | undefined> {
     try {
       const obj = coerceStageObject(arg);
       if (!(obj instanceof StageObject)) throw new InvalidStageObjectError(arg);
 
       const app = Object.values(obj.apps)[0];
       if (app instanceof StageObjectApplication) {
-
-        return app.render(!app.rendered)
-          .then(() => {
-            app.bringToFront();
-            return app.closed;
-          });
+        await app.render(!app.rendered);
+        app.bringToFront();
+        return app.closed as Promise<t | undefined>;
       } else {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const appClass = obj.ApplicationType as any;
         if (!appClass) throw new InvalidApplicationClassError(obj.type);
+
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         const app = new appClass(obj) as StageObjectApplication;
-        return app.render(true)
-          .then(() => app.closed);
+        await app.render(true);
+        return app.closed as Promise<t | undefined>;
       }
     } catch (err) {
       logError(err as Error);

@@ -1,5 +1,5 @@
 import { StageObject } from '../stageobjects/StageObject';
-import { SerializedStageObject, SerializedTrigger } from '../types';
+import { SerializedStageObject, SerializedTrigger, StageLayer } from '../types';
 import { log, logError } from '../logging';
 import { AnyObject, DeepPartial, EmptyObject } from 'Foundry-VTT/src/types/utils.mjs';
 import { localize } from 'functions';
@@ -16,12 +16,12 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
   public static readonly stageObjectType = "";
 
   #reject: ((err: Error) => void) | undefined = undefined;
-  #resolve: ((val?: v) => void) | undefined = undefined;
+  #resolve: ((val?: t) => void) | undefined = undefined;
 
   private _original: v | undefined = undefined;
   public get original() { return this._original; }
 
-  private _closed: Promise<v | undefined> | undefined = undefined;
+  private _closed: Promise<t | undefined> | undefined = undefined;
   public get closed() { return this._closed; }
 
   private _ghost: PIXI.DisplayObject | undefined = undefined;
@@ -313,6 +313,7 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
       this._ghost = undefined;
       this._original = undefined;
       this.stageObject.synchronize = true;
+      this.originalLayer = undefined;
     } catch (err) {
       logError(err as Error);
     }
@@ -403,11 +404,17 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
 
 
       if (!this.submitted && this.original) {
-        log("reverting", this.original);
-        this.stageObject.deserialize(this.original);
-      }
+        if (this.originalLayer)
+          StageManager.setStageObjectLayer(this.stageObject, this.originalLayer);
+        else
+          this.stageObject.displayObject.removeFromParent();
 
-      if (this.#resolve) this.#resolve();
+        this.stageObject.deserialize(this.original);
+        if (this.#resolve) this.#resolve();
+
+      } else if (this.#resolve) {
+        this.#resolve(this.stageObject);
+      }
     } catch (err) {
       logError(err as Error);
       if (this.#reject) this.#reject(err as Error);
@@ -527,6 +534,8 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
     return context as any;
   }
 
+  protected originalLayer: StageLayer | undefined = undefined;
+
 
   protected _onRender(context: Record<string, undefined>, options: { force?: boolean | undefined; position?: { top?: number | undefined; left?: number | undefined; width?: number | 'auto' | undefined; height?: number | 'auto' | undefined; scale?: number | undefined; zIndex?: number | undefined; } | undefined; window?: { title?: string | undefined; icon?: string | false | undefined; controls?: boolean | undefined; } | undefined; parts?: string[] | undefined; isFirstRender?: boolean | undefined; }): void {
     try {
@@ -534,8 +543,9 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
 
       this.submitted = false;
       this.stageObject.synchronize = false;
+      this.originalLayer = this.stageObject.layer;
 
-      this._closed = new Promise<v | undefined>((resolve, reject) => {
+      this._closed = new Promise<t | undefined>((resolve, reject) => {
         this.#resolve = resolve;
         this.#reject = reject;
       });

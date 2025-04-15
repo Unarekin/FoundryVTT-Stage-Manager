@@ -4,7 +4,7 @@ import { InputManager } from "./InputManager";
 import { log, logError } from "./logging";
 import { StageManager } from "./StageManager";
 import { DialogueStageObject, ImageStageObject, TextStageObject } from "./stageobjects";
-import { TOOL_LAYERS } from "./types";
+import { PartialWithRequired, SerializedImageStageObject, TOOL_LAYERS } from "./types";
 // import { StageManager } from "./StageManager";
 
 let controlsInitialized = false;
@@ -78,7 +78,7 @@ export class ControlButtonsHandler {
         icon: "fas fa-image",
         onClick: () => {
           StageManager.DeselectAll();
-          addImage();
+          void addImage();
         },
         visible: StageManager.canAddStageObjects(game?.user?.id ?? ""),
         button: true
@@ -181,48 +181,53 @@ async function addDialogue() {
   if (obj) StageManager.addStageObject(obj, layer);
 }
 
-function addImage() {
-  new FilePicker({
-    type: "imagevideo",
-    displayMode: "tiles",
-    callback: result => {
-      if (result) {
+async function addImage() {
+  try {
+    const layer = TOOL_LAYERS[game?.activeTool ?? ""];
+    if (!layer) return;
+
+    const result = await new Promise<string | undefined>(resolve => {
+      new FilePicker({
+        type: "imagevideo",
+        displayMode: "tiles",
+        callback: result => { resolve(result); }
+      }).render(true);
+    });
+
+    if (!result) return;
+
+    const sprite = PIXI.Sprite.from(result);
+    sprite.anchor.x = 0.5;
+    sprite.anchor.y = 0.5;
+
+    const displayObject = await InputManager.PlaceDisplayObject(sprite, layer) as PIXI.Sprite;
+
+    // Ensure texture is loaded.
+    if (!displayObject.texture.valid)
+      await new Promise<void>(resolve => { displayObject.texture.baseTexture.once("loaded", () => { resolve(); }) })
 
 
-        const layer = TOOL_LAYERS[game?.activeTool ?? ""];
-        if (!layer) return;
+    const img: PartialWithRequired<SerializedImageStageObject, "type"> = {
+      type: "image",
+      version: __MODULE_VERSION__,
+      src: result,
+      bounds: {
+        x: displayObject.x / window.innerWidth,
+        y: displayObject.y / window.innerHeight,
+        width: displayObject.width / window.innerWidth,
+        height: displayObject.height / window.innerHeight
+      },
+      layer,
+      ...((StageManager.ViewingAs instanceof User && StageManager.ViewingAs !== game.user) ? { scope: "user", scopeOwners: [StageManager.ViewingAs.uuid] } : {})
+    }
 
-        const sprite = PIXI.Sprite.from(result);
-        sprite.anchor.x = 0.5;
-        sprite.anchor.y = 0.5;
+    displayObject.destroy();
 
-        InputManager.PlaceDisplayObject(sprite, layer)
-          .then(obj => {
-            const image = new ImageStageObject(result);
-            image.x = obj.x;
-            image.y = obj.y;
-            sprite.destroy();
-
-            if (StageManager.ViewingAs instanceof User && StageManager.ViewingAs !== game.user) {
-              image.scope = "user";
-              image.scopeOwners = [StageManager.ViewingAs.uuid];
-            }
-
-            return StageManager.CreateStageObject<ImageStageObject>({
-              ...image.serialize()
-            })
-          })
-          .then(obj => {
-            // this.stageObject.displayObject.removeFromParent();
-            if (obj) StageManager.addStageObject(obj, layer);
-          })
-          .catch((err: Error) => {
-            logError(err);
-          })
-
-      }
-    },
-  }).render(true);
+    const obj = await StageManager.CreateStageObject(img, true);
+    if (obj instanceof ImageStageObject) StageManager.addStageObject(obj);
+  } catch (err) {
+    logError(err as Error);
+  }
 }
 
 function setViewAsIcon() {
