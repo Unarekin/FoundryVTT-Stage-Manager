@@ -220,6 +220,36 @@ export function pathPresetSelect(uuid?: string): Record<string, string> {
   return foundry.utils.flattenObject(context) as Record<string, string>;
 }
 
+export function updatePresetValues(parent: HTMLElement) {
+  const container = parent.querySelector(`#pathSelectParent`);
+  if (!(container instanceof HTMLElement)) return;
+
+  const uuidElem = parent.querySelector(`[data-role="object-uuid"]`);
+  if (!(uuidElem instanceof HTMLInputElement) || !uuidElem.value) return;
+
+  const selectElem = parent.querySelector(`[data-role="path-select"]`)
+  if (!(selectElem instanceof HTMLSelectElement)) return;
+
+  const presets = pathPresetSelect(uuidElem.value);
+
+  const entries = Object.entries(presets)
+    .sort((a, b) => a[1].localeCompare(b[1]));
+
+  container.style.display = entries.length ? "block" : "none";
+  selectElem.innerHTML = "";
+
+  if (entries.length) {
+    // Add a blank one
+    selectElem.options.add(document.createElement("option"))
+    for (const [key, value] of entries) {
+      const option = document.createElement("option");
+      option.value = key;
+      option.innerText = value;
+      selectElem.options.add(option);
+    }
+  }
+}
+
 export function setPresetValues(parent: HTMLElement) {
   const presetSelect = parent.querySelector(`#pathPreset`);
   if (presetSelect instanceof HTMLSelectElement) {
@@ -232,4 +262,44 @@ export function setPresetValues(parent: HTMLElement) {
     if (value instanceof HTMLInputElement) value.value = `${presetSelect.value}.value`;
     if (max instanceof HTMLInputElement) max.value = `${presetSelect.value}.max`;
   }
+}
+
+export function setPathSuggestions(parent: HTMLElement, inputSelector: string, listSelector: string, prop: string) {
+  const inputElem = parent.querySelector(inputSelector);
+  if (!(inputElem instanceof HTMLInputElement)) return;
+
+  const listElem = parent.querySelector(listSelector);
+  if (!(listElem instanceof HTMLDataListElement)) return;
+
+  const uuidElem = parent.querySelector(`[data-role="object-uuid"]`)
+  if (!(uuidElem instanceof HTMLInputElement) || !uuidElem.value) return;
+
+  const obj = fromUuidSync(uuidElem.value);
+  if (!(obj instanceof foundry.abstract.Document)) return;
+
+  listElem.innerHTML = "";
+
+  const keys = Object.keys(foundry.utils.flattenObject(obj));
+
+  // Check for exact match
+  if (keys.includes(`system.${inputElem.value}`)) return;
+
+  const filtered = keys
+    .filter(key => {
+      const parts = key.split(".");
+      return key.startsWith(`system.${inputElem.value}`) && parts[parts.length - 1] === prop;
+    })
+    .sort((a, b) => a.localeCompare(b))
+    ;
+
+
+  for (const key of filtered) {
+    const option = document.createElement("option");
+    const path = key.split(".").slice(1).join(".");
+    option.value = path;
+    option.innerText = path;
+    listElem.appendChild(option);
+  }
+
+
 }

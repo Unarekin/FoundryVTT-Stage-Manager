@@ -2,7 +2,7 @@ import { ResourceClockStageObject } from "stageobjects";
 import { SerializedResourceClockStageObject } from "types";
 import { ProgressClockStageObjectApplication } from "./ProgressClockStageObjectApplication";
 import { EmptyObject } from 'Foundry-VTT/src/types/utils.mjs';
-import { pathPresetSelect, setPresetValues } from "./functions";
+import { pathPresetSelect, setPathSuggestions, setPresetValues, updatePresetValues } from "./functions";
 import { logError } from "logging";
 
 export class ResourceClockStageObjectApplication extends ProgressClockStageObjectApplication<ResourceClockStageObject, SerializedResourceClockStageObject> {
@@ -48,13 +48,29 @@ export class ResourceClockStageObjectApplication extends ProgressClockStageObjec
 
     const uuidElem = this.element.querySelector(`[data-role="object-uuid"]`);
     if (uuidElem instanceof HTMLInputElement) {
-      uuidElem.addEventListener("input", () => { this.loadUUIDPreview(); });
+      uuidElem.addEventListener("input", () => {
+        this.loadUUIDPreview();
+        updatePresetValues(this.element);
+      });
     }
 
     const presetSelect = this.element.querySelector(`#pathPreset`);
     if (presetSelect instanceof HTMLSelectElement) {
       setPresetValues(this.element);
       presetSelect.addEventListener("input", () => { setPresetValues(this.element); });
+    }
+
+    setPathSuggestions(this.element, `[data-role="value-path"]`, `[data-role="value-path-suggestions"]`, "value");
+    setPathSuggestions(this.element, `[data-role="max-path"]`, `[data-role="max-path-suggestions"]`, "max");
+
+    const valueElem = this.element.querySelector(`[data-role="value-path"]`);
+    if (valueElem instanceof HTMLInputElement) {
+      valueElem.addEventListener("input", () => { setPathSuggestions(this.element, `[data-role="value-path"]`, `[data-role="value-path-suggestions"]`, "value"); });
+    }
+
+    const maxElem = this.element.querySelector(`[data-role="max-path"]`);
+    if (maxElem instanceof HTMLInputElement) {
+      maxElem.addEventListener("input", () => { setPathSuggestions(this.element, `[data-role="max-path"]`, `[data-role="max-path-suggestions"]`, "max"); });
     }
   }
 
