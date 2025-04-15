@@ -4,7 +4,7 @@ import { InputManager } from "./InputManager";
 import { log, logError } from "./logging";
 import { StageManager } from "./StageManager";
 import { DialogueStageObject, ImageStageObject, TextStageObject } from "./stageobjects";
-import { PartialWithRequired, SerializedImageStageObject, TOOL_LAYERS } from "./types";
+import { PartialWithRequired, SerializedImageStageObject, SerializedTextStageObject, TOOL_LAYERS } from "./types";
 // import { StageManager } from "./StageManager";
 
 let controlsInitialized = false;
@@ -131,36 +131,6 @@ export class ControlButtonsHandler {
 
 }
 
-async function addText() {
-  try {
-    const layer = TOOL_LAYERS[game?.activeTool ?? ""];
-    if (!layer) return;
-
-    const content = await renderTemplate(`modules/${__MODULE_ID__}/templates/textInput.hbs`, {})
-    const text = await inputPrompt(content, "STAGEMANAGER.ADDTEXT.TITLE");
-    if (!text) return;
-
-    const tempObj = new PIXI.HTMLText(TextStageObject.prepareText(text));
-    tempObj.anchor.x = .5;
-    tempObj.anchor.y = .5;
-
-    const obj = await InputManager.PlaceDisplayObject(tempObj, layer);
-
-    const textObj = new TextStageObject(text);
-    textObj.x = obj.x;
-    textObj.y = obj.y;
-
-    tempObj.destroy();
-
-    const created = await StageManager.CreateStageObject<TextStageObject>({ ...textObj.serialize() });
-    if (created) StageManager.addStageObject(created, layer);
-
-  } catch (err) {
-    logError(err as Error);
-  }
-}
-
-
 async function addDialogue() {
   const layer = TOOL_LAYERS[game?.activeTool ?? ""];
   if (!layer) return;
@@ -179,6 +149,48 @@ async function addDialogue() {
   dialogue.destroy();
 
   if (obj) StageManager.addStageObject(obj, layer);
+}
+
+async function addText() {
+  try {
+    const layer = TOOL_LAYERS[game?.activeTool ?? ""];
+    if (!layer) return;
+
+    const inputText = await inputPrompt(
+      await renderTemplate(`modules/${__MODULE_ID__}/templates/textInput.hbs`, {}),
+      "STAGEMANAGER.ADDTEXT.TITLE"
+    );
+
+    if (!inputText) return;
+
+    const textObj = new PIXI.HTMLText(inputText);
+    textObj.anchor.x = textObj.anchor.y = 0.5;
+
+    const displayObject = await InputManager.PlaceDisplayObject(textObj, layer) as PIXI.HTMLText;
+    if (!(displayObject instanceof PIXI.HTMLText)) return;
+
+    const text: PartialWithRequired<SerializedTextStageObject, "type"> = {
+      type: "text",
+      id: foundry.utils.randomID(),
+      text: inputText,
+      bounds: {
+        x: displayObject.x / window.innerWidth,
+        y: displayObject.y / window.innerHeight,
+        width: displayObject.width / window.innerWidth,
+        height: displayObject.height / window.innerHeight
+      },
+      layer,
+      ...((StageManager.ViewingAs instanceof User && StageManager.ViewingAs !== game.user) ? { scope: "user", scopeOwners: [StageManager.ViewingAs.uuid] } : {})
+    }
+
+    displayObject.destroy();
+
+    const obj = await StageManager.CreateStageObject(text, true);
+    if (obj instanceof TextStageObject) StageManager.addStageObject(obj);
+
+  } catch (err) {
+    logError(err as Error);
+  }
 }
 
 async function addImage() {
@@ -209,6 +221,7 @@ async function addImage() {
 
     const img: PartialWithRequired<SerializedImageStageObject, "type"> = {
       type: "image",
+      id: foundry.utils.randomID(),
       version: __MODULE_VERSION__,
       src: result,
       bounds: {

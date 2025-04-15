@@ -177,22 +177,23 @@ export async function inputPrompt(content: string, title?: string): Promise<stri
     rejectClose: false,
     buttons: [
       {
-        icon: `<i class="fas fa-check"></i>`,
+        icon: `fas fa-check`,
         label: localize("Confirm"),
         action: "confirm",
         callback: (e, button, dialog) => {
           const input = dialog.querySelector("#text");
-          if (!(input instanceof HTMLInputElement)) return Promise.resolve();
+          if (!(input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement)) return Promise.resolve();
           return Promise.resolve(input.value);
         }
       },
       {
-        icon: `<I class="fas fa-times"></i>`,
+        icon: `fas fa-times`,
         label: localize("Cancel"),
         action: "cancel"
       }
     ]
   });
+
   if (input === "cancel" || !input || input === "confirm") return undefined;
   else return input;
 }
