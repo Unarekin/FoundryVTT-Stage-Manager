@@ -16,6 +16,7 @@
       "ARGS": {
         "ACTIVEEFFECT": "activeEffect",
         "ACTOR": "actor",
+        "REGION": "region",
         "ADD": "Add Argument",
         "AUTO": "Automatic",
         "COMBAT": "combat",

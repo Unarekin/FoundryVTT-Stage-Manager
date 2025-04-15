@@ -14,7 +14,8 @@
         "ACTOR": "Actor",
         "COMBAT": "Combat",
         "MISC": "Miscellaneous",
-        "TOKEN": "Token"
+        "TOKEN": "Token",
+        "REGION": "Region"
       },
       "EVENTS": {
         "HOVERIN": "Mouse Enter",
@@ -41,7 +42,8 @@
         "TARGETTOKEN": "Target Token",
         "UNTARGETTOKEN": "Untarget Token",
         "WORLDTIMECHANGE": "World Time Change",
-        "ACTORCHANGE": "Actor Changed"
+        "ACTORCHANGE": "Actor Changed",
+        "REGIONENTER": "Region Entered"
       }
     }
   }

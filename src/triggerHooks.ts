@@ -150,4 +150,43 @@ Hooks.on("pauseGame", paused => {
     triggerEvent("pause", undefined);
   else
     triggerEvent("unpause", undefined);
-})
+});
+
+// Region class isn't implemented in current typings
+const TOKEN_REGIONS = new WeakMap<Token, any[]>();
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+Hooks.on("updateToken", (doc: TokenDocument, delta: any, options: unknown, userId: string) => {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  if (!(canvas?.scene as any)?.regions) return;
+
+
+  // Check for region changes
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  if (Array.isArray(delta._regions)) {
+    if (doc.object instanceof Token) {
+      const token = doc.object;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const actor = token.actor;
+
+      const currentRegions = TOKEN_REGIONS.get(token) as string[] ?? [];
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      const newRegions = delta._regions as string[];
+
+      const enteredRegions = newRegions.filter(id => !currentRegions.includes(id));
+      // const exitedRegions = currentRegions.filter(id => !newRegions.includes(id));
+
+      for (const id of enteredRegions) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+        const region = (canvas?.scene as any).regions.get(id);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        if (region) triggerEvent("regionEnter", { region, actor, token });
+      }
+
+      // TODO: Region exited
+
+      TOKEN_REGIONS.set(token, [...newRegions]);
+    }
+  }
+
+});
