@@ -155,9 +155,9 @@ Hooks.on("pauseGame", paused => {
     triggerEvent("unpause", undefined);
 });
 
-Hooks.on(CUSTOM_HOOKS.ITEM_ROLLED, (actor: Actor, item: Item, data: Record<string, unknown>) => {
+Hooks.on(CUSTOM_HOOKS.ITEM_ROLLED, (actor: Actor, item: Item, rollData: Record<string, unknown>) => {
   log("Item rolled:", actor, item, data);
-  triggerEvent("itemRoll", { actor, item, data });
+  triggerEvent("itemRoll", { actor, item, rollData });
 });
 
 // Set up item roll hooks

@@ -292,7 +292,7 @@ export interface TriggerEventSignatures {
   worldTimeChange: { time: number };
   actorChange: { actor: Actor };
 
-  itemRoll: { actor: Actor, item: Item, data: Record<string, unknown> }
+  itemRoll: { actor: Actor, item: Item, rollData: Record<string, unknown> }
 }
 
 

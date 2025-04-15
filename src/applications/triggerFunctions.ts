@@ -4,6 +4,7 @@ import { getTriggerActionType, triggerActions } from 'triggeractions';
 import triggerEvents from "./triggerEvents.json";
 import { localize, confirm } from 'functions';
 import { StageObject } from 'stageobjects';
+import * as triggerHooks from "triggers";
 
 const TRIGGER_LIST_SELECTOR = `select[name="triggerList"]`
 const TRIGGER_FORM_SELECTOR = `[data-role="trigger-config"]`
@@ -225,7 +226,6 @@ function setSelectedConfig(parent: HTMLElement, stageObject?: StageObject) {
     void setMacroArgs(parent, stageObject);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function setMacroArgs(parent: HTMLElement, stageObject?: StageObject) {
   const eventElem = parent.querySelector(`select[name="trigger.event"]`);
   if (!(eventElem instanceof HTMLSelectElement)) return;
@@ -282,12 +282,26 @@ function getTriggerActionSelect(): Record<string, string> {
   )
 }
 
+function itemRollSupported(): boolean {
+  return !!((triggerHooks.itemRoll as Record<string, unknown>)?.[game?.system?.id ?? ""]);
+}
+
 function getTriggerEventSelect(trigger?: SerializedTrigger): EventSpec[] {
-  return triggerEvents.map(item => ({
-    ...item,
-    label: localize(item.label),
-    categoryLabel: localize(item.categoryLabel),
-    selected: trigger?.event === item.value
-  }))
-    .sort((a, b) => a.label.localeCompare(b.label))
+
+  return triggerEvents.reduce((prev, curr) => {
+
+    if (curr.value === "itemRoll" && !itemRollSupported()) return prev;
+
+
+    return [
+      ...prev,
+      {
+        ...curr,
+        label: localize(curr.label),
+        categoryLabel: localize(curr.categoryLabel),
+        selected: trigger?.event === curr.value
+      }
+    ]
+  }, [] as EventSpec[])
+    .sort((a, b) => a.label.localeCompare(b.label));
 }

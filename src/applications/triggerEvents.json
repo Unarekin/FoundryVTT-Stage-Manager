@@ -390,6 +390,10 @@
       {
         "name": "item",
         "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ITEM"
+      },
+      {
+        "name": "rollData",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.DATA"
       }
     ]
   }
