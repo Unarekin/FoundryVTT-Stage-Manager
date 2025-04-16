@@ -293,7 +293,8 @@ export interface TriggerEventSignatures {
   actorChange: { actor: Actor };
 
   itemRoll: { actor: Actor, item: Item, rollData: Record<string, unknown> };
-  hook: { hook: string, hookArgs: unknown[] };
+  preHook: { hook: string, hookArgs: unknown[] };
+  postHook: { hook: string, hookArgs: unknown[] };
 }
 
 

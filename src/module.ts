@@ -59,20 +59,33 @@ Hooks.once("canvasReady", () => {
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-function-type
   libWrapper.register(__MODULE_ID__, "Hooks.call", function (this: Hooks, wrapped: Function, hook: string, ...args: unknown[]) {
-    if (hook !== CUSTOM_HOOKS.HOOK)
-      Hooks.callAll(CUSTOM_HOOKS.HOOK, hook, args);
+    if (!(hook === CUSTOM_HOOKS.PREHOOK || hook === CUSTOM_HOOKS.POSTHOOK))
+      Hooks.callAll(CUSTOM_HOOKS.PREHOOK, hook, args);
+
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const retVal = wrapped(hook, ...args);
+    if (!(hook === CUSTOM_HOOKS.PREHOOK || hook === CUSTOM_HOOKS.POSTHOOK))
+      Hooks.callAll(CUSTOM_HOOKS.POSTHOOK, hook, args);
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return wrapped(hook, ...args);
+    return retVal;
   });
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-function-type
   libWrapper.register(__MODULE_ID__, "Hooks.callAll", function (this: Hooks, wrapped: Function, hook: string, ...args: unknown[]) {
-    if (hook !== CUSTOM_HOOKS.HOOK)
-      Hooks.callAll(CUSTOM_HOOKS.HOOK, hook, args);
+    if (!(hook === CUSTOM_HOOKS.PREHOOK || hook === CUSTOM_HOOKS.POSTHOOK))
+      Hooks.callAll(CUSTOM_HOOKS.PREHOOK, hook, args);
+
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const retVal = wrapped(hook, ...args);
+
+    if (!(hook === CUSTOM_HOOKS.PREHOOK || hook === CUSTOM_HOOKS.POSTHOOK))
+      Hooks.callAll(CUSTOM_HOOKS.POSTHOOK, hook, args);
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return wrapped(hook, ...args);
+    return retVal;
   })
 
   log("Initialized.");

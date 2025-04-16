@@ -398,8 +398,26 @@
     ]
   },
   {
-    "value": "hook",
-    "label": "STAGEMANAGER.TRIGGERS.EVENTS.HOOK",
+    "value": "preHook",
+    "label": "STAGEMANAGER.TRIGGERS.EVENTS.PREHOOK",
+    "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
+    "category": "misc",
+    "requiredArgs": [
+      {
+        "name": "hook",
+        "type": "string"
+      }
+    ],
+    "addlArgs": [
+      {
+        "name": "hookArgs",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.HOOKARGS"
+      }
+    ]
+  },
+  {
+    "value": "postHook",
+    "label": "STAGEMANAGER.TRIGGERS.EVENTS.POSTHOOK",
     "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
     "category": "misc",
     "requiredArgs": [

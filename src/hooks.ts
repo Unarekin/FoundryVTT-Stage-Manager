@@ -11,7 +11,8 @@ export const CUSTOM_HOOKS = {
   REMOTE_REMOVED: `${__MODULE_ID__}.remoteObjectRemoved`,
 
   ITEM_ROLLED: `${__MODULE_ID__}.itemRoll`,
-  HOOK: `${__MODULE_ID__}.hook`
+  PREHOOK: `${__MODULE_ID__}.preHook`,
+  POSTHOOK: `${__MODULE_ID__}.postHook`
 }
 
 
