@@ -9,6 +9,7 @@ import { InputManager } from './InputManager';
 import { SynchronizationManager } from './SynchronizationManager';
 import { coerceStageObject } from "./coercion";
 import { hitTestFn } from "./lib/hitTest";
+import { CUSTOM_HOOKS } from "./hooks";
 
 import groupBy from "./lib/groupBy";
 import "./triggerHooks";
@@ -56,6 +57,23 @@ Hooks.once("canvasReady", () => {
     return wrapped(scope, ...args);
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-function-type
+  libWrapper.register(__MODULE_ID__, "Hooks.call", function (this: Hooks, wrapped: Function, hook: string, ...args: unknown[]) {
+    if (hook !== CUSTOM_HOOKS.HOOK)
+      Hooks.callAll(CUSTOM_HOOKS.HOOK, hook, args);
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return wrapped(hook, ...args);
+  });
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-function-type
+  libWrapper.register(__MODULE_ID__, "Hooks.callAll", function (this: Hooks, wrapped: Function, hook: string, ...args: unknown[]) {
+    if (hook !== CUSTOM_HOOKS.HOOK)
+      Hooks.callAll(CUSTOM_HOOKS.HOOK, hook, args);
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return wrapped(hook, ...args);
+  })
 
   log("Initialized.");
 });

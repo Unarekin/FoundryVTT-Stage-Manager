@@ -10,7 +10,6 @@ import * as triggerHooks from "./triggers"
 import { localize } from "functions";
 
 function triggerEvent<k extends keyof TriggerEventSignatures>(event: k, arg: TriggerEventSignatures[k]) {
-  log("Event triggered:", event, arg);
   StageManager.StageObjects.forEach(obj => void obj.triggerEvent(event, arg));
 }
 
@@ -156,7 +155,7 @@ Hooks.on("pauseGame", paused => {
 });
 
 Hooks.on(CUSTOM_HOOKS.ITEM_ROLLED, (actor: Actor, item: Item, rollData: Record<string, unknown>) => {
-  log("Item rolled:", actor, item, data);
+  log("Item rolled:", actor, item, rollData);
   triggerEvent("itemRoll", { actor, item, rollData });
 });
 
@@ -172,3 +171,7 @@ if (triggerHooks.itemRoll) {
     }
   })
 }
+
+Hooks.on(CUSTOM_HOOKS.HOOK, (hook: string, args: unknown[]) => {
+  triggerEvent("hook", { hook, hookArgs: args });
+});

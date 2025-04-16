@@ -343,7 +343,6 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   }
 
   public async triggerEvent<k extends keyof TriggerEventSignatures>(event: k, args: TriggerEventSignatures[k]) {
-    log("Event triggered:", event);
 
     if (this.triggers[event]) {
       for (const trigger of this.triggers[event]) {

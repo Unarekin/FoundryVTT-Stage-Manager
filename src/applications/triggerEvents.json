@@ -396,5 +396,23 @@
         "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.DATA"
       }
     ]
+  },
+  {
+    "value": "hook",
+    "label": "STAGEMANAGER.TRIGGERS.EVENTS.HOOK",
+    "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
+    "category": "misc",
+    "requiredArgs": [
+      {
+        "name": "hook",
+        "type": "string"
+      }
+    ],
+    "addlArgs": [
+      {
+        "name": "hookArgs",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.HOOKARGS"
+      }
+    ]
   }
 ]

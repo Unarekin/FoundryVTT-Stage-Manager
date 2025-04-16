@@ -21,6 +21,8 @@
         "COMBAT": "combat",
         "COMBATANT": "combatant",
         "DATA": "data",
+        "HOOKARGS": "hookArgs",
+        "HOOKNAME": "hookName",
         "ITEM": "item",
         "MODKEYS": "modifierKeys",
         "NAME": "Name",
