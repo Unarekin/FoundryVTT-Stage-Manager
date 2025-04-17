@@ -324,6 +324,8 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
     const formData = new FormDataExtended(form, {});
     const data = foundry.utils.expandObject(formData.object) as Record<string, unknown>;
 
+    log("Form data:", foundry.utils.mergeObject({}, data));
+
 
     const bounds = data.restrictToVisualArea ? StageManager.VisualBounds : StageManager.ScreenBounds;
 
@@ -344,6 +346,7 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
 
     const triggerForm = parseTriggerFormData(data);
     if (triggerForm) {
+      // Parse eventArgs
       const triggers = data.triggers as Record<string, SerializedTrigger[]>;
       if (Array.isArray(triggers[triggerForm.event])) {
         const index = triggers[triggerForm.event].findIndex(item => item.id === triggerForm.id);

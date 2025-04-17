@@ -319,9 +319,13 @@ interface ActorSerializedTrigger extends BaseSerializedTrigger {
   actor: string;
 }
 
+interface HookSerializedTrigger extends BaseSerializedTrigger {
+  event: "postHook" | "preHook";
+  hook: string;
+}
 
 
-export type SerializedTrigger = BaseSerializedTrigger | ActorSerializedTrigger;
+export type SerializedTrigger = BaseSerializedTrigger | ActorSerializedTrigger | HookSerializedTrigger;
 
 export type SerializedMacroTrigger = SerializedTrigger & ({
   macro: string;

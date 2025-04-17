@@ -68,16 +68,30 @@ export class MacroTriggerAction extends TriggerAction {
   }
 
   public static fromFormData(data: Record<string, unknown>): SerializedMacroTrigger {
+
+    const event = data.event as keyof TriggerEventSignatures ?? "";
+    const hook: Record<string, string> = {};
+
+    const eventArgs: Record<string, Record<string, string | boolean | number>> = data.eventArgs as Record<string, Record<string, string | boolean | number>>;
+
+    if (event === "preHook")
+      foundry.utils.mergeObject(hook, { hook: eventArgs.preHook.hook ?? "" });
+    else if (event === "postHook")
+      foundry.utils.mergeObject(hook, { hook: eventArgs.postHook.hook ?? "" });
+
+
     return {
       id: data.id ? data.id as string : foundry.utils.randomID(),
       label: data.label as string ?? "",
       version: data.version as string ?? "1.0.0",
       action: "macro",
       macro: data.macro as string ?? "",
-      event: data.event as keyof TriggerEventSignatures ?? "",
+      event,
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       arguments: data.arg ? Object.values(data.arg) : [],
-      ...(data.actor ? { actor: data.actor as string } : {})
+      // ...(data.actor ? { actor: data.actor as string } : {}),
+      ...(eventArgs.actor ? { actor: eventArgs.actor.actor ?? "" } : {}),
+      ...hook
     };
   }
 
