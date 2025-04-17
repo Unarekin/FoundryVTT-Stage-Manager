@@ -1,0 +1,18 @@
+<section>
+  <section data-event="preHook" style="display:none">
+    <div class="form-group">
+      <label for="trigger.hook">{{localize "STAGEMANAGER.TRIGGERS.HOOKNAME"}}</label>
+      <input type="text" name="trigger.hook" id="trigger.hook" value="{{hook}}" list="preHookList" required data-role="prehook-name" />
+      <datalist id="preHookList"></datalist>
+    </div>
+    <br>
+  </section>
+  <section data-event="postHook" style="display:none">
+    <div class="form-group">
+      <label for="trigger.hook">{{localize "STAGEMANAGER.TRIGGERS.HOOKNAME"}}</label>
+      <input type="text" name="trigger.hook" id="trigger.hook" value="{{hook}}" list="postHookList" required data-role="posthook-name" />
+      <datalist id="postHookList"></datalist>
+    </div>
+    <br>
+  </section>
+</section>

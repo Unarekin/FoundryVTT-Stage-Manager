@@ -46,7 +46,8 @@
         "WORLDTIMECHANGE": "World Time Changed"
       },
       "TYPE": "Trigger Type",
-      "UNKNOWN": "(Unknown Trigger)"
+      "UNKNOWN": "(Unknown Trigger)",
+      "HOOKNAME": "Hook Name"
     }
   }
 }

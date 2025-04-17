@@ -402,12 +402,6 @@
     "label": "STAGEMANAGER.TRIGGERS.EVENTS.PREHOOK",
     "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
     "category": "misc",
-    "requiredArgs": [
-      {
-        "name": "hook",
-        "type": "string"
-      }
-    ],
     "addlArgs": [
       {
         "name": "hookArgs",
@@ -420,12 +414,6 @@
     "label": "STAGEMANAGER.TRIGGERS.EVENTS.POSTHOOK",
     "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
     "category": "misc",
-    "requiredArgs": [
-      {
-        "name": "hook",
-        "type": "string"
-      }
-    ],
     "addlArgs": [
       {
         "name": "hookArgs",

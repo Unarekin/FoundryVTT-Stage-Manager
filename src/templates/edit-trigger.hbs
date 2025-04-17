@@ -14,9 +14,11 @@
       {{/group}}
     </select>
   </div>
+  <br>
 
   <section data-role="event-configs">
     {{> "modules/stage-manager/templates/events/actor.hbs" trigger=trigger}}
+    {{> "modules/stage-manager/templates/events/hook.hbs" trigger=trigger}}
   </section>
 
   <div class="form-group">
@@ -26,6 +28,7 @@
       {{selectOptions triggerActionSelect localize=true selected=trigger.action}}
     </select>
   </div>
+  <br>
 
   <section data-role="action-configs">
     {{> "modules/stage-manager/templates/triggers/macro.hbs" trigger=trigger}}

@@ -5,6 +5,7 @@ import triggerEvents from "./triggerEvents.json";
 import { localize, confirm } from 'functions';
 import { StageObject } from 'stageobjects';
 import * as triggerHooks from "triggers";
+import * as hookEvents from "./hookEvents.json"
 
 const TRIGGER_LIST_SELECTOR = `select[name="triggerList"]`
 const TRIGGER_FORM_SELECTOR = `[data-role="trigger-config"]`
@@ -197,6 +198,20 @@ function hideElements(parent: HTMLElement, selector: string) {
     if (elem instanceof HTMLElement) elem.style.display = "none";
 }
 
+function setHookSuggestions(parent: HTMLElement, selector: string) {
+  const list = parent.querySelector(selector);
+  if (!(list instanceof HTMLDataListElement)) return;
+
+  list.innerHTML = "";
+  Object.keys(hookEvents).forEach(key => {
+    const option = document.createElement("option");
+    option.value = key;
+    option.innerText = key;
+    list.appendChild(option);
+  })
+
+}
+
 function setSelectedConfig(parent: HTMLElement, stageObject?: StageObject) {
   const eventSelect = parent.querySelector(`select[name="trigger.event"]`);
   if (!(eventSelect instanceof HTMLSelectElement)) throw new LocalizedError("NOTRIGGERELEMENT");
@@ -204,10 +219,16 @@ function setSelectedConfig(parent: HTMLElement, stageObject?: StageObject) {
   const selectedEvent = eventSelect.value;
 
   // Hide configuration elements
-  hideElements(parent, `[data-role="event-configs"] [data-type], [data-role="event-configs"] [data-category]`);
+  hideElements(parent, `[data-role="event-configs"] [data-type], [data-role="event-configs"] [data-event], [data-role="event-configs"] [data-category]`);
 
   // Show event-specific configuration items
   showElements(parent, `[data-role="event-configs"] [data-event="${selectedEvent}"]`);
+
+  // Load list of hook suggestions
+  if (selectedEvent === "preHook")
+    setHookSuggestions(parent, `#preHookList`);
+  else if (selectedEvent === "postHook")
+    setHookSuggestions(parent, "#postHookList")
 
   // Show category-specific configuration
   const selectedOption = eventSelect.options[eventSelect.selectedIndex];
@@ -241,11 +262,23 @@ async function setMacroArgs(parent: HTMLElement, stageObject?: StageObject) {
 
     autoArgs.innerHTML = "";
 
+    const hookArgs: { key: string, label: string, value: string }[] = [];
+
+    // // Get hook event arguments
+    // if (event.value === "preHook" || event.value === "postHook") {
+    //   const hookInput = parent.querySelector(`[data-role="${event.value.toLowerCase()}-name"]`);
+    //   if (hookInput instanceof HTMLInputElement && !!hookEvents[hookInput.value as keyof typeof hookEvents]) {
+    //     const args = hookEvents[hookInput.value as keyof typeof hookEvents] as string[];
+    //     hookArgs.push(...args.map(arg => ({ key: arg, label: arg, value: `STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.AUTO`, disabled: true })));
+    //   }
+    // }
+
     const args: { key: string, label: string, value: string }[] = [
       // Object-specific
       ...(stageObject ? stageObject.macroArguments() : []),
       // Event-specific
-      ...event.addlArgs.map(arg => ({ key: arg.name, label: arg.name, value: `STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.AUTO` }))
+      ...event.addlArgs.map(arg => ({ key: arg.name, label: arg.name, value: `STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.AUTO` })),
+      ...hookArgs
     ]
       .filter((arg, i, arr) => arr.findIndex(elem => elem.key === arg.key) === i)
       .sort((a, b) => a.key.localeCompare(b.key))
