@@ -13,7 +13,7 @@ export class MacroTriggerAction extends TriggerAction {
     return {}
   }
 
-  public static readonly customArgumentTemplate = `macro.hbs`;
+  // public static readonly customArgumentTemplate = `macro.hbs`;
 
   // eslint-disable-next-line @typescript-eslint/class-literal-property-style
   public static get category(): string { return "misc"; }

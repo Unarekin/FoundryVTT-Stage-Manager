@@ -22,7 +22,13 @@
           class="stage-manager multiselect"
           data-action="selectTrigger"
         >
-
+          {{#group ../triggers by="eventLabel"}}
+            {{#if eventLabel}}<optgroup label="{{localize eventLabel}}">{{/if}}</optgroup>
+            {{#each items}}
+              <option value="{{trigger.id}}" data-serialized="{{serialized}}">{{actionLabel}}</option>
+            {{/each}}
+            {{#if value}}</optGroup>{{/if}}
+          {{/group}}
         </select>
       </div>
       <div data-role="trigger-config"></div>

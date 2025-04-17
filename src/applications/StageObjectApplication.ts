@@ -543,7 +543,7 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
 
       this.submitted = false;
       this.stageObject.synchronize = false;
-      this.originalLayer = this.stageObject.layer;
+      this.originalLayer = this.stageObject.layer || undefined;
 
       this._closed = new Promise<t | undefined>((resolve, reject) => {
         this.#resolve = resolve;

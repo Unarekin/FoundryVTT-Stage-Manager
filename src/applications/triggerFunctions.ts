@@ -130,11 +130,12 @@ async function injectTriggerForm(parent: HTMLElement, trigger?: SerializedTrigge
     autoSection.innerHTML = "";
 
     if (trigger?.action) {
-      const actionClass = getTriggerActionType(trigger);
-      if (actionClass?.customArgumentTemplate) {
-        const customArgs = await renderTemplate(actionClass.customArgumentTemplate, context);
-        autoSection.innerHTML = customArgs;
-      }
+      // const actionClass = getTriggerActionType(trigger);
+
+      // if (actionClass?.customArgumentTemplate) {
+      //   const customArgs = await renderTemplate(`modules/${__MODULE_ID__}/templates/triggers/${actionClass.customArgumentTemplate}`, context);
+      //   autoSection.innerHTML = customArgs;
+      // }
     }
   }
 

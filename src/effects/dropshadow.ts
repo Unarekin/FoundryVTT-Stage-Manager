@@ -51,7 +51,7 @@ export const DropShadowEffect: Effect<SerializedDropShadowEffect> = {
   deserialize(serialized: SerializedDropShadowEffect): PIXI.Filter {
     const color = new PIXI.Color(serialized.color);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    const filter = (PIXI.filters as any).DropShadowFilter({
+    const filter = new (PIXI.filters as any).DropShadowFilter({
       offset: { x: serialized.offsetX, y: serialized.offsetY },
       blur: serialized.blur,
       quality: serialized.quality,
