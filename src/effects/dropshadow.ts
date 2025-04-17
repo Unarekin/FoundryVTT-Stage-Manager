@@ -37,6 +37,8 @@ export const DropShadowEffect: Effect<SerializedDropShadowEffect> = {
 
     return {
       ...DropShadowEffect.default,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+      id: (filter as any).id ?? foundry.utils.randomID(),
       offsetX: offset.x,
       offsetY: offset.y,
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
@@ -49,13 +51,16 @@ export const DropShadowEffect: Effect<SerializedDropShadowEffect> = {
   deserialize(serialized: SerializedDropShadowEffect): PIXI.Filter {
     const color = new PIXI.Color(serialized.color);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    return new (PIXI.filters as any).DropShadowFilter({
+    const filter = (PIXI.filters as any).DropShadowFilter({
       offset: { x: serialized.offsetX, y: serialized.offsetY },
       blur: serialized.blur,
       quality: serialized.quality,
       color: color.toNumber(),
       alpha: color.alpha
     }) as PIXI.Filter;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    (filter as any).id = serialized.id;
+    return filter;
   },
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   typeCheck(filter: PIXI.Filter): boolean { return filter instanceof (PIXI.filters as any).DropShadowFilter }

@@ -17,12 +17,14 @@ export const InvertEffect: Effect<SerializedInvertEffect> = {
     if (!(filter instanceof InvertFilter)) throw new InvalidEffectError(filter);
     return {
       ...InvertEffect.default,
-      id: foundry.utils.randomID()
+      id: filter.id
     };
   },
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   deserialize(serialized: SerializedInvertEffect): InvertFilter {
-    return new InvertFilter();
+    const filter = new InvertFilter();
+    filter.id = serialized.id;
+    return filter;
   },
   typeCheck(filter: PIXI.Filter) { return filter instanceof InvertFilter },
   fromForm(parent: HTMLElement): SerializedInvertEffect {

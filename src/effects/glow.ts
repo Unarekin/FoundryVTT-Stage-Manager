@@ -24,7 +24,8 @@ export const GlowEffect: Effect<SerializedGlowEffect> = {
 
     return {
       ...GlowEffect.default,
-      id: foundry.utils.randomID(),
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+      id: (filter as any).id ?? foundry.utils.randomID(),
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       glowOnly: (filter as any).knockout,
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -41,7 +42,7 @@ export const GlowEffect: Effect<SerializedGlowEffect> = {
     const color = new PIXI.Color(serialized.color);
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    return new (PIXI.filters as any).GlowFilter({
+    const filter = (PIXI.filters as any).GlowFilter({
       innerStrength: serialized.innerStrength,
       outerStrengtH: serialized.outerStrength,
       color: color.toNumber(),
@@ -49,6 +50,9 @@ export const GlowEffect: Effect<SerializedGlowEffect> = {
       knockout: serialized.glowOnly,
       quality: serialized.quality / 100
     }) as PIXI.Filter;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    (filter as any).id = serialized.id;
+    return filter;
   },
   fromForm(parent: HTMLElement) {
     return {

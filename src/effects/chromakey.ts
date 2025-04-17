@@ -22,7 +22,7 @@ export const ChromaKeyEffect: Effect<SerializedChromaKeyEffect> = {
   serialize(filter: ChromaKeyFilter): SerializedChromaKeyEffect {
     return {
       ...ChromaKeyEffect.default,
-      id: foundry.utils.randomID(),
+      id: filter.id,
       backgroundType: filter.backgroundType,
       ...(filter.backgroundType === "image" ? { backgroundImage: filter.background, backgroundColor: "" } : { backgroundColor: filter.background as string, backgroundImage: "" }),
       keyColor: new PIXI.Color(filter.keyRGBA).toHexa(),
@@ -47,11 +47,13 @@ export const ChromaKeyEffect: Effect<SerializedChromaKeyEffect> = {
     }
 
 
-    return new ChromaKeyFilter(
+    const filter = new ChromaKeyFilter(
       serialized.keyColor,
       serialized.range,
       bg
     )
+    filter.id = serialized.id;
+    return filter;
   },
   typeCheck(filter: PIXI.Filter) { return filter instanceof ChromaKeyFilter; },
   fromForm(parent: HTMLElement): SerializedChromaKeyEffect {

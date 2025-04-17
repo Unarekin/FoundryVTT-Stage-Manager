@@ -24,7 +24,8 @@ export const OutlineEffect: Effect<SerializedOutlineEffect> = {
 
     return {
       ...OutlineEffect.default,
-      id: foundry.utils.randomID(),
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+      id: (filter as any).id ?? foundry.utils.randomID(),
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       outlineOnly: (filter as any).knockout,
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
@@ -45,6 +46,8 @@ export const OutlineEffect: Effect<SerializedOutlineEffect> = {
     filter.quality = serialized.quality / 100;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     filter.knockout = serialized.outlineOnly;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    filter.id = serialized.id;
 
     return filter as PIXI.Filter;
   },

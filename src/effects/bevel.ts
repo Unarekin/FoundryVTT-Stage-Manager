@@ -29,8 +29,8 @@ export const BevelEffect: Effect<SerializedBevelEffect> = {
     const shadowColor = new PIXI.Color(serialized.shadowColor);
 
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
-    return new (PIXI.filters as any).BevelFilter({
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+    const effect = new (PIXI.filters as any).BevelFilter({
       rotation: serialized.rotation,
       thickness: serialized.thickness,
       lightColorAlpha: lightColor.alpha,
@@ -38,6 +38,10 @@ export const BevelEffect: Effect<SerializedBevelEffect> = {
       lightColor: lightColor.toNumber(),
       shadowColor: shadowColor.toNumber()
     });
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    effect.id = serialized.id;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return effect;
   },
   serialize(filter: PIXI.Filter): SerializedBevelEffect {
 
@@ -54,7 +58,8 @@ export const BevelEffect: Effect<SerializedBevelEffect> = {
 
     return {
       ...BevelEffect.default,
-      id: foundry.utils.randomID(),
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+      id: (filter as any).id ?? foundry.utils.randomID(),
       lightColor: lightColor.toHexa(),
       shadowColor: shadowColor.toHexa(),
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
