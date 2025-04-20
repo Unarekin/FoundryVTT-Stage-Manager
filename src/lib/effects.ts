@@ -1,4 +1,5 @@
-import * as effects from "../effects";
+// import * as effects from "../effects";
+import { effects, Effect } from "effects";
 import { SerializedEffect } from "../types";
 
 export function serializeEffect(effect: PIXI.Filter): SerializedEffect | undefined {
@@ -21,7 +22,7 @@ export function defaultEffect(effectType: string): SerializedEffect | undefined 
     return handler.default;
 }
 
-export function getEffectHandler(effectType: string): effects.Effect | undefined {
+export function getEffectHandler(effectType: string): Effect | undefined {
   return Object.values(effects).find(effect => effect.type === effectType);
 }
 
@@ -29,10 +30,4 @@ export function getEffectTemplate(effectType: string): string | undefined {
   const handler = getEffectHandler(effectType);
   if (handler)
     return handler.template;
-}
-
-export function effectFromForm<t extends SerializedEffect = SerializedEffect>(effectType: string, elements: HTMLElement[]): t | undefined {
-  const handler = getEffectHandler(effectType);
-  if (handler)
-    return handler.fromForm(elements) as t;
 }

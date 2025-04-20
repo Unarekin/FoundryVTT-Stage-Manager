@@ -12,6 +12,7 @@ import { StageObjectApplication } from './applications';
 import { SynchronizationManager } from './SynchronizationManager';
 import { Conversation } from "./conversation";
 import { durationOfHold, localize } from 'functions';
+import { filters } from "effects";
 
 const _copiedObjects: SerializedStageObject[] = [];
 
@@ -26,6 +27,8 @@ export class StageManager {
   // #region Public Static Getters And Setters (10)
 
   public static get HighlightedObjects(): StageObject[] { return StageManager.StageObjects.filter(obj => obj.highlighted); }
+
+  public static get filters() { return filters; }
 
   public static get ScreenBounds(): { left: number, right: number, top: number, bottom: number, width: number, height: number } {
     return {

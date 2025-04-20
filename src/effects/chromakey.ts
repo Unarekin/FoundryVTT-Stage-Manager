@@ -92,7 +92,7 @@ function rgbaToCC(r: number, g: number, b: number): [number, number] {
   return [(b - y) * 0.565, (r - y) * 0.713];
 }
 
-class ChromaKeyFilter extends CustomFilter<ChromaKeyUniforms> {
+export class ChromaKeyFilter extends CustomFilter<ChromaKeyUniforms> {
   public readonly keyRGBA: [number, number, number, number];
   public readonly keyCC: [number, number];
   public readonly range: [number, number];

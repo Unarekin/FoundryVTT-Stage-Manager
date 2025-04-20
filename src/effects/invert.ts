@@ -42,7 +42,7 @@ export const InvertEffect: Effect<SerializedInvertEffect> = {
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type, @typescript-eslint/consistent-type-definitions
 type InvertUniforms = {}
 
-class InvertFilter extends CustomFilter<InvertUniforms> {
+export class InvertFilter extends CustomFilter<InvertUniforms> {
   constructor() {
     super(undefined, frag, {});
   }

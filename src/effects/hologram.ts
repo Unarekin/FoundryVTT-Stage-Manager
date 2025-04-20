@@ -18,7 +18,8 @@ export const HologramEffect: Effect<SerializedHologramEffect> = {
     speed: .4,
     color1: "rgba(0,0,255,1)",
     color2: "rgba(255,0,0,1)",
-    lines: 100
+    lines: 100,
+    temporary: false
   },
   serialize(filter: HologramFilter): SerializedHologramEffect {
     return {
@@ -73,7 +74,7 @@ type HologramUniforms = {
   lines: number
 };
 
-class HologramFilter extends CustomFilter<HologramUniforms> {
+export class HologramFilter extends CustomFilter<HologramUniforms> {
 
 
   public get alpha() { return this.uniforms.alpha as number ?? 1; }
