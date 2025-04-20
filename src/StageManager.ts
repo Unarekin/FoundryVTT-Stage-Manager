@@ -13,7 +13,6 @@ import { SynchronizationManager } from './SynchronizationManager';
 import { Conversation } from "./conversation";
 import { durationOfHold, localize } from 'functions';
 
-
 const _copiedObjects: SerializedStageObject[] = [];
 
 let screenDarkenObject: ImageStageObject | undefined = undefined;
