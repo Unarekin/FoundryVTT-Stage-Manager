@@ -1,4 +1,5 @@
 import { localize } from 'functions';
+import { log } from "logging";
 import { coerceJSON, coerceMacro } from '../coercion';
 import { InvalidMacroError, MacroPermDeniedError } from '../errors';
 import { SerializedMacroTrigger, SerializedTrigger, TriggerEventSignatures } from '../types';
@@ -36,8 +37,6 @@ export class MacroTriggerAction extends TriggerAction {
       ...args,
       ...Object.fromEntries(serialized.arguments.map(item => [item.name, item.value]))
     }))
-
-
     for (const key in parsedArgs) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const value = parsedArgs[key];

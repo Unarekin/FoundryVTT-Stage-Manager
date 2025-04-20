@@ -275,8 +275,8 @@ export interface TriggerEventSignatures {
   combatStart: { combat: Combat };
   combatEnd: { combat: Combat };
   combatRound: { combat: Combat };
-  combatTurnStart: { combat: Combat, actor: Actor };
-  combatTurnEnd: { combat: Combat, actor: Actor };
+  combatTurnStart: { combat: Combat, combatant: Combatant, token: Token, actor: Actor };
+  combatTurnEnd: { combat: Combat, combatant: Combatant, token: Token, actor: Actor };
   sceneChange: { scene: Scene };
   pause: undefined;
   unpause: undefined;

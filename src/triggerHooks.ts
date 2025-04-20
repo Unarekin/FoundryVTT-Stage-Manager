@@ -35,13 +35,15 @@ Hooks.on("combatTurnChange", (combat: Combat, prev: Combat.HistoryData, curr: Co
   if (prev.combatantId) {
     const combatant = combat.combatants.get(prev.combatantId);
     if (combatant instanceof Combatant && combatant.actor instanceof Actor)
-      triggerEvent("combatTurnEnd", { combat, actor: combatant.actor });
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      triggerEvent("combatTurnEnd", { combat, actor: combatant.actor, combatant, token: combatant.token?.object as Token });
   }
 
   if (curr.combatantId) {
     const combatant = combat.combatants.get(curr.combatantId);
     if (combatant instanceof Combatant && combatant.actor instanceof Actor)
-      triggerEvent("combatTurnStart", { combat, actor: combatant.actor });
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      triggerEvent("combatTurnStart", { combat, actor: combatant.actor, combatant, token: combatant.token?.object as Token });
   }
 });
 
@@ -155,7 +157,6 @@ Hooks.on("pauseGame", paused => {
 });
 
 Hooks.on(CUSTOM_HOOKS.ITEM_ROLLED, (actor: Actor, item: Item, rollData: Record<string, unknown>) => {
-  log("Item rolled:", actor, item, rollData);
   triggerEvent("itemRoll", { actor, item, rollData });
 });
 
@@ -172,6 +173,11 @@ if (triggerHooks.itemRoll) {
   })
 }
 
-Hooks.on(CUSTOM_HOOKS.HOOK, (hook: string, args: unknown[]) => {
-  triggerEvent("hook", { hook, hookArgs: args });
+
+Hooks.on(CUSTOM_HOOKS.PREHOOK, (hook: string, args: unknown[]) => {
+  triggerEvent("preHook", { hook, hookArgs: args });
+});
+
+Hooks.on(CUSTOM_HOOKS.POSTHOOK, (hook: string, args: unknown[]) => {
+  triggerEvent("postHook", { hook, hookArgs: args });
 });
