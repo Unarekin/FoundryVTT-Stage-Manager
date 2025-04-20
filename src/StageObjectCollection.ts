@@ -76,4 +76,8 @@ export class StageObjects extends Collection<StageObject> {
     }
   }
 
+  public getTag(tag: string): StageObject[] {
+    return this.contents.filter(obj => obj.tags.includes(tag));
+  }
+
 }

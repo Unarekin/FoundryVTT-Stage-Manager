@@ -175,6 +175,7 @@
         "ZINDEXHINT": "A zIndex > 0 will place the speaker in front of the dialogue panel."
       },
       "SRC": "Image source",
+      "TAGS": "Tags",
       "TEMPORARY": "Temporary",
       "TEXT": "Text",
       "TEXTALIGN": {

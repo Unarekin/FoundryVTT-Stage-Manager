@@ -17,6 +17,7 @@ export interface SerializedStageObject {
   layer: StageLayer;
   name: string;
   scope: Scope;
+  tags: string[];
   scopeOwners: string[];
   clickThrough: boolean;
   triggersEnabled: boolean;

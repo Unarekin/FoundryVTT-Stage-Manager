@@ -8,6 +8,11 @@
     </div>
 
     <div class="form-group">
+      <label for="tags">{{localize "STAGEMANAGER.EDITDIALOG.TAGS"}}</label>
+      <string-tags name="tags" id="tags">{{tags}}</string-tags>
+    </div>
+
+    <div class="form-group">
       <label for="mask">{{localize "STAGEMANAGER.EDITDIALOG.MASK"}}</label>
       <file-picker type="image" value="{{mask}}" name="mask" id="mask"></file-picker>
     </div>

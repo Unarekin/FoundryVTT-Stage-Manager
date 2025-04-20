@@ -32,6 +32,8 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   private _selected = false;
   private _dragging = false;
 
+  public readonly tags: string[] = [];
+
   // protected scaledDimensions = {
   //   x: 0,
   //   y: 0,
@@ -884,6 +886,9 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     this.clickThrough = serialized.clickThrough ?? false;
     this.visible = serialized.visible ?? true;
 
+    if (Array.isArray(serialized.tags))
+      this.tags.splice(0, this.tags.length - 1, ...serialized.tags);
+
     if (StageManager.canModifyStageObject(game?.user?.id ?? "", this.id)) {
       if (game?.ready) void StageManager.setOwners(this.id, serialized.owners);
       else Hooks.once("canvasReady", () => { void StageManager.setOwners(this.id, serialized.owners) });
@@ -1107,6 +1112,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       clickThrough: this.clickThrough,
       visible: this.visible,
       mask: this.mask,
+      tags: this.tags,
       bounds: {
         x: this.x / this.actualBounds.width,
         y: this.y / this.actualBounds.height,

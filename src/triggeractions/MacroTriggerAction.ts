@@ -1,5 +1,4 @@
 import { localize } from 'functions';
-import { log } from "logging";
 import { coerceJSON, coerceMacro } from '../coercion';
 import { InvalidMacroError, MacroPermDeniedError } from '../errors';
 import { SerializedMacroTrigger, SerializedTrigger, TriggerEventSignatures } from '../types';
