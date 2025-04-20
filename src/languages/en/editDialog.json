@@ -41,7 +41,6 @@
         "BLUR": "Blur",
         "CHROMAKEY": "Chroma Key",
         "CONFIG": {
-          "NOOPTIONS": "No configurable options.",
           "BACKGROUND": "Background",
           "BEVEL": {
             "LIGHTCOLOR": "Light Color",
@@ -83,6 +82,7 @@
             "NOISE": "Noise",
             "SPEED": "Animation Speed"
           },
+          "NOOPTIONS": "No configurable options.",
           "OUTLINE": {
             "COLOR": "Color",
             "OUTLINEONLY": "Outline Only",
@@ -175,6 +175,7 @@
         "ZINDEXHINT": "A zIndex > 0 will place the speaker in front of the dialogue panel."
       },
       "SRC": "Image source",
+      "TEMPORARY": "Temporary",
       "TEXT": "Text",
       "TEXTALIGN": {
         "BOTTOM": "Bottom",

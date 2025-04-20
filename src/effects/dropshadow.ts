@@ -14,7 +14,8 @@ export const DropShadowEffect: Effect<SerializedDropShadowEffect> = {
     offsetY: 4,
     color: "#00000080",
     blur: 2,
-    quality: 3
+    quality: 3,
+    temporary: false
   },
   fromForm(parent: HTMLElement) {
     const parsed = parseForm(parent);
@@ -45,7 +46,9 @@ export const DropShadowEffect: Effect<SerializedDropShadowEffect> = {
       blur: (filter as any).blur,
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       quality: (filter as any).quality,
-      color: color.toHexa()
+      color: color.toHexa(),
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+      temporary: (filter as any).temporary ?? false
     }
   },
   deserialize(serialized: SerializedDropShadowEffect): PIXI.Filter {
@@ -60,6 +63,8 @@ export const DropShadowEffect: Effect<SerializedDropShadowEffect> = {
     }) as PIXI.Filter;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     (filter as any).id = serialized.id;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    (filter as any).temporary = serialized.temporary ?? false;
     return filter;
   },
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access

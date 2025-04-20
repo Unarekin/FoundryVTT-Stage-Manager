@@ -9,7 +9,8 @@ export const BlurEffect: Effect<SerializedBlurEffect> = {
     version: __MODULE_VERSION__,
     strength: 0,
     quality: 4,
-    id: ""
+    id: "",
+    temporary: false
   },
   template: "blur.hbs",
   fromForm(parent: HTMLElement) {

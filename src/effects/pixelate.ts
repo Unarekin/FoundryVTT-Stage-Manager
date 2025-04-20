@@ -10,7 +10,8 @@ export const PixelateEffect: Effect<SerializedPixelateEffect> = {
     id: "",
     version: __MODULE_VERSION__,
     type: "pixelate",
-    size: 5
+    size: 5,
+    temporary: false
   },
   serialize(filter: PIXI.Filter): SerializedPixelateEffect {
     return {
@@ -18,7 +19,9 @@ export const PixelateEffect: Effect<SerializedPixelateEffect> = {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       id: (filter as any).id ?? foundry.utils.randomID(),
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-      size: (filter as any).size[0]
+      size: (filter as any).size[0],
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+      temporary: (filter as any).temporary
     }
   },
   deserialize(serialized: SerializedPixelateEffect): PIXI.Filter {
@@ -26,6 +29,9 @@ export const PixelateEffect: Effect<SerializedPixelateEffect> = {
     const filter = new (PIXI.filters as any).PixelateFilter(serialized.size);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     filter.id = serialized.id;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    filter.temporary = serialized.temporary ?? false;
+
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return filter;
   },

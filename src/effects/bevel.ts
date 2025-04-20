@@ -12,7 +12,8 @@ export const BevelEffect: Effect<SerializedBevelEffect> = {
     lightColor: "#FFFFFFB2",
     shadowColor: "#000000B2",
     rotation: 45,
-    thickness: 2
+    thickness: 2,
+    temporary: false
   },
   template: 'bevel.hbs',
 
@@ -40,6 +41,9 @@ export const BevelEffect: Effect<SerializedBevelEffect> = {
     });
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     effect.id = serialized.id;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    effect.temporary = serialized.temporary ?? false;
+
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return effect;
   },
@@ -65,7 +69,9 @@ export const BevelEffect: Effect<SerializedBevelEffect> = {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       rotation: (filter as any).rotation,
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-      thickness: (filter as any).thickness
+      thickness: (filter as any).thickness,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+      temporary: (filter as any).temporary
     }
   },
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access

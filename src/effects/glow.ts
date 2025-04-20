@@ -14,7 +14,8 @@ export const GlowEffect: Effect<SerializedGlowEffect> = {
     outerStrength: 4,
     quality: 0.1,
     color: "FFFFFFFF",
-    glowOnly: false
+    glowOnly: false,
+    temporary: false
   },
   serialize(filter: PIXI.Filter): SerializedGlowEffect {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
@@ -34,8 +35,9 @@ export const GlowEffect: Effect<SerializedGlowEffect> = {
       innerStrength: (filter as any).innerStrength,
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       outerStrength: (filter as any).outerStrength,
-      color: color.toHexa()
-
+      color: color.toHexa(),
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+      temporary: (filter as any).temporary ?? false
     }
   },
   deserialize(serialized: SerializedGlowEffect): PIXI.Filter {
@@ -52,6 +54,8 @@ export const GlowEffect: Effect<SerializedGlowEffect> = {
     }) as PIXI.Filter;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     (filter as any).id = serialized.id;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    (filter as any).temporary = serialized.temporary ?? false;
     return filter;
   },
   fromForm(parent: HTMLElement) {

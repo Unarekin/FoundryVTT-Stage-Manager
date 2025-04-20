@@ -1070,7 +1070,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     ];
   }
 
-  public serialize(): SerializedStageObject {
+  public serialize(includeTemporaryEffects = false): SerializedStageObject {
     return {
       id: this.id,
       layer: this.layer as StageLayer ?? "primary",
@@ -1088,19 +1088,11 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
         width: (this.baseWidth * this.scale.x) / this.actualBounds.width,
         height: (this.baseHeight * this.scale.y) / this.actualBounds.height
       },
-      // pos: {
-      //   x: this.x / this.actualBounds.width,
-      //   y: this.y / this.actualBounds.height
-      // },
-      // scale: {
-      //   x: this.baseWidth * this.scale.x / this.actualBounds.width,
-      //   y: this.baseHeight * this.scale.y / this.actualBounds.height
-      // },
       angle: this.angle,
       restrictToVisualArea: this.restrictToVisualArea,
       scope: this.scope ?? "global",
       scopeOwners: this.scopeOwners ?? [],
-      effects: this.effects?.map(effect => serializeEffect(effect)).filter(effect => !!effect) ?? [],
+      effects: this.effects?.map(effect => serializeEffect(effect)).filter(effect => !!effect && includeTemporaryEffects || !effect?.temporary) ?? [],
       effectsEnabled: this.effectsEnabled,
       triggers: this.triggers ?? {},
       triggersEnabled: this.triggersEnabled,

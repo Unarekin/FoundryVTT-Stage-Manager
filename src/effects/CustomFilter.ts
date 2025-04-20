@@ -34,6 +34,8 @@ export class CustomFilter<u extends { [x: string]: unknown }> extends PIXI.Filte
 
   public id: string = foundry.utils.randomID();
 
+  public temporary = false;
+
   destroy(): void {
     const index = filters.indexOf(this);
     if (index !== -1) filters.splice(index, 1);

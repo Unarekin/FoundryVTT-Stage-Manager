@@ -6,6 +6,11 @@
   <div class="center">{{localize "STAGEMANAGER.EDITDIALOG.EFFECTS.CHROMAKEY"}}</div>
 
   <div class="form-group">
+    <label for="effect.temporary">{{localize "STAGEMANAGER.EDITDIALOG.TEMPORARY"}}</label>
+    <input type="checkbox" {{checked temporary}} name="effect.temporary" id="effect.temporary">
+  </div>
+
+  <div class="form-group">
     <label for="effect.keyColor">{{localize "STAGEMANAGER.EDITDIALOG.EFFECTS.CONFIG.CHROMAKEY.KEYCOLOR"}}</label>
     <input type="text" name="effect.keyColor" id="effect.keyColor" value="{{keyColor}}" data-color-picker="{alphaChannel: true}">
   </div>

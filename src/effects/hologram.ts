@@ -28,7 +28,8 @@ export const HologramEffect: Effect<SerializedHologramEffect> = {
       alpha: filter.alpha,
       speed: filter.speed,
       color1: new PIXI.Color(filter.color1).toHexa(),
-      color2: new PIXI.Color(filter.color2).toHexa()
+      color2: new PIXI.Color(filter.color2).toHexa(),
+      temporary: filter.temporary ?? false
     };
   },
 

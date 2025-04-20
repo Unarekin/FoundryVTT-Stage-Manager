@@ -17,7 +17,8 @@ export const ChromaKeyEffect: Effect<SerializedChromaKeyEffect> = {
     backgroundType: "color",
     backgroundColor: "#00000000",
     keyColor: "#00B140",
-    range: [.11, .22]
+    range: [.11, .22],
+    temporary: false
   },
   serialize(filter: ChromaKeyFilter): SerializedChromaKeyEffect {
     return {
@@ -26,7 +27,8 @@ export const ChromaKeyEffect: Effect<SerializedChromaKeyEffect> = {
       backgroundType: filter.backgroundType,
       ...(filter.backgroundType === "image" ? { backgroundImage: filter.background, backgroundColor: "" } : { backgroundColor: filter.background as string, backgroundImage: "" }),
       keyColor: new PIXI.Color(filter.keyRGBA).toHexa(),
-      range: filter.range
+      range: filter.range,
+      temporary: filter.temporary ?? false
     }
   },
   deserialize(serialized: SerializedChromaKeyEffect): ChromaKeyFilter {
@@ -53,6 +55,7 @@ export const ChromaKeyEffect: Effect<SerializedChromaKeyEffect> = {
       bg
     )
     filter.id = serialized.id;
+    filter.temporary = serialized.temporary ?? false;
     return filter;
   },
   typeCheck(filter: PIXI.Filter) { return filter instanceof ChromaKeyFilter; },

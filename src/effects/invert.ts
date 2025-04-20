@@ -11,19 +11,22 @@ export const InvertEffect: Effect<SerializedInvertEffect> = {
   default: {
     id: "",
     version: __MODULE_VERSION__,
-    type: "invert"
+    type: "invert",
+    temporary: false
   },
   serialize(filter: InvertFilter): SerializedInvertEffect {
     if (!(filter instanceof InvertFilter)) throw new InvalidEffectError(filter);
     return {
       ...InvertEffect.default,
-      id: filter.id
+      id: filter.id,
+      temporary: filter.temporary
     };
   },
 
   deserialize(serialized: SerializedInvertEffect): InvertFilter {
     const filter = new InvertFilter();
     filter.id = serialized.id;
+    filter.temporary = serialized.temporary ?? false;
     return filter;
   },
   typeCheck(filter: PIXI.Filter) { return filter instanceof InvertFilter },

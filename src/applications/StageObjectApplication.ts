@@ -436,7 +436,7 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
     const context = await super._prepareContext(options) as Record<string, unknown>
     const bounds = this.stageObject.actualBounds;
 
-    const serialized = this.stageObject.serialize();
+    const serialized = this.stageObject.serialize(true);
     context.stageObject = serialized;
     context.originalStageObject = serialized;
 
@@ -563,7 +563,7 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
         addEventListeners(this.element);
 
       // loadTriggers(this.element, this.stageObject);
-      this._original = this.stageObject.serialize() as v;
+      this._original = this.stageObject.serialize(true) as v;
 
       // const ghost = this.stageObject.createDragGhost();
       // this._ghost = ghost;

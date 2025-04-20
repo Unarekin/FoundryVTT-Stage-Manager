@@ -174,6 +174,7 @@ export interface SerializedEffect {
   id: string;
   type: EffectType;
   version: string;
+  temporary: boolean;
 }
 
 export interface SerializedOutlineEffect extends SerializedEffect {
