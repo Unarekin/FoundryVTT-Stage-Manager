@@ -23,4 +23,3 @@ export * from './NotImplementedError';
 export * from './PermissionDeniedError';
 export * from './SpeakerNotFoundError';
 export * from './UnknownDocumentTypeError';
-export * from './UnknownUserError';
