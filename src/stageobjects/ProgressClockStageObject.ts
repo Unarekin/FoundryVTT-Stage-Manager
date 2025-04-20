@@ -94,31 +94,48 @@ export class ProgressClockStageObject extends ProgressStageObject {
   public get bgSource() { return this._bgSource; }
   public set bgSource(val) {
     if (this.bgSource !== val) {
+      const { width, height } = this;
       const texture = coerceTexture(val);
       if (!(texture instanceof PIXI.Texture)) throw new InvalidTextureError();
-
       this._bgSource = val;
-      // this.bgObject = new PIXI.Sprite(texture);
-      this.bgObject.texture = texture;
-      // this.bgObject.width = width;
-      // this.bgObject.height = height;
-
-      this.dirty = true;
-      this.updateSprites();
+      if (!texture.valid) {
+        texture.baseTexture.once("loaded", () => {
+          this.bgObject.texture = texture;
+          this.width = width;
+          this.height = height;
+          this.updateSprites();
+          this.dirty = true;
+        });
+      } else {
+        this.bgObject.texture = texture;
+        this.width = width;
+        this.height = height;
+        this.updateSprites();
+        this.dirty = true;
+      }
     }
   }
 
   public get fgSource() { return this._fgSource; }
   public set fgSource(val) {
     if (this.fgSource !== val) {
+      this._fgSource = val;
       const texture = coerceTexture(val);
       if (!(texture instanceof PIXI.Texture)) throw new InvalidTextureError();
 
-      this._fgSource = val;
-      // this.fgObject = new PIXI.Sprite(texture);
-      this.fgObject.texture = texture;
-      this.dirty = true;
-      this.updateSprites();
+      if (!texture.valid) {
+        texture.baseTexture.once("loaded", () => {
+          this.fgObject.texture = texture;
+          this.fgObject.mask = this.maskSprite;
+          this.updateSprites();
+          this.dirty = true;
+        })
+      } else {
+        this.fgObject.texture = texture;
+        this.fgObject.mask = this.maskSprite;
+        this.updateSprites();
+        this.dirty = true;
+      }
     }
   }
 
@@ -129,10 +146,19 @@ export class ProgressClockStageObject extends ProgressStageObject {
       if (!(texture instanceof PIXI.Texture)) throw new InvalidTextureError();
 
       this._lerpSource = val;
-      // this.lerpObject = new PIXI.Sprite(texture);
-      this.lerpObject.texture = texture;
-      this.dirty = true;
-      this.updateSprites();
+      if (!texture.valid) {
+        texture.baseTexture.once("loaded", () => {
+          this.lerpObject.texture = texture;
+          this.lerpObject.mask = this.lerpMaskSprite;
+          this.updateSprites();
+          this.dirty = true;
+        })
+      } else {
+        this.lerpObject.texture = texture;
+        this.lerpObject.mask = this.lerpMaskSprite;
+        this.updateSprites();
+        this.dirty = true;
+      }
     }
   }
 

@@ -22,15 +22,16 @@ export class PanelStageObject extends StageObject<PIXI.NineSlicePlane> {
   public get src() { return this._imageSrc; }
   public set src(val) {
     if (val !== this.src) {
-      this.dirty = true;
       this._imageSrc = val;
-      this.displayObject.texture = PIXI.Texture.from(val);
-      if (!this.displayObject.texture.valid) {
-        this.displayObject.texture.baseTexture.once("loaded", () => {
-          this.width = this.displayObject.texture.width;
-          this.height = this.displayObject.texture.height;
-          // this.createRenderTexture();
+      const texture = PIXI.Texture.from(val);
+      if (!texture.valid) {
+        texture.baseTexture.once("loaded", () => {
+          this.displayObject.texture = texture;
+          this.dirty = true;
         });
+      } else {
+        this.displayObject.texture = texture;
+        this.dirty = true;
       }
     }
   }

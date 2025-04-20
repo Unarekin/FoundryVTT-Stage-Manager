@@ -17,31 +17,16 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
   public set path(val) {
     if (this.path !== val) {
       this._path = val;
-      this.cleanVideoTexture();
       const texture = PIXI.Texture.from(val);
-
-      if (texture.baseTexture.resource instanceof PIXI.VideoResource) {
-        const resource = texture.baseTexture.resource;
-        if (texture.valid) {
-          resource.source.loop = true;
-          resource.source.play()
-            .catch((err: Error) => { logError(err); });
-        } else {
-          texture.baseTexture.once("loaded", () => {
-            resource.source.loop = true;
-            resource.source.play()
-              .catch((err: Error) => { logError(err); });
-          });
-        }
-
-        if (VIDEO_OBJECTS[val]) VIDEO_OBJECTS[val].push(this);
-        else VIDEO_OBJECTS[val] = [this];
+      if (!texture.valid) {
+        texture.baseTexture.once("loaded", () => {
+          this.displayObject.texture = texture;
+          this.dirty = true;
+        });
+      } else {
+        this.displayObject.texture = texture;
+        this.dirty = true;
       }
-
-
-      // game.video?.play(this.displayObject.texture);
-
-      this.dirty = true;
     }
   }
 
@@ -337,6 +322,8 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
   public deserialize(serialized: SerializedImageStageObject): void {
     super.deserialize(serialized);
     // If the texture isn't loaded into memory, wait for it to be then set the width/height
+
+    if (serialized.src) this.path = serialized.src;
 
     void this.textureLoaded().then(() => {
       if (typeof serialized.bounds !== "undefined") {
