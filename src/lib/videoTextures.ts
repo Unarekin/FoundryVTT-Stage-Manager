@@ -1,59 +1,61 @@
-import { logError } from "../logging";
+import { log } from "logging";
 import mime from "../mime";
 
-const KNOWN_TEXTURES: Record<string, PIXI.Texture[]> = {};
-const REVERSE_HASH = new WeakMap<PIXI.Texture, string>();
+const VIDEO_TEXTURES: Record<string, PIXI.Texture[]> = {};
 
 export function pathIsVideo(path: string): boolean {
   const mimeType = mime(path);
   const split = mimeType ? mimeType.split("/") : [];
-  return split[1] === "video";
+  return split[0] === "video";
 }
+
+
+function playTexture(texture: PIXI.Texture) {
+  if (texture.baseTexture.resource instanceof PIXI.VideoResource) {
+    texture.baseTexture.resource.source.loop = true;
+    if (game?.audio?.locked) {
+      void game.audio.awaitFirstGesture().then(() => {
+        if (texture.baseTexture.resource instanceof PIXI.VideoResource)
+          return texture.baseTexture.resource.source.play();
+      });
+    } else {
+      void texture.baseTexture.resource.source.play();
+    }
+  }
+}
+
 
 export function loadVideoTexture(source: string): PIXI.Texture {
   const texture = PIXI.Texture.from(source);
-  if (KNOWN_TEXTURES[source]) KNOWN_TEXTURES[source].push(texture);
-  else KNOWN_TEXTURES[source] = [texture];
-  REVERSE_HASH.set(texture, source);
+  if (Array.isArray(VIDEO_TEXTURES[source])) VIDEO_TEXTURES[source].push(texture);
+  else VIDEO_TEXTURES[source] = [texture];
 
-  if (texture.baseTexture.valid) {
-    if (texture.baseTexture.resource instanceof PIXI.VideoResource) {
-      if (texture.valid) {
-        texture.baseTexture.resource.source.loop = true;
-        texture.baseTexture.resource.source.play()
-          .catch((err: Error) => {
-            logError(err);
-            unloadVideoTexture(texture);
-          });
-      } else {
-        texture.baseTexture.once("loaded", () => {
-          if (texture.baseTexture.resource instanceof PIXI.VideoResource) {
-            texture.baseTexture.resource.source.loop = true;
-            texture.baseTexture.resource.source.play()
-              .catch((err: Error) => {
-                logError(err);
-              });
-            unloadVideoTexture(texture);
-          }
 
-        })
-      }
-    }
+
+  if (!texture.valid) {
+    texture.baseTexture.once("loaded", () => { void playTexture(texture); });
+  } else {
+    void playTexture(texture);
   }
-
   return texture;
 }
 
-export function unloadVideoTexture(texture: PIXI.Texture) {
-  const source = REVERSE_HASH.get(texture);
-  if (!source) return;
-  REVERSE_HASH.delete(texture);
+export function unloadVideoTexture(source: string, texture: PIXI.Texture) {
+  log("Unloading:", source, VIDEO_TEXTURES);
+  if (Array.isArray(VIDEO_TEXTURES[source])) {
+    const index = VIDEO_TEXTURES[source].indexOf(texture);
+    if (index !== -1) VIDEO_TEXTURES[source].splice(index, 1);
 
-  const index = KNOWN_TEXTURES[source].indexOf(texture);
-  if (index !== -1)
-    KNOWN_TEXTURES[source].splice(index,1);
-  if (KNOWN_TEXTURES[source].length===0 && texture.baseTexture.resource instanceof PIXI.VideoResource)
-    texture.baseTexture.resource.source.pause();
+    log("Textures:", VIDEO_TEXTURES[source]);
 
-  texture.destroy();
+    // No more textures using this video, pause it
+    if (VIDEO_TEXTURES[source].length === 0 && texture.baseTexture?.resource instanceof PIXI.VideoResource)
+      texture.baseTexture.resource.source.pause();
+  }
+}
+
+
+export function pathIsGif(path: string) {
+  const mimeType = mime(path);
+  return mimeType.split("/")[1] === "gif";
 }

@@ -2,6 +2,8 @@ import { SerializedPanelStageObject } from "../types";
 import { StageObject } from "./StageObject";
 import { ObservableBorder } from "./ObservableBorder";
 import { PanelStageObjectApplication, StageObjectApplication } from "applications";
+import { unloadVideoTexture, pathIsVideo, loadVideoTexture, pathIsGif } from "lib/videoTextures";
+import { logError } from "logging";
 
 export class PanelStageObject extends StageObject<PIXI.NineSlicePlane> {
   public static readonly type: string = "panel";
@@ -22,17 +24,20 @@ export class PanelStageObject extends StageObject<PIXI.NineSlicePlane> {
   public get src() { return this._imageSrc; }
   public set src(val) {
     if (val !== this.src) {
+      if (pathIsVideo(this.src)) unloadVideoTexture(this.src, this.displayObject.texture);
+
       this._imageSrc = val;
-      const texture = PIXI.Texture.from(val);
-      if (!texture.valid) {
-        texture.baseTexture.once("loaded", () => {
-          this.displayObject.texture = texture;
-          this.dirty = true;
-        });
+      if (pathIsVideo(val)) {
+        this.displayObject.texture = loadVideoTexture(val);
+      } else if (pathIsGif(val)) {
+        PIXI.Assets.load(val)
+          .then((img: PIXI.Sprite) => { this.displayObject.texture = img.texture; })
+          .catch((err: Error) => { logError(err); })
       } else {
-        this.displayObject.texture = texture;
-        this.dirty = true;
+        this.displayObject.texture = PIXI.Texture.from(val);
       }
+
+      this.dirty = true;
     }
   }
 
@@ -203,8 +208,18 @@ export class PanelStageObject extends StageObject<PIXI.NineSlicePlane> {
     const top = sizes.length === 4 ? sizes[2] : sizes[1];
     const bottom = sizes.length === 4 ? sizes[3] : sizes[1];
 
-    const panel = new PIXI.NineSlicePlane(PIXI.Texture.from(image), left, right, top, bottom);
+
+
+    const panel = new PIXI.NineSlicePlane(pathIsVideo(image) ? loadVideoTexture(image) : PIXI.Texture.from(image), left, right, top, bottom);
     super(panel);
+
+    if (pathIsGif(image)) {
+      PIXI.Assets.load(image)
+        .then((img: PIXI.Sprite) => {
+          panel.texture = img.texture;
+        }).catch((err: Error) => { logError(err); });
+    }
+
     this._imageSrc = image;
     this.resizable = true;
 

@@ -40,8 +40,8 @@ export const DropShadowEffect: Effect<SerializedDropShadowEffect> = {
       ...DropShadowEffect.default,
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       id: (filter as any).id ?? foundry.utils.randomID(),
-      offsetX: offset.x,
-      offsetY: offset.y,
+      ...(typeof offset?.x === "number" ? { offsetX: offset.x } : {}),
+      ...(typeof offset?.y === "number" ? { offsetY: offset.y } : {}),
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       blur: (filter as any).blur,
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access

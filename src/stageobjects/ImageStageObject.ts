@@ -1,10 +1,9 @@
 import { SerializedImageStageObject } from "../types";
 import { StageObject } from "./StageObject";
-import mime from "../mime";
+import { pathIsVideo, pathIsGif, unloadVideoTexture, loadVideoTexture } from "lib/videoTextures";
 import { logError } from "../logging";
 import { ImageStageObjectApplication, StageObjectApplication } from "applications";
 
-const VIDEO_OBJECTS: Record<string, ImageStageObject[]> = {};
 
 export class ImageStageObject extends StageObject<PIXI.Sprite> {
   // #region Properties (3)
@@ -16,27 +15,31 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
   public get path() { return this._path; }
   public set path(val) {
     if (this.path !== val) {
+
+
+      if (pathIsVideo(this.path))
+        unloadVideoTexture(this.path, this.texture);
+
       this._path = val;
-      const texture = PIXI.Texture.from(val);
-      if (!texture.valid) {
-        texture.baseTexture.once("loaded", () => {
-          this.displayObject.texture = texture;
-          this.dirty = true;
-        });
+
+
+      if (pathIsVideo(val)) {
+        this.displayObject.texture = loadVideoTexture(val);
+      } else if (pathIsGif(val)) {
+        // const { width, height, tint, alpha, blendMode, anchor } = this;
+        PIXI.Assets.load(val)
+          .then((img: PIXI.Sprite) => { this.displayObject = img; })
+          .catch((err: Error) => {
+            logError(err);
+          });
       } else {
-        this.displayObject.texture = texture;
-        this.dirty = true;
+        this.displayObject.texture = PIXI.Texture.from(val);
       }
+
+      this.dirty = true;
     }
   }
 
-  protected pathIsVideo(path: string): boolean {
-    return pathIsVideo(path);
-  }
-
-  protected pathIsGif(path: string): boolean {
-    return pathIsGif(path);
-  }
 
   public static readonly type: string = "image";
 
@@ -47,48 +50,29 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
   // #region Constructors (1)
 
   constructor(path: string, name?: string) {
-    let sprite: PIXI.Sprite | null = null;
+    const sprite = pathIsVideo(path) ? new PIXI.Sprite(loadVideoTexture(path)) : PIXI.Sprite.from(path);
+    // if (pathIsGif(path)) {
+    //   PIXI.Assets.load(path)
+    //     .then((img: PIXI.Sprite) => {
+    //       this.displayObject = img;
+    //     }).catch((err: Error) => { logError(err); })
+    // }
 
-    let isVideo = false;
-
-    if (pathIsVideo(path)) {
-      // Handle video
-      isVideo = true;
-
-      const vid = document.createElement("video");
-      vid.src = path;
-      // vid.autoplay = true;
-      // vid.loop = true;
-      game.video?.play(vid);
-      if (game.video?.locked) {
-        sprite = PIXI.Sprite.from(path);
-        vid.onplay = () => {
-          this.displayObject = PIXI.Sprite.from(vid);
-          // if (sprite) sprite.destroy();
-        }
-      } else {
-        sprite = PIXI.Sprite.from(vid);
-      }
-
-    } else if (pathIsGif(path)) {
-      PIXI.Assets.load(path)
-        .then(img => { this.displayObject = img as PIXI.Sprite; })
-        .catch((err: Error) => {
-          logError(err);
-        });
-    }
-
-    if (!sprite) sprite = PIXI.Sprite.from(path);
     super(sprite, name);
+
+
+
     // this.anchor.x = 0.5;
     // this.anchor.y = 0.5;
     this.resizable = true;
     this.loop = true;
     this._path = path;
 
-    if (isVideo) {
-      if (VIDEO_OBJECTS[path]) VIDEO_OBJECTS[path].push(this);
-      else VIDEO_OBJECTS[path] = [this];
+
+    if (pathIsVideo(path)) {
+      // if (Array.isArray(VIDEO_OBJECTS[path])) VIDEO_OBJECTS[path].push(this);
+      // else VIDEO_OBJECTS[path] = [this];
+      // log("Added video object:", VIDEO_OBJECTS);
     }
 
     if (!this.displayObject.texture.valid) {
@@ -192,6 +176,7 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
 
   public set displayObject(val) {
     if (this.displayObject != val) {
+
       if (this.displayObject) {
         const { width, height, anchor } = this.displayObject;
         val.width = width;
@@ -348,22 +333,9 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
   }
 
   public destroy() {
-    // // Make sure we destroy the video resource so it stops playing.
-    // if (!this.destroyed && this.#isVideo && !this.displayObject.texture.baseTexture.resource.destroyed)
-    //   this.displayObject.texture.baseTexture.resource.destroy();
+    unloadVideoTexture(this.path, this.texture);
     super.destroy();
-    this.cleanVideoTexture();
-  }
 
-  protected cleanVideoTexture() {
-    if (VIDEO_OBJECTS[this.path]) {
-      const index = VIDEO_OBJECTS[this.path].indexOf(this);
-      if (index !== -1)
-        VIDEO_OBJECTS[this.path].splice(index, 1);
-      // Pause the video if it is no longer being used.
-      if (!VIDEO_OBJECTS[this.path].length && this.displayObject.texture.baseTexture?.resource instanceof PIXI.VideoResource)
-        this.displayObject.texture.baseTexture.resource.source.pause();
-    }
   }
 
   public scaleToScreen() {
@@ -426,14 +398,4 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
       }
     }
   }
-}
-
-function pathIsVideo(path: string): boolean {
-  const mimeType = mime(path);
-  const split = mimeType ? mimeType.split("/") : [];
-  return split[1] === "video";
-}
-
-function pathIsGif(path: string): boolean {
-  return mime(path) === "image/gif";
 }
