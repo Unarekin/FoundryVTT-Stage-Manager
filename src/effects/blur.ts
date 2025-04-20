@@ -29,7 +29,7 @@ export const BlurEffect: Effect<SerializedBlurEffect> = {
   deserialize(serialized: SerializedBlurEffect) {
     const filter = new PIXI.BlurFilter(serialized.strength, serialized.quality);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    (filter as any).id = serialized.id;
+    (filter as any).id = serialized.id ?? foundry.utils.randomID();
     return filter;
   },
   serialize(filter: PIXI.BlurFilter) {

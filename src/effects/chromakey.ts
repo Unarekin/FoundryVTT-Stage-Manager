@@ -54,7 +54,7 @@ export const ChromaKeyEffect: Effect<SerializedChromaKeyEffect> = {
       serialized.range,
       bg
     )
-    filter.id = serialized.id;
+    filter.id = serialized.id ?? foundry.utils.randomID();
     filter.temporary = serialized.temporary ?? false;
     return filter;
   },

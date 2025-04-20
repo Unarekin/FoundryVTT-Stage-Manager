@@ -45,7 +45,7 @@ export const HologramEffect: Effect<SerializedHologramEffect> = {
       serialized.speed ?? HologramEffect.default.speed,
       color1, color2
     );
-    filter.id = serialized.id;
+    filter.id = serialized.id ?? foundry.utils.randomID();
     return filter;
   },
   typeCheck(filter: PIXI.Filter) { return filter instanceof HologramFilter; },

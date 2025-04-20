@@ -53,7 +53,7 @@ export const GlowEffect: Effect<SerializedGlowEffect> = {
       quality: serialized.quality / 100
     }) as PIXI.Filter;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    (filter as any).id = serialized.id;
+    (filter as any).id = serialized.id ?? foundry.utils.randomID();
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     (filter as any).temporary = serialized.temporary ?? false;
     return filter;

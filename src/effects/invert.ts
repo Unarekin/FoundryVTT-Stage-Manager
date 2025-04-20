@@ -25,7 +25,7 @@ export const InvertEffect: Effect<SerializedInvertEffect> = {
 
   deserialize(serialized: SerializedInvertEffect): InvertFilter {
     const filter = new InvertFilter();
-    filter.id = serialized.id;
+    filter.id = serialized.id ?? foundry.utils.randomID();
     filter.temporary = serialized.temporary ?? false;
     return filter;
   },

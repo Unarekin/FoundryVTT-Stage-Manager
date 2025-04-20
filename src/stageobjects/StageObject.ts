@@ -2,7 +2,7 @@ import { CannotCopyError, CannotDeserializeError, CanvasNotInitializedError, Inv
 import { closeAllContextMenus, localize, registerContextMenu } from "../functions";
 import { ScreenSpaceCanvasGroup } from "../ScreenSpaceCanvasGroup";
 import { StageManager } from "../StageManager";
-import { Scope, SerializedStageObject, SerializedTrigger, StageLayer, TriggerEventSignatures } from '../types';
+import { Scope, SerializedEffect, SerializedStageObject, SerializedTrigger, StageLayer, TriggerEventSignatures } from '../types';
 import { PinHash } from "./PinHash";
 import deepProxy from "../lib/deepProxy";
 import { CUSTOM_HOOKS } from "../hooks";
@@ -923,6 +923,31 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   }
 
   #hookIds: Record<string, number[]> = {};
+
+  public addEffect(serialized: SerializedEffect): PIXI.Filter | undefined {
+    const filter = deserializeEffect(serialized);
+    if (filter) {
+      if (Array.isArray(this.displayObject.filters)) this.displayObject.filters.push(filter);
+      else this.displayObject.filters = [filter];
+
+      this.dirty = true;
+
+      return filter;
+    }
+  }
+
+  public removeEffect(serialized: SerializedEffect): void
+  public removeEffect(id: string): void
+  public removeEffect(arg: unknown): void {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const index = this.effects.findIndex(item => typeof arg === "string" ? (item as any).id === arg : (item as any).id === (arg as SerializedEffect).id);
+    if (index !== -1) {
+      const effect = this.effects[index];
+      this.effects.splice(index, 1);
+      effect.destroy();
+    }
+    this.dirty = true;
+  }
 
   public destroy() {
     if (!this.destroyed) {

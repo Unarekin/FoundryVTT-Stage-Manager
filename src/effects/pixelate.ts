@@ -28,7 +28,7 @@ export const PixelateEffect: Effect<SerializedPixelateEffect> = {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
     const filter = new (PIXI.filters as any).PixelateFilter(serialized.size);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    filter.id = serialized.id;
+    filter.id = serialized.id ?? foundry.utils.randomID();
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     filter.temporary = serialized.temporary ?? false;
 

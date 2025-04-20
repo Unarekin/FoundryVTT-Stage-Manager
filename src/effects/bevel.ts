@@ -40,7 +40,7 @@ export const BevelEffect: Effect<SerializedBevelEffect> = {
       shadowColor: shadowColor.toNumber()
     });
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    effect.id = serialized.id;
+    effect.id = serialized.id ?? foundry.utils.randomID();
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     effect.temporary = serialized.temporary ?? false;
 

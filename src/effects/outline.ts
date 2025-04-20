@@ -50,7 +50,7 @@ export const OutlineEffect: Effect<SerializedOutlineEffect> = {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     filter.knockout = serialized.outlineOnly;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    filter.id = serialized.id;
+    filter.id = serialized.id ?? foundry.utils.randomID();
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     filter.temporary = serialized.temporary ?? false
 
