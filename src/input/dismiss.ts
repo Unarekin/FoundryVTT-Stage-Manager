@@ -1,10 +1,10 @@
 import { StageManager } from "StageManager";
 
-function dismiss(context: KeyboardManager.KeyboardEventContext): boolean {
-  
+function dismiss(context: KeyboardEventContext): boolean {
+
   // Check for open context menu
   if (ui.context?.menu.length) return false;
-  
+
   // Check for open tour
   if (Tour.tourInProgress) return false;
 

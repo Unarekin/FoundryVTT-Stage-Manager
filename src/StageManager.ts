@@ -3,7 +3,7 @@ import { ActorStageObject, ImageStageObject, PanelStageObject, StageObject, Text
 import { PartialWithRequired, SerializedStageObject, StageLayer } from './types';
 import { coerceStageObject, coerceUser } from './coercion';
 import { StageObjects } from './StageObjectCollection';
-import { CannotDeserializeError, CanvasNotInitializedError, InvalidApplicationClassError, InvalidStageObjectError, InvalidUserError, PermissionDeniedError } from './errors';
+import { CannotDeserializeError, CanvasNotInitializedError, InvalidApplicationClassError, InvalidStageObjectError, InvalidUserError, PermissionDeniedError, SystemMismatchError } from './errors';
 import * as stageObjectTypes from "./stageobjects";
 import { addSceneObject, addUserObject, getGlobalObjects, getSceneObjects, getSetting, getUserObjects, removeSceneObject, removeUserObject, setGlobalObjects, setSceneObjects, setSetting, setUserObjects } from './Settings';
 import { CUSTOM_HOOKS } from './hooks';
@@ -13,6 +13,11 @@ import { SynchronizationManager } from './SynchronizationManager';
 import { Conversation } from "./conversation";
 import { durationOfHold, localize } from 'functions';
 import { filters } from "effects";
+import * as systemCompatibility from "./compatibility";
+import { SystemCompatibility } from "./compatibility";
+
+import { triggerEvent } from 'triggerHooks';
+import semver from "semver";
 
 const _copiedObjects: SerializedStageObject[] = [];
 
@@ -746,9 +751,6 @@ export class StageManager {
       uiCanvasGroup = new ScreenSpaceCanvasGroup("StageManagerUICanvasGroup", "ui");
 
 
-
-
-
       canvas.stage.addChild(bgCanvasGroup);
       canvas.stage.addChild(primaryCanvasGroup);
 
@@ -830,6 +832,20 @@ export class StageManager {
       // if (!(obj instanceof StageObject)) logWarn(localize("STAGEMANAGER.WARNINGS.REMOVEUNKNOWNOBJECT", {id}));
       // else obj.destroy();
     });
+
+
+    // Check for system compatibility modules
+    const system = Object.values(systemCompatibility).find(item => item.SystemID === game?.system?.id)
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    if (system) StageManager.RegisterSystem(system as any);
+  }
+
+  public static RegisterSystem(system: SystemCompatibility) {
+    if (system.SystemID !== game?.system?.id) throw new SystemMismatchError(system.SystemID);
+    if (system.MinVersion && !semver.gte(game.system.version, system.MinVersion)) throw new SystemMismatchError(system.SystemID);
+    if (system.MaxVersion && !semver.lte(game.system.version, system.MaxVersion)) throw new SystemMismatchError(system.SystemID);
+    log(`Registering system compatibility module for ${system.SystemID}.`);
+    system.register(triggerEvent);
   }
 
   /**

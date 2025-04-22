@@ -43,7 +43,7 @@ function handleMovement(): boolean {
   return true;
 }
 
-function shouldMove(context: KeyboardManager.KeyboardEventContext): boolean {
+function shouldMove(context: KeyboardEventContext): boolean {
   // Check for active tour
   if ((Tour.tourInProgress) && (!context.repeat) && (!context.up)) return false;
   if (!TOOL_LAYERS[game.activeTool ?? ""]) return false;
@@ -52,7 +52,7 @@ function shouldMove(context: KeyboardManager.KeyboardEventContext): boolean {
   return true;
 }
 
-export function moveUp(context: KeyboardManager.KeyboardEventContext): boolean {
+export function moveUp(context: KeyboardEventContext): boolean {
   if (!shouldMove(context)) return false;
 
   snap = context.isShift;
@@ -60,7 +60,7 @@ export function moveUp(context: KeyboardManager.KeyboardEventContext): boolean {
   return handleMovement();
 }
 
-export function moveDown(context: KeyboardManager.KeyboardEventContext): boolean {
+export function moveDown(context: KeyboardEventContext): boolean {
   if (!shouldMove(context)) return false;
 
   snap = context.isShift;
@@ -68,7 +68,7 @@ export function moveDown(context: KeyboardManager.KeyboardEventContext): boolean
   return handleMovement();
 }
 
-export function moveLeft(context: KeyboardManager.KeyboardEventContext): boolean {
+export function moveLeft(context: KeyboardEventContext): boolean {
   if (!shouldMove(context)) return false;
 
   snap = context.isShift;
@@ -76,7 +76,7 @@ export function moveLeft(context: KeyboardManager.KeyboardEventContext): boolean
   return handleMovement();
 }
 
-export function moveRight(context: KeyboardManager.KeyboardEventContext): boolean {
+export function moveRight(context: KeyboardEventContext): boolean {
   if (!shouldMove(context)) return false;
 
   snap = context.isShift;
@@ -84,7 +84,7 @@ export function moveRight(context: KeyboardManager.KeyboardEventContext): boolea
   return handleMovement();
 }
 
-export function moveUpRight(context: KeyboardManager.KeyboardEventContext): boolean {
+export function moveUpRight(context: KeyboardEventContext): boolean {
   if (!shouldMove(context)) return false;
 
   snap = context.isShift;
@@ -93,7 +93,7 @@ export function moveUpRight(context: KeyboardManager.KeyboardEventContext): bool
   return handleMovement();
 }
 
-export function moveUpLeft(context: KeyboardManager.KeyboardEventContext): boolean {
+export function moveUpLeft(context: KeyboardEventContext): boolean {
   if (!shouldMove(context)) return false;
 
   snap = context.isShift;
@@ -102,7 +102,7 @@ export function moveUpLeft(context: KeyboardManager.KeyboardEventContext): boole
   return handleMovement();
 }
 
-export function moveDownRight(context: KeyboardManager.KeyboardEventContext): boolean {
+export function moveDownRight(context: KeyboardEventContext): boolean {
   if (!shouldMove(context)) return false;
 
   snap = context.isShift;
@@ -111,7 +111,7 @@ export function moveDownRight(context: KeyboardManager.KeyboardEventContext): bo
   return handleMovement();
 }
 
-export function moveDownLeft(context: KeyboardManager.KeyboardEventContext): boolean {
+export function moveDownLeft(context: KeyboardEventContext): boolean {
   if (!shouldMove(context)) return false;
 
   snap = context.isShift;

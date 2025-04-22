@@ -4,7 +4,6 @@ import { InvalidTextureError } from "errors";
 import { ObservableBorder } from "./ObservableBorder";
 import { SerializedProgressBarStageObject, Border } from "types";
 import { serializeTexture } from "lib/textureSerialization";
-import { log } from "logging";
 
 export class ProgressBarStageObject extends ProgressStageObject {
 
@@ -240,7 +239,6 @@ export class ProgressBarStageObject extends ProgressStageObject {
   }
 
   private _bgBorder = new ObservableBorder(0, 0, 0, 0, (left, right, top, bottom) => {
-    log("Setting bgBorder:", this.bgObject);
     this.bgObject.leftWidth = left;
     this.bgObject.rightWidth = right;
     this.bgObject.topHeight = top;

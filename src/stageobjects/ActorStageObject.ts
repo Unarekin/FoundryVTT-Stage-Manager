@@ -75,6 +75,7 @@ export class ActorStageObject extends ImageStageObject {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected getTriggerArguments<k extends keyof TriggerEventSignatures>(event: k, args: TriggerEventSignatures[k]): Partial<TriggerEventSignatures[k]> | Record<string, unknown> {
     return {
+      ...super.getTriggerArguments(event, args),
       actor: this.actor
     };
   }

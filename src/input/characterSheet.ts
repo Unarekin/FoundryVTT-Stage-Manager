@@ -1,9 +1,9 @@
 import { PermissionDeniedError } from "errors";
 import { logError } from "logging";
-import {StageManager} from "StageManager";
+import { StageManager } from "StageManager";
 
-function characterSheet(context: KeyboardManager.KeyboardEventContext): boolean {
-  
+function characterSheet(context: KeyboardEventContext): boolean {
+
   if (StageManager.StageObjects.selected.length === 1) {
     if (context.up) return false;
     if (StageManager.StageObjects.selected[0].canUserModify(game.user as User, "modify"))

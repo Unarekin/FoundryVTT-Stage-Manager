@@ -31,7 +31,8 @@
       "NOTRIGGERLIST": "Unable to find trigger list to insert trigger.",
       "PERMISSIONDENIED": "Permission denied.",
       "SPEAKERNOTFOUND": "Speaker not found: {speaker}",
-      "UNKNOWNDOCUMENTTYPE": "Unknown document type: {document}"
+      "UNKNOWNDOCUMENTTYPE": "Unknown document type: {document}",
+      "SYSTEMMISMATCH": "Could not register system compatibility: ID or version mismatch for {system}"
     }
   }
 }

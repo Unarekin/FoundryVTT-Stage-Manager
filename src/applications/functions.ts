@@ -60,8 +60,8 @@ export function getDocuments(documentName: string, selected?: string): SectionSp
   if (!collection) throw new UnknownDocumentTypeError(documentName);
 
   // Add non-compendium documents
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-  documents.push(...collection.map(item => ({ uuid: item.uuid, name: item.name, pack: "", selected: item.uuid === selected })));
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  documents.push(...collection.map(item => ({ uuid: item.uuid, name: item.name ?? "", pack: "", selected: item.uuid === selected })));
 
   // Add compendium documents
   if (game?.packs) {

@@ -1,7 +1,7 @@
 import { StageManager } from "StageManager";
 import { TOOL_LAYERS } from "types";
 
-function highlight(context: KeyboardManager.KeyboardEventContext): boolean {
+function highlight(context: KeyboardEventContext): boolean {
   if (!game.activeTool) return false;
 
   if (Object.keys(TOOL_LAYERS).includes(game.activeTool)) {

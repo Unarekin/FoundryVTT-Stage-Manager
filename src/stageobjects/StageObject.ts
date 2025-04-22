@@ -329,7 +329,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected getTriggerArguments<k extends keyof TriggerEventSignatures>(event: k, args: TriggerEventSignatures[k]): Partial<TriggerEventSignatures[k]> | Record<string, unknown> {
     return {
-      stageObject: this.serialize()
+      stageObject: this
     };
   }
 
@@ -355,6 +355,8 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
           ...this.getTriggerArguments(event, args),
           ...args
         };
+        log("Triggering:", event, scope, args);
+        log(this.getTriggerArguments(event, args));
         const exec = triggerClass.execute(trigger, scope);
         if (exec instanceof Promise) await exec;
       }

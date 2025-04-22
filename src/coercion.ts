@@ -76,7 +76,7 @@ export function coerceActor(token: TokenDocument): undefined
 export function coerceActor(actor: Actor): Actor
 export function coerceActor(arg: unknown): Actor | undefined {
   if (arg instanceof Actor) return arg;
-  if (arg instanceof Token) return arg.actor as Actor ?? undefined;
+  if (arg instanceof Token) return arg.actor! ?? undefined;
   if (arg instanceof TokenDocument) return arg.actor ?? undefined;
   if (typeof arg === "string") {
     let actor: unknown = fromUuidSync(arg);

@@ -258,6 +258,7 @@ export const TOOL_LAYERS: Record<string, StageLayer> = {
   "sm-select-background": "background"
 }
 
+
 export type StageObjectLike = string | StageObject | PIXI.DisplayObject;
 
 export interface ActorSettings {
@@ -274,10 +275,10 @@ export interface TriggerEventSignatures {
   doubleClick: { pos: { x: number, y: number, clientX: number; clientY: number }, modKeys: { ctrl: boolean, shift: boolean, alt: boolean }, user: User; };
   rightClick: { pos: { x: number, y: number, clientX: number; clientY: number }, modKeys: { ctrl: boolean, shift: boolean, alt: boolean }, user: User; };
   combatStart: { combat: Combat };
-  combatEnd: { combat: Combat };
+  combatEnd: { combat?: Combat };
   combatRound: { combat: Combat };
-  combatTurnStart: { combat: Combat, combatant: Combatant, token: Token, actor: Actor };
-  combatTurnEnd: { combat: Combat, combatant: Combatant, token: Token, actor: Actor };
+  combatTurnStart: { combat: Combat, combatant: Combatant, token?: Token, actor: Actor };
+  combatTurnEnd: { combat: Combat, combatant: Combatant, token?: Token, actor: Actor };
   sceneChange: { scene: Scene };
   pause: undefined;
   unpause: undefined;

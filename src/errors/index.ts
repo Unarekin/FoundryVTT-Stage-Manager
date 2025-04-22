@@ -22,4 +22,5 @@ export * from './NoPortraitError';
 export * from './NotImplementedError';
 export * from './PermissionDeniedError';
 export * from './SpeakerNotFoundError';
+export * from './SystemMismatchError';
 export * from './UnknownDocumentTypeError';

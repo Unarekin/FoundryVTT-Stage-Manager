@@ -1,7 +1,7 @@
 import { StageObjectApplication } from "./StageObjectApplication";
 import { Border, SerializedProgressBarStageObject } from "types";
 import { ProgressBarStageObject } from "stageobjects";
-import { AnyObject, DeepPartial, EmptyObject } from "Foundry-VTT/src/types/utils.mjs";
+import { AnyObject, DeepPartial, EmptyObject, InexactPartial } from "Foundry-VTT/src/types/utils.mjs";
 import { StageManager } from "StageManager";
 import { logError } from "logging";
 import { drawPanelPreview, easingSelectOptions, fontSelectContext } from "./functions";
@@ -156,7 +156,8 @@ export class ProgressBarStageObjectApplication<t extends ProgressBarStageObject,
     }
   }
 
-  changeTab(tab: string, group: string, options?: foundry.applications.api.ApplicationV2.ChangeTabOptions): void {
+
+  changeTab(tab: string, group: string, options?: InexactPartial<{ event: Event; navElement: HTMLElement; force: boolean; updatePosition: boolean; }>): void {
     if (group === "primary") {
       const content = this.hasFrame ? this.element.querySelector(`.window-content`) : this.element;
       if (!content) return;

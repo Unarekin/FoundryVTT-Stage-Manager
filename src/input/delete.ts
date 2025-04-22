@@ -1,7 +1,7 @@
 import { StageManagerControlsLayer } from "ControlButtonsHandler";
 import { StageManager } from "StageManager";
 
-function deleteHandler(context: KeyboardManager.KeyboardEventContext): boolean {
+function deleteHandler(context: KeyboardEventContext): boolean {
   if (ui.hotbar?._hover) return false;
 
 

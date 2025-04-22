@@ -51,7 +51,8 @@
     "greensock/dist/gsap.min.js",
     "vendor/pixi-gif.js",
     "vendor/pixi-filters.js",
-    "vendor/jquery.dragOptions.js"
+    "vendor/jquery.dragOptions.js",
+    "vendor/semver.min.js"
   ],
   "styles": ["styles/module.css"],
   "languages": [

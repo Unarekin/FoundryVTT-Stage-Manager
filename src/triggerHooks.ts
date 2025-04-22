@@ -1,15 +1,12 @@
 // StageObject trigger hooks
 
-import { log } from "./logging";
 import { coerceActor } from "./coercion";
 import { StageManager } from "./StageManager";
 import { ActorStageObject, StageObject } from "./stageobjects";
 import { TriggerEventSignatures } from "./types";
 import { CUSTOM_HOOKS } from "./hooks";
-import * as triggerHooks from "./triggers"
-import { localize } from "functions";
 
-function triggerEvent<k extends keyof TriggerEventSignatures>(event: k, arg: TriggerEventSignatures[k]) {
+export function triggerEvent<k extends keyof TriggerEventSignatures>(event: k, arg: TriggerEventSignatures[k]) {
   StageManager.StageObjects.forEach(obj => void obj.triggerEvent(event, arg));
 }
 
@@ -35,15 +32,14 @@ Hooks.on("combatTurnChange", (combat: Combat, prev: Combat.HistoryData, curr: Co
   if (prev.combatantId) {
     const combatant = combat.combatants.get(prev.combatantId);
     if (combatant instanceof Combatant && combatant.actor instanceof Actor)
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      triggerEvent("combatTurnEnd", { combat, actor: combatant.actor, combatant, token: combatant.token?.object as Token });
+
+      triggerEvent("combatTurnEnd", { combat, actor: combatant.actor, combatant, token: combatant.token?.object ?? undefined });
   }
 
   if (curr.combatantId) {
     const combatant = combat.combatants.get(curr.combatantId);
     if (combatant instanceof Combatant && combatant.actor instanceof Actor)
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      triggerEvent("combatTurnStart", { combat, actor: combatant.actor, combatant, token: combatant.token?.object as Token });
+      triggerEvent("combatTurnStart", { combat, actor: combatant.actor, combatant, token: combatant.token?.object ?? undefined });
   }
 });
 
@@ -105,9 +101,9 @@ Hooks.on("updateActiveEffect", (effect: ActiveEffect, delta: Partial<ActiveEffec
 Hooks.on("applyTokenStatusEffect", (token: Token, status: string, applied: boolean) => {
   // triggerEvent("addStatusEffect", { actor: token.actor, effect, status: })
   if (applied)
-    triggerEvent("addStatusEffect", { actor: token.actor as Actor, status });
+    triggerEvent("addStatusEffect", { actor: token.actor!, status });
   else
-    triggerEvent("removeStatusEffect", { actor: token.actor as Actor, status });
+    triggerEvent("removeStatusEffect", { actor: token.actor!, status });
 })
 
 Hooks.on("controlToken", (token: Token, controlled: boolean) => {
@@ -160,18 +156,18 @@ Hooks.on(CUSTOM_HOOKS.ITEM_ROLLED, (actor: Actor, item: Item, rollData: Record<s
   triggerEvent("itemRoll", { actor, item, rollData });
 });
 
-// Set up item roll hooks
-if (triggerHooks.itemRoll) {
-  const itemRoll = triggerHooks.itemRoll as Record<string, { hook: () => void }>;
-  Hooks.on("ready", () => {
-    if (itemRoll[game.system?.id ?? ""]) {
-      log("Hooking item roll event.");
-      itemRoll[game.system?.id ?? ""].hook();
-    } else {
-      log(localize("STAGEMANAGER.WARNINGS.UNABLETOHOOKROLL", { system: game.system?.id ?? typeof undefined }));
-    }
-  })
-}
+// // Set up item roll hooks
+// if (triggerHooks.itemRoll) {
+//   const itemRoll = triggerHooks.itemRoll as Record<string, { hook: () => void }>;
+//   Hooks.on("ready", () => {
+//     if (itemRoll[game.system?.id ?? ""]) {
+//       log("Hooking item roll event.");
+//       itemRoll[game.system?.id ?? ""].hook();
+//     } else {
+//       log(localize("STAGEMANAGER.WARNINGS.UNABLETOHOOKROLL", { system: game.system?.id ?? typeof undefined }));
+//     }
+//   })
+// }
 
 
 Hooks.on(CUSTOM_HOOKS.PREHOOK, (hook: string, args: unknown[]) => {

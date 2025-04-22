@@ -1,7 +1,8 @@
-import { StageManager} from "StageManager"
-import { StageManagerControlsLayer} from "ControlButtonsHandler";
+import { StageManager } from "StageManager"
+import { StageManagerControlsLayer } from "ControlButtonsHandler";
 
-function paste(context: KeyboardManager.KeyboardEventContext): boolean {
+
+function paste(context: KeyboardEventContext): boolean {
   if (!canvas) return false;
   if (!context.up && canvas.activeLayer instanceof StageManagerControlsLayer && StageManager.CopiedObjects.length && StageManager.canAddStageObjects(game.user?.id ?? "")) {
     const pos = new PIXI.Point();
