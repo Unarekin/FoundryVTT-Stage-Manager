@@ -355,8 +355,6 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
           ...this.getTriggerArguments(event, args),
           ...args
         };
-        log("Triggering:", event, scope, args);
-        log(this.getTriggerArguments(event, args));
         const exec = triggerClass.execute(trigger, scope);
         if (exec instanceof Promise) await exec;
       }

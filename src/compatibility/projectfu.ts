@@ -1,7 +1,6 @@
 import { CUSTOM_HOOKS } from "hooks";
 import { SystemCompatibility, TriggerFunc } from './SystemCompatibility';
 import EmbeddedCollection from "Foundry-VTT/src/foundry/common/abstract/embedded-collection.mjs";
-import { log } from "logging";
 
 interface CombatEvent {
   combatant: Combatant;
@@ -31,7 +30,6 @@ export const ProjectFU: SystemCompatibility = {
      */
     // triggerEvent("combatTurnStart", { combat, actor: combatant.actor, combatant, token: combatant.token?.object as Token });
     Hooks.on("projectfu.events.combat", (event: CombatEvent) => {
-      log("pfu combat event:", event);
       switch (event.type) {
         case "FU.StartOfTurn":
           triggerFunc("combatTurnStart", { combat: event.combatant.combat!, combatant: event.combatant, token: event.token.object!, actor: event.actor });
