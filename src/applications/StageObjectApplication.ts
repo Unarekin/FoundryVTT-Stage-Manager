@@ -475,7 +475,8 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
         actionLabel: triggerClass.getDialogLabel(trigger),
         eventLabel: `STAGEMANAGER.TRIGGERS.EVENTS.${trigger.event.toUpperCase()}`
       };
-    });
+    })
+      .sort((a, b) => a.eventLabel.localeCompare(b.eventLabel));
 
     // context.effects = [];
     // context.triggers = [];

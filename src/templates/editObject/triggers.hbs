@@ -23,7 +23,7 @@
           data-action="selectTrigger"
         >
           {{#group ../triggers by="eventLabel"}}
-            {{#if eventLabel}}<optgroup label="{{localize eventLabel}}">{{/if}}</optgroup>
+            {{#if value}}<optgroup label="{{localize value}}">{{/if}}
             {{#each items}}
               <option value="{{trigger.id}}" data-serialized="{{serialized}}">{{actionLabel}}</option>
             {{/each}}
