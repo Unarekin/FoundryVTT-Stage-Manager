@@ -1,7 +1,10 @@
-import { CUSTOM_HOOKS } from "hooks";
+import { CUSTOM_HOOKS } from "hooks"
+import { SystemCompatibility, TriggerFunc } from "./SystemCompatibility"
 
-const dnd5e = {
-  hook() {
+export const dnd5e: SystemCompatibility = {
+  SystemID: "dnd5e",
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  register: function (triggerFunc: TriggerFunc): void {
     Hooks.on("dnd5e.postRollAttack", (roll: any, data: any) => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       const item = data.subject.item;
@@ -13,5 +16,3 @@ const dnd5e = {
     });
   }
 }
-
-export default dnd5e;

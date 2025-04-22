@@ -1,8 +1,7 @@
 import { CUSTOM_HOOKS } from "hooks";
-import { SystemCompatibility } from "./SystemCompatibility";
+import { SystemCompatibility, TriggerFunc } from './SystemCompatibility';
 import EmbeddedCollection from "Foundry-VTT/src/foundry/common/abstract/embedded-collection.mjs";
 import { log } from "logging";
-import { TriggerEventSignatures } from "types";
 
 interface CombatEvent {
   combatant: Combatant;
@@ -17,7 +16,7 @@ interface CombatEvent {
 
 export const ProjectFU: SystemCompatibility = {
   SystemID: "projectfu",
-  register(triggerFunc: <k extends keyof TriggerEventSignatures>(event: k, arg: TriggerEventSignatures[k]) => void): void {
+  register(triggerFunc: TriggerFunc): void {
     Hooks.on("projectfu.processCheck", (rollData: Record<string, unknown>, actor: Actor, item: Item) => {
       Hooks.callAll(CUSTOM_HOOKS.ITEM_ROLLED, actor, item, rollData);
     });

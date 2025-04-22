@@ -1,6 +1,6 @@
 import { TriggerEventSignatures } from "types";
 
-type TriggerFunc = <k extends keyof TriggerEventSignatures>(event: k, arg: TriggerEventSignatures[k]) => void;
+export type TriggerFunc = <k extends keyof TriggerEventSignatures>(event: k, arg: TriggerEventSignatures[k]) => void;
 
 export interface SystemCompatibility {
   SystemID: string;

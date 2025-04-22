@@ -4,7 +4,7 @@ import { getTriggerActionType, triggerActions } from 'triggeractions';
 import triggerEvents from "./triggerEvents.json";
 import { localize, confirm } from 'functions';
 import { StageObject } from 'stageobjects';
-import * as triggerHooks from "triggers";
+
 import * as hookEvents from "./hookEvents.json"
 
 const TRIGGER_LIST_SELECTOR = `select[name="triggerList"]`
@@ -317,7 +317,8 @@ function getTriggerActionSelect(): Record<string, string> {
 }
 
 function itemRollSupported(): boolean {
-  return !!((triggerHooks.itemRoll as Record<string, unknown>)?.[game?.system?.id ?? ""]);
+  // return !!((triggerHooks.itemRoll as Record<string, unknown>)?.[game?.system?.id ?? ""]);
+  return true
 }
 
 function getTriggerEventSelect(trigger?: SerializedTrigger): EventSpec[] {
