@@ -818,6 +818,14 @@ export class StageManager {
       deserialized.dirty = false;
     });
 
+    Hooks.on(CUSTOM_HOOKS.SYNC_OBJECT, (item: SerializedStageObject) => {
+      const obj = coerceStageObject(item.id);
+      if (obj instanceof StageObject) {
+        obj.deserialize(item);
+        obj.dirty = false;
+      }
+    });
+
     Hooks.on("collapseSidebar", () => {
       if (StageManager.uiCanvasGroup.children.some(child => child.name === "visual-bounds")) {
         StageManager.HideVisualBounds();

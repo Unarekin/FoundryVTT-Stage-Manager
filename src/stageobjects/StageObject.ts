@@ -5,7 +5,6 @@ import { StageManager } from "../StageManager";
 import { Scope, SerializedEffect, SerializedStageObject, SerializedTrigger, StageLayer, TriggerEventSignatures } from '../types';
 import { PinHash } from "./PinHash";
 import deepProxy from "../lib/deepProxy";
-import { CUSTOM_HOOKS } from "../hooks";
 import { StageManagerControlsLayer } from "../ControlButtonsHandler";
 import { log, logError, logInfo } from "../logging";
 import { getTriggerActionType } from "../triggeractions";
@@ -305,12 +304,12 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
   // #hookId = 0;
 
-  protected onSynchronize(item: SerializedStageObject) {
-    if (item.id === this.id) {
-      this.deserialize(item);
-      this.dirty = false;
-    }
-  }
+  // protected onSynchronize(item: SerializedStageObject) {
+  //   if (item.id === this.id) {
+  //     this.deserialize(item);
+  //     this.dirty = false;
+  //   }
+  // }
 
   private _name: string = this.id;
   public get name() { return this._name; }
@@ -376,7 +375,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
     this._name = name ?? this.id;
 
-    this.addHook(CUSTOM_HOOKS.SYNC_OBJECT, Hooks.on(CUSTOM_HOOKS.SYNC_OBJECT, this.onSynchronize.bind(this)));
+    // this.addHook(CUSTOM_HOOKS.SYNC_OBJECT, Hooks.on(CUSTOM_HOOKS.SYNC_OBJECT, this.onSynchronize.bind(this)));
 
     // this.displayObject.on("prerender", this.onPreRender.bind(this));
     // canvas?.app?.renderer.addListener("prerender", this.onPreRender.bind(this))
