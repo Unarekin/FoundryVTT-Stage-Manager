@@ -55,7 +55,10 @@ export function unloadVideoTexture(source: string, texture: PIXI.Texture) {
 }
 
 
+// TODO Reimplement but also fix bugs with destroying / recreating GIF sprites
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function pathIsGif(path: string) {
-  const mimeType = mime(path);
-  return mimeType.split("/")[1] === "gif";
+  return false;
+  // const mimeType = mime(path);
+  // return mimeType.split("/")[1] === "gif";
 }

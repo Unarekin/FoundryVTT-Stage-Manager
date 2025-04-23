@@ -494,7 +494,8 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       this.removeDisplayObjectListeners();
 
       if (val) {
-        val.setParent(this.#displayObject.parent);
+        if (val.transform)
+          val.setParent(this.#displayObject.parent);
 
         const { skew, alpha, angle, x, y, pivot } = this.#displayObject;
         val.skew.x = skew.x;
@@ -969,6 +970,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
       delete KNOWN_OBJECTS[this.id];
 
+      this.displayObject.parent.removeChild(this.displayObject);
       if (!this.displayObject.destroyed) this.displayObject.destroy();
       // StageManager.StageObjects.delete(this.id);
       StageManager.removeStageObject(this);

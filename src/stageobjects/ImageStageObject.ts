@@ -1,7 +1,7 @@
 import { SerializedImageStageObject } from "../types";
 import { StageObject } from "./StageObject";
 import { pathIsVideo, pathIsGif, unloadVideoTexture, loadVideoTexture } from "lib/videoTextures";
-import { logError } from "../logging";
+import { log, logError } from "../logging";
 import { ImageStageObjectApplication, StageObjectApplication } from "applications";
 
 
@@ -28,6 +28,11 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
       } else if (pathIsGif(val)) {
         // const { width, height, tint, alpha, blendMode, anchor } = this;
         PIXI.Assets.load(val)
+          .then((img: PIXI.Sprite) => {
+            if (!img.texture.valid)
+              return new Promise<PIXI.Sprite>(resolve => { this.texture.baseTexture.once("loaded", () => { resolve(img); }) });
+            else return Promise.resolve(img);
+          })
           .then((img: PIXI.Sprite) => { this.displayObject = img; })
           .catch((err: Error) => {
             logError(err);
@@ -51,12 +56,13 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
 
   constructor(path: string, name?: string) {
     const sprite = pathIsVideo(path) ? new PIXI.Sprite(loadVideoTexture(path)) : PIXI.Sprite.from(path);
-    // if (pathIsGif(path)) {
-    //   PIXI.Assets.load(path)
-    //     .then((img: PIXI.Sprite) => {
-    //       this.displayObject = img;
-    //     }).catch((err: Error) => { logError(err); })
-    // }
+    if (pathIsGif(path)) {
+      PIXI.Assets.load(path)
+        .then((img: PIXI.Sprite) => {
+          this.displayObject = img;
+        })
+        .catch((err: Error) => { logError(err); })
+    }
 
     super(sprite, name);
 
@@ -175,14 +181,18 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
   public get displayObject(): PIXI.Sprite { return super.displayObject; }
 
   public set displayObject(val) {
-    if (this.displayObject != val) {
+    if (this.displayObject != val && val) {
 
       if (this.displayObject) {
         const { width, height, anchor } = this.displayObject;
-        val.width = width;
-        val.height = height;
-        val.anchor.x = anchor.x;
-        val.anchor.y = anchor.y;
+        if (!val.transform) {
+          log("No transform?");
+        } else {
+          val.width = width;
+          val.height = height;
+          val.anchor.x = anchor.x;
+          val.anchor.y = anchor.y;
+        }
       }
       super.displayObject = val;
       this.dirty = true;
@@ -334,6 +344,12 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
 
   public destroy() {
     unloadVideoTexture(this.path, this.texture);
+    if (pathIsGif(this.path)) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      (this.displayObject as any).visible = false;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+      if (typeof (this.displayObject as any).stop === "function") (this.displayObject as any).stop();
+    }
     super.destroy();
 
   }
