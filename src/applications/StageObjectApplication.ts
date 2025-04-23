@@ -43,9 +43,9 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
     triggers: {
       template: `modules/${__MODULE_ID__}/templates/editObject/triggers.hbs`
     },
-    permissions: {
-      template: `modules/${__MODULE_ID__}/templates/editObject/permissions.hbs`
-    },
+    // permissions: {
+    //   template: `modules/${__MODULE_ID__}/templates/editObject/permissions.hbs`
+    // },
     footer: {
       template: "templates/generic/form-footer.hbs"
     }
@@ -519,14 +519,14 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
         icon: "fas fa-forward",
         label: "STAGEMANAGER.TABS.TRIGGERS"
       },
-      permissions: {
-        id: "permissions",
-        group: "primary",
-        active: false,
-        cssClass: "",
-        icon: "fas fa-shield",
-        label: "STAGEMANAGER.TABS.PERMISSIONS"
-      }
+      // permissions: {
+      //   id: "permissions",
+      //   group: "primary",
+      //   active: false,
+      //   cssClass: "",
+      //   icon: "fas fa-shield",
+      //   label: "STAGEMANAGER.TABS.PERMISSIONS"
+      // }
     }
 
     context.tab = (context.tabs as Record<string, foundry.applications.api.ApplicationV2.Tab>)[partId];
