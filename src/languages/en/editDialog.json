@@ -142,6 +142,11 @@
         "TOP": "Top"
       },
       "PATHPRESETS": "Path Preset",
+      "PIN": "Pin Settings",
+      "PINBOTTOM": "Bottom",
+      "PINLEFT": "Left",
+      "PINRIGHT": "Right",
+      "PINTOP": "Top",
       "POSX": "X",
       "POSY": "Y",
       "PREVIEW": "Preview:",

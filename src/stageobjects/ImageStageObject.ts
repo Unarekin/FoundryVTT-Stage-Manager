@@ -124,7 +124,7 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
    * 
    * @remarks If {@link StageObject.restrictToVisualArea | restrictToVisualArea} is true, then this is the distance from the top of the visual bounds, instead.
    */
-  public get top() { return this.y + this.actualBounds.top - (this.height * this.anchor.y); }
+  public get top() { return this.y - this.actualBounds.top - (this.height * this.anchor.y); }
   public set top(val) { this.y = this.actualBounds.top + val + (this.height * this.anchor.y); }
 
   /**
@@ -140,8 +140,10 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
    * 
    * @remarks If {@link StageObject.restrictToVisualArea | restrictToVisualArea} is true, then this is the distance from the left of the visual bounds, instead.
    */
-  public get right() { return this.x + this.actualBounds.left + (this.width * (1 - this.anchor.x)); }
+  public get right() { return this.x - this.actualBounds.left + (this.width * (1 - this.anchor.x)); }
   public set right(val) { this.x = val + this.actualBounds.left - (this.width * (1 - this.anchor.x)); }
+
+  //public get right() { return this.x - this.actualBounds.left + this.width; }
 
   /**
    * The distance from the top of the screen to the bottom-most edge of the object.
@@ -354,23 +356,23 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
 
   }
 
-  public scaleToScreen() {
-    // const effectiveBounds = this.restrictToVisualArea ? StageManager.VisualBounds : StageManager.ScreenBounds;
+  // public scaleToScreen() {
+  //   // const effectiveBounds = this.restrictToVisualArea ? StageManager.VisualBounds : StageManager.ScreenBounds;
 
-    // const width = effectiveBounds.width * this.scaledDimensions.width;
-    // const height = effectiveBounds.height * this.scaledDimensions.height;
+  //   // const width = effectiveBounds.width * this.scaledDimensions.width;
+  //   // const height = effectiveBounds.height * this.scaledDimensions.height;
 
-    // const x = effectiveBounds.width * this.scaledDimensions.x;
-    // const y = effectiveBounds.height * this.scaledDimensions.y;
+  //   // const x = effectiveBounds.width * this.scaledDimensions.x;
+  //   // const y = effectiveBounds.height * this.scaledDimensions.y;
 
-    // this.width = width;
-    // this.height = height;
+  //   // this.width = width;
+  //   // this.height = height;
 
-    // this.x = x;
-    // this.y = y;
+  //   // this.x = x;
+  //   // this.y = y;
 
-    this.sizeInterfaceContainer();
-  }
+  //   this.sizeInterfaceContainer();
+  // }
 
   public textureLoaded(): Promise<void> {
     return new Promise(resolve => {

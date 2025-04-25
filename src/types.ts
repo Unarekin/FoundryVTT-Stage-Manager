@@ -23,6 +23,12 @@ export interface SerializedStageObject {
   triggersEnabled: boolean;
   visible: boolean;
   triggers: Partial<Record<keyof TriggerEventSignatures, SerializedTrigger[]>>;
+  pin: {
+    top: boolean;
+    bottom: boolean;
+    left: boolean;
+    right: boolean;
+  };
   bounds: {
     x: number;
     y: number;

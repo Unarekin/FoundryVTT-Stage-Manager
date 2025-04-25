@@ -82,6 +82,23 @@
     <p class="hint">{{localize "STAGEMANAGER.EDITDIALOG.VISUALBOUNDSHINT"}}</p>
 
     <div class="form-group">
+      <label>{{localize "STAGEMANAGER.EDITDIALOG.PIN"}}</label>
+      <div class="form-fields">
+        <label for="pin.top">{{localize "STAGEMANAGER.EDITDIALOG.PINTOP"}}</label>
+        <input type="checkbox" name="pin.top" id="pin.top" {{checked pin.top}}>
+        
+        <label for="pin.bottom">{{localize "STAGEMANAGER.EDITDIALOG.PINBOTTOM"}}</label>
+        <input type="checkbox" name="pin.bottom" id="pin.bottom" {{checked pin.bottom}}>
+
+        <label for="pin.left">{{localize "STAGEMANAGER.EDITDIALOG.PINLEFT"}}</label>
+        <input type="checkbox" name="pin.left" id="pin.left" {{checked pin.left}}>
+
+        <label for="pin.right">{{localize "STAGEMANAGER.EDITDIALOG.PINRIGHT"}}</label>
+        <input type="checkbox" name="pin.right" id="pin.right" {{checked pin.right}}>
+      </div>
+    </div>
+
+    <div class="form-group">
       <label for="{{../formPrefix}}angle">
         {{localize "STAGEMANAGER.EDITDIALOG.ANGLE"}}
         <span class="units">{{localize "STAGEMANAGER.EDITDIALOG.ANGLEHINT"}}</span>
@@ -93,21 +110,5 @@
       <label for="{{../formPrefix}}alpha">{{localize "STAGEMANAGER.EDITDIALOG.ALPHA"}}</label>
       <range-picker value="{{alpha}}" min="0" max="100" step="1" id="{{../formPrefix}}alpha" name="{{../formPrefix}}alpha"></range-picker>
     </div>
-
-    <div class="form-group">
-      <label for="zIndex">{{localize "STAGEMANAGER.EDITDIALOG.ZINDEX"}}</label>
-      <input type="number" name="zIndex" id="zIndex" value="{{zIndex}}">
-    </div>
-
-    <div class="form-group slim">
-      <label>{{localize "STAGEMANAGER.EDITDIALOG.SKEW"}}</label>
-      <div class="form-fields">
-        <label for="{{../formPrefix}}skew.x">{{localize "STAGEMANAGER.EDITDIALOG.POSX"}}</label>
-        <input type="number" name="{{../formPrefix}}skew.x" id="{{../formPrefix}}skew.x" value="{{skew.x}}" min="0" step="any">
-        <label for="{{../formPrefix}}skew.y">{{localize "STAGEMANAGER.EDITDIALOG.POSY"}}</label>
-        <input type="number" name="{{../formPrefix}}skew.y" id="{{../formPrefix}}skew.y" value="{{skew.y}}" min="0" step="any">
-      </div>
-    </div>
-
   {{/with}}
 </section>

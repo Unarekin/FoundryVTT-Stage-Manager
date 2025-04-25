@@ -372,6 +372,8 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     // // this.createRenderTexture();
     this.addDisplayObjectListeners();
 
+    this.pin.left = true;
+    this.pin.top = true;
 
     this._name = name ?? this.id;
 
@@ -674,10 +676,24 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
 
   protected updatePinLocations() {
-    if (this.pin.left) this._leftPinPos = this.left;
-    if (this.pin.right) this._rightPinPos = this.right;
-    if (this.pin.top) this._topPinPos = this.top;
-    if (this.pin.bottom) this._bottomPinPos = this.bottom;
+    if (this.suppressPinUpdate) return;
+    // Pin positions are relative distance from boundary edges
+
+    // Distance from left edge of bounds
+    if (this.pin.left) this._leftPinPos = this.left / this.actualBounds.width;
+    else this._leftPinPos = -1;
+
+    // Distance from right edge of bounds
+    if (this.pin.right) this._rightPinPos = (this.actualBounds.width - this.right) / this.actualBounds.width;
+    else this._rightPinPos = -1;
+
+    // Distance from top edge of bounds
+    if (this.pin.top) this._topPinPos = this.top / this.actualBounds.height;
+    else this._topPinPos = -1;
+
+    // Distance from bottom edge of bounds
+    if (this.pin.bottom) this._bottomPinPos = (this.actualBounds.height - this.bottom) / this.actualBounds.height;
+    else this._bottomPinPos = -1;
   }
 
   public get x() { return this.displayObject.x; }
@@ -886,6 +902,20 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     this.clickThrough = serialized.clickThrough ?? false;
     this.visible = serialized.visible ?? true;
 
+    if (typeof serialized.pin !== "undefined") {
+      if (typeof serialized.pin.top === "boolean") this.pin.top = serialized.pin.top;
+      else this.pin.top = true;
+
+      if (typeof serialized.pin.bottom === "boolean") this.pin.bottom = serialized.pin.bottom;
+      else this.pin.bottom = false;
+
+      if (typeof serialized.pin.left === "boolean") this.pin.left = serialized.pin.left;
+      else this.pin.left = true;
+
+      if (typeof serialized.pin.right === "boolean") this.pin.right = serialized.pin.right;
+      else this.pin.right = false;
+    }
+
     if (Array.isArray(serialized.tags))
       this.tags.splice(0, this.tags.length - 1, ...serialized.tags);
 
@@ -1000,25 +1030,44 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
   public get actualBounds() { return this.restrictToVisualArea ? StageManager.VisualBounds : StageManager.ScreenBounds; }
 
+  protected suppressPinUpdate = false;
+
   public scaleToScreen() {
-    // Calculate and apply a new transform.
-    if (this.pin.left && this.pin.right) {
-      // Empty
-    } else if (this.pin.left) {
-      this.left = this._leftPinPos;
-    } else if (this.pin.right) {
-      this.right = this._rightPinPos;
-    }
+    try {
+      this.suppressPinUpdate = true;
 
-    if (this.pin.top && this.pin.bottom) {
-      // Empty
-    } else if (this.pin.top) {
-      this.top = this._topPinPos;
-    } else if (this.pin.bottom) {
-      this.bottom = this._bottomPinPos;
-    }
+      // Calculate and apply a new transform.
+      if (this.pin.left && this.pin.right) {
+        // Set left
+        this.left = this.actualBounds.width * this._leftPinPos;
+        // Set width to account for difference
+        const right = this.actualBounds.width - (this._rightPinPos * this.actualBounds.width);
+        this.width = right - this.left;
 
-    this.sizeInterfaceContainer();
+      } else if (this.pin.left) {
+        this.left = this.actualBounds.width * this._leftPinPos;
+      } else if (this.pin.right) {
+        this.right = this.actualBounds.width - (this._rightPinPos * this.actualBounds.width);
+      }
+
+      if (this.pin.top && this.pin.bottom) {
+        // Set top
+        this.top = this.actualBounds.height * this._topPinPos;
+        // Set height to account for difference.
+        const bottom = this.actualBounds.height - (this._bottomPinPos * this.actualBounds.height);
+        this.height = bottom - this.top;
+      } else if (this.pin.top) {
+        this.top = this.actualBounds.height * this._topPinPos;
+      } else if (this.pin.bottom) {
+        this.bottom = this.actualBounds.height - (this._bottomPinPos * this.actualBounds.height);
+      }
+
+      this.sizeInterfaceContainer();
+    } catch (err) {
+      logError(err as Error);
+    } finally {
+      this.suppressPinUpdate = false;
+    }
   }
 
   private _scope: Scope = "global";
@@ -1114,6 +1163,12 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       visible: this.visible,
       mask: this.mask,
       tags: this.tags,
+      pin: {
+        top: this.pin.top,
+        bottom: this.pin.bottom,
+        left: this.pin.left,
+        right: this.pin.right
+      },
       bounds: {
         x: this.x / this.actualBounds.width,
         y: this.y / this.actualBounds.height,
@@ -1124,7 +1179,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       restrictToVisualArea: this.restrictToVisualArea,
       scope: this.scope ?? "global",
       scopeOwners: this.scopeOwners ?? [],
-      effects: this.effects?.map(effect => serializeEffect(effect)).filter(effect => !!effect && includeTemporaryEffects || !effect?.temporary) ?? [],
+      effects: (this.effects?.map(effect => serializeEffect(effect)).filter(effect => !!effect && includeTemporaryEffects || !effect?.temporary) ?? []).filter(effect => !!effect),
       effectsEnabled: this.effectsEnabled,
       triggers: this.triggers ?? {},
       triggersEnabled: this.triggersEnabled,
