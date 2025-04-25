@@ -1,5 +1,5 @@
 import { CannotCopyError, CannotDeserializeError, CanvasNotInitializedError, InvalidStageObjectError } from "../errors";
-import { closeAllContextMenus, localize, registerContextMenu } from "../functions";
+import { closeAllContextMenus, localize, parsePositionCoordinate, registerContextMenu } from "../functions";
 import { ScreenSpaceCanvasGroup } from "../ScreenSpaceCanvasGroup";
 import { StageManager } from "../StageManager";
 import { Scope, SerializedEffect, SerializedStageObject, SerializedTrigger, StageLayer, TriggerEventSignatures } from '../types';
@@ -460,17 +460,37 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   public get baseWidth(): number { return 0; }
 
 
-  public get left() { return this.x - this.actualBounds.left; }
-  public set left(val) { this.x = val + this.actualBounds.left; }
+  public get left(): number { return this.x - this.actualBounds.left; }
+  public set left(val: number | string) {
+    const calculated = typeof val === "string" ? this.calculatePercentageExpression(val, this.actualBounds.width) : val;
+    if (calculated !== this.left) {
+      this.x = calculated + this.actualBounds.left;
+    }
+  }
 
-  public get right() { return this.x - this.actualBounds.left + this.width; }
-  public set right(val) { this.x = val + this.actualBounds.left - this.width; }
+  public get right(): number { return this.x - this.actualBounds.left + this.width; }
+  public set right(val: number | string) {
+    const calculated = typeof val === "string" ? this.calculatePercentageExpression(val, this.actualBounds.width) : val;
+    if (calculated !== this.right) {
+      this.x = calculated + this.actualBounds.left - this.width;
+    }
+  }
 
-  public get top() { return this.y - this.actualBounds.top; }
-  public set top(val) { this.y = val + this.actualBounds.top; }
+  public get top(): number { return this.y - this.actualBounds.top; }
+  public set top(val: number | string) {
+    const calculated = typeof val === "string" ? this.calculatePercentageExpression(val, this.actualBounds.height) : val;
+    if (calculated !== this.top) {
+      this.y = calculated + this.actualBounds.top;
+    }
+  }
 
-  public get bottom() { return this.y - this.actualBounds.top + this.height; }
-  public set bottom(val) { this.y = val + this.actualBounds.top - this.height; }
+  public get bottom(): number { return this.y - this.actualBounds.top + this.height; }
+  public set bottom(val: number | string) {
+    const calculated = typeof val === "string" ? this.calculatePercentageExpression(val, this.actualBounds.height) : val;
+    if (calculated !== this.top) {
+      this.y = calculated + this.actualBounds.top - this.height;
+    }
+  }
 
   public get center() { return new PIXI.Point(this.x + (this.width / 2), this.y + (this.width / 2)); }
   public set center(val) {
@@ -665,6 +685,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
 
   public get width() { return 0 }
   public set width(width) {
+
     if (this.width !== width) {
       this.dirty = true;
       this.updateMaskObject();
@@ -674,6 +695,10 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     }
   }
 
+  protected calculatePercentageExpression(expression: string, total: number): number {
+    const parsedExpression = expression.replace(/\d+(\.\d+)?%/g, perc => `(${perc}) * ${total}`);
+    return parsePositionCoordinate(parsedExpression, this);
+  }
 
   protected updatePinLocations() {
     if (this.suppressPinUpdate) return;
@@ -696,20 +721,26 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     else this._bottomPinPos = -1;
   }
 
-  public get x() { return this.displayObject.x; }
-  public set x(x) {
-    this.displayObject.x = x;
-    this.updateMaskObject();
-    // this.updateScaledDimensions();
-    this.updatePinLocations();
+  public get x(): number { return this.displayObject.x; }
+  public set x(x: number | string) {
+    const calculated = typeof x === "string" ? this.calculatePercentageExpression(x, window.innerWidth) : x;
+    if (calculated !== this.x) {
+      this.displayObject.x = calculated;
+      this.updateMaskObject();
+      // this.updateScaledDimensions();
+      this.updatePinLocations();
+    }
   }
 
   public get y() { return this.displayObject.y; }
   public set y(y) {
-    this.displayObject.y = y;
-    this.updateMaskObject();
-    // this.updateScaledDimensions();
-    this.updatePinLocations();
+    const calculated = typeof y === "string" ? this.calculatePercentageExpression(y, window.innerHeight) : y;
+    if (calculated !== this.y) {
+      this.displayObject.y = calculated;
+      this.updateMaskObject();
+      // this.updateScaledDimensions();
+      this.updatePinLocations();
+    }
   }
 
   // #endregion Public Getters And Setters (43)

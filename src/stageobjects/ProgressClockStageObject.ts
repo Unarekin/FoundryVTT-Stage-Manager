@@ -211,20 +211,22 @@ export class ProgressClockStageObject extends ProgressStageObject {
   }
 
 
-  public get width() { return this.bgObject?.width ?? 0; }
-  public set width(val) {
-    if (this.width !== val) {
-      this.bgObject.width = val;
+  public get width(): number { return this.bgObject?.width ?? 0; }
+  public set width(val: number | string) {
+    const calculated = typeof val === "string" ? this.calculatePercentageExpression(val, this.actualBounds.width) : val;
+    if (this.width !== calculated) {
+      this.bgObject.width = calculated;
       this.dirty = true;
       this.updateText();
       this.updateSprites();
     }
   }
 
-  public get height() { return this.bgObject?.height ?? 0; }
-  public set height(val) {
-    if (this.height !== val) {
-      this.bgObject.height = val;
+  public get height(): number { return this.bgObject?.height ?? 0; }
+  public set height(val: number | string) {
+    const calculated = typeof val === "string" ? this.calculatePercentageExpression(val, this.actualBounds.height) : val;
+    if (this.height !== calculated) {
+      this.bgObject.height = calculated;
       this.dirty = true;
       this.updateText();
       this.updateSprites();

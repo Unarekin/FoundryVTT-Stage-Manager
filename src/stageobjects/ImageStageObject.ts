@@ -124,34 +124,52 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
    * 
    * @remarks If {@link StageObject.restrictToVisualArea | restrictToVisualArea} is true, then this is the distance from the top of the visual bounds, instead.
    */
-  public get top() { return this.y - this.actualBounds.top - (this.height * this.anchor.y); }
-  public set top(val) { this.y = this.actualBounds.top + val + (this.height * this.anchor.y); }
+  public get top(): number { return this.y - this.actualBounds.top - (this.height * this.anchor.y); }
+  public set top(val: number | string) {
+    const calculated = typeof val === "string" ? this.calculatePercentageExpression(val, this.actualBounds.height) : val;
+    if (calculated !== this.top) {
+      this.y = this.actualBounds.top + calculated + (this.height * this.anchor.y);
+    }
+  }
 
   /**
    * The distance from the left side of the screen to the left-most edge of this object
    * 
    * @remarks If {@link StageObject.restrictToVisualArea | restrictToVisualArea} is true, then this is the distance from the left of the visual bounds, instead.
    */
-  public get left() { return this.x - this.actualBounds.left - (this.width * this.anchor.x); }
-  public set left(val) { this.x = val + this.actualBounds.left + (this.width * this.anchor.x); }
+  public get left(): number { return this.x - this.actualBounds.left - (this.width * this.anchor.x); }
+  public set left(val: number | string) {
+    const calculated = typeof val === "string" ? this.calculatePercentageExpression(val, this.actualBounds.width) : val;
+    if (calculated !== this.left) {
+      this.x = calculated + this.actualBounds.left + (this.width * this.anchor.x);
+    }
+  }
 
   /**
    * The distance from the left side of the screen to the right-most edge of this object.
    * 
    * @remarks If {@link StageObject.restrictToVisualArea | restrictToVisualArea} is true, then this is the distance from the left of the visual bounds, instead.
    */
-  public get right() { return this.x - this.actualBounds.left + (this.width * (1 - this.anchor.x)); }
-  public set right(val) { this.x = val + this.actualBounds.left - (this.width * (1 - this.anchor.x)); }
-
-  //public get right() { return this.x - this.actualBounds.left + this.width; }
+  public get right(): number { return this.x - this.actualBounds.left + (this.width * (1 - this.anchor.x)); }
+  public set right(val) {
+    const calculated = typeof val === "string" ? this.calculatePercentageExpression(val, this.actualBounds.width) : val;
+    if (calculated !== this.right) {
+      this.x = calculated + this.actualBounds.left - (this.width * (1 - this.anchor.x));
+    }
+  }
 
   /**
    * The distance from the top of the screen to the bottom-most edge of the object.
    * 
    * @remarks If {@link StageObject.restrictToVisualArea | restrictToVisualArea} is true, then this is the distance from the top of the visual bounds, instead.
    */
-  public get bottom() { return this.y - this.actualBounds.top + (this.height * (1 - this.anchor.y)); }
-  public set bottom(val) { this.y = val + this.actualBounds.top - (this.height * (1 - this.anchor.y)); }
+  public get bottom(): number { return this.y - this.actualBounds.top + (this.height * (1 - this.anchor.y)); }
+  public set bottom(val: number | string) {
+    const calculated = typeof val === "string" ? this.calculatePercentageExpression(val, this.actualBounds.height) : val;
+    if (calculated !== this.bottom) {
+      this.y = calculated + this.actualBounds.top - (this.height * (1 - this.anchor.y));
+    }
+  }
 
   public get center(): PIXI.Point {
     return new PIXI.Point(
@@ -201,15 +219,17 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
     }
   }
 
-  public get height() { return this.displayObject.height; }
+  public get height(): number { return this.displayObject.height; }
 
-  public set height(height) {
-    if (this.height !== height) {
+  public set height(height: number | string) {
+    const calculated = typeof height === "string" ? this.calculatePercentageExpression(height, this.actualBounds.height) : height;
+
+    if (this.height !== calculated) {
       if (!this.displayObject.texture.valid) {
-        this.displayObject.texture.baseTexture.once("loaded", () => { this.height = height; });
+        this.displayObject.texture.baseTexture.once("loaded", () => { this.height = calculated; });
       } else {
-        this.displayObject.height = height;
-        super.height = height;
+        this.displayObject.height = calculated;
+        super.height = calculated;
         this.updateMaskObject();
         this.dirty = true;
       }
@@ -267,15 +287,16 @@ export class ImageStageObject extends StageObject<PIXI.Sprite> {
   }
 
 
-  public get width() { return this.displayObject.width; }
+  public get width(): number { return this.displayObject.width; }
+  public set width(width: number | string) {
+    const calculated = typeof width === "string" ? this.calculatePercentageExpression(width, this.actualBounds.width) : width;
 
-  public set width(width) {
-    if (this.width !== width) {
+    if (this.width !== calculated) {
       if (!this.displayObject.texture.valid) {
-        this.displayObject.texture.baseTexture.once("loaded", () => { this.width = width; });
+        this.displayObject.texture.baseTexture.once("loaded", () => { this.width = calculated; });
       } else {
-        this.displayObject.width = width;
-        super.width = width;
+        this.displayObject.width = calculated;
+        super.width = calculated;
         this.updateMaskObject();
         this.dirty = true;
       }

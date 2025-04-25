@@ -132,28 +132,30 @@ export class PanelStageObject extends StageObject<PIXI.NineSlicePlane> {
     // this.pivot.y = this.height / 2;
   }
 
-  public get width() { return this.displayObject.width; }
-  public set width(val) {
-    if (val !== this.width) {
+  public get width(): number { return this.displayObject.width; }
+  public set width(val: number | string) {
+    const calculated = typeof val === "string" ? this.calculatePercentageExpression(val, this.actualBounds.width) : val;
+    if (calculated !== this.width) {
       if (!this.displayObject.texture.valid) {
-        this.displayObject.texture.baseTexture.once("loaded", () => { this.width = val; });
+        this.displayObject.texture.baseTexture.once("loaded", () => { this.width = calculated; });
       } else {
         this.dirty = true;
-        this.displayObject.width = val;
+        this.displayObject.width = calculated;
         // this.updateScaledDimensions();
         this.updatePivot();
       }
     }
   }
 
-  public get height() { return this.displayObject.height; }
-  public set height(val) {
-    if (val !== this.height) {
+  public get height(): number { return this.displayObject.height; }
+  public set height(val: number | string) {
+    const calculated = typeof val === "string" ? this.calculatePercentageExpression(val, this.actualBounds.height) : val;
+    if (calculated !== this.height) {
       if (!this.displayObject.texture.valid) {
-        this.displayObject.texture.baseTexture.once("loaded", () => { this.height = val; });
+        this.displayObject.texture.baseTexture.once("loaded", () => { this.height = calculated; });
       } else {
         this.dirty = true;
-        this.displayObject.height = val;
+        this.displayObject.height = calculated;
         // this.updateScaledDimensions();
         this.updatePivot();
       }
@@ -170,18 +172,20 @@ export class PanelStageObject extends StageObject<PIXI.NineSlicePlane> {
     })
   }
 
-  public get x() { return super.x; }
-  public set x(val) {
-    if (val !== this.x) {
-      super.x = val;
+  public get x(): number { return super.x; }
+  public set x(val: number | string) {
+    const calculated = typeof val === "string" ? this.calculatePercentageExpression(val, this.actualBounds.width) : val;
+    if (calculated !== this.x) {
+      super.x = calculated;
       this.updatePivot();
     }
   }
 
-  public get y() { return super.y; }
-  public set y(val) {
-    if (val !== this.y) {
-      super.y = val;
+  public get y(): number { return super.y; }
+  public set y(val: number | string) {
+    const calculated = typeof val === "string" ? this.calculatePercentageExpression(val, this.actualBounds.height) : val;
+    if (calculated !== this.y) {
+      super.y = calculated;
       this.updatePivot();
     }
   }
