@@ -5,7 +5,7 @@ import { StageObject } from "./stageobjects";
 export const StageLayers = ["primary", "foreground", "background", "ui"] as const;
 export type StageLayer = typeof StageLayers[number];
 
-export const Scopes = ["scene", "global", "user", "temp"] as const;
+export const Scopes = ["scene", "global", "user"] as const;
 export type Scope = typeof Scopes[number];
 
 
@@ -22,6 +22,7 @@ export interface SerializedStageObject {
   clickThrough: boolean;
   triggersEnabled: boolean;
   visible: boolean;
+  temporary: boolean;
   triggers: Partial<Record<keyof TriggerEventSignatures, SerializedTrigger[]>>;
   pin: {
     top: boolean;

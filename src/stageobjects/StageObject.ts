@@ -927,7 +927,10 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     this.locked = serialized.locked ?? false;
     this.zIndex = serialized.zIndex ?? 0;
     this.alpha = serialized.alpha ?? 1;
-    this.scope = serialized.scope ?? "global";
+    // this.scope = serialized.scope ?? "global";
+
+    this.temporary = serialized.scope === "temp" ? true : serialized.temporary ?? false;
+
     this.scopeOwners = serialized.scopeOwners ?? [];
     this.triggers = serialized.triggers ?? {};
     this.clickThrough = serialized.clickThrough ?? false;
@@ -1181,6 +1184,15 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     ];
   }
 
+  private _temporary = false;
+  public get temporary() { return this._temporary; }
+  public set temporary(val) {
+    if (this.temporary !== val) {
+      this._temporary = val;
+      this.dirty = true;
+    }
+  }
+
   public serialize(includeTemporaryEffects = false): SerializedStageObject {
     return {
       id: this.id,
@@ -1194,6 +1206,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
       visible: this.visible,
       mask: this.mask,
       tags: this.tags,
+      temporary: this.temporary,
       pin: {
         top: this.pin.top,
         bottom: this.pin.bottom,

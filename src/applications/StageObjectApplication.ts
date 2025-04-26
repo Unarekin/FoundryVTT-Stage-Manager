@@ -3,7 +3,7 @@ import { SerializedStageObject, SerializedTrigger, StageLayer } from '../types';
 import { log, logError } from '../logging';
 import { AnyObject, DeepPartial, EmptyObject } from 'Foundry-VTT/src/types/utils.mjs';
 import { localize } from 'functions';
-import { addEventListeners } from "./functions";
+import { addEventListeners, setScopeConfigs } from "./functions";
 import { InvalidMacroError, InvalidTriggerError, LocalizedError } from 'errors';
 import { StageManager } from 'StageManager';
 import { addTrigger, deleteTrigger, editTrigger, parseTriggerFormData, parseTriggerList, setTriggerOption } from "./triggerFunctions";
@@ -112,8 +112,7 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
       // eslint-disable-next-line @typescript-eslint/unbound-method
       presetBottom: StageObjectApplication.SetPresetBottom,
       // eslint-disable-next-line @typescript-eslint/unbound-method
-      presetBottomRight: StageObjectApplication.SetPresetBottomRight
-
+      presetBottomRight: StageObjectApplication.SetPresetBottomRight,
     }
   }
 
@@ -387,6 +386,14 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
     delete data.effect;
     delete data.effectsList;
 
+    if (data.scope === "user") {
+      data.scopeOwners = (data.scopeOwners as Record<string, string[]>).users ?? [];
+    } else if (data.scope === "scene") {
+      data.scopeOwners = (data.scopeOwners as Record<string, string[]>).scenes ?? [];
+    } else {
+      data.scopeOwners = [];
+    }
+
     return {
       ...data
     } as unknown as v;
@@ -485,7 +492,27 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
       { type: "submit", icon: "fas fa-save", label: "SETTINGS.Save" }
     ];
 
+    context.scopeSelect = {
+      global: "STAGEMANAGER.SCOPES.GLOBAL",
+      scene: "STAGEMANAGER.SCOPES.SCENE",
+      user: "STAGEMANAGER.SCOPES.USER"
+    }
 
+    // Users select
+    context.usersSelect = (game?.users ?? []).map((user: User) => ({
+      value: user.uuid,
+      label: user.name,
+      selected: serialized.scopeOwners.includes(user.uuid)
+    }));
+
+    // Scenes select
+    context.scenesSelect = (game?.scenes ?? []).map((scene: Scene) => ({
+      value: scene.uuid,
+      label: scene.name,
+      selected: serialized.scopeOwners.includes(scene.uuid)
+    }));
+
+    log(context);
     return context as EmptyObject;
   }
 
@@ -578,6 +605,10 @@ export abstract class StageObjectApplication<t extends StageObject = StageObject
       // ghost.interactive = false;
       // ghost.interactiveChildren = false;
 
+      setScopeConfigs(this.element, this._original.scope);
+      const scopeSelect = this.element.querySelector(`select[name="scope"]`);
+      if (scopeSelect instanceof HTMLSelectElement)
+        scopeSelect.addEventListener("input", () => { setScopeConfigs(this.element); })
 
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       ColorPicker.install();

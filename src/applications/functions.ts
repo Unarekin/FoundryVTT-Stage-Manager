@@ -1,6 +1,6 @@
 import { coerceTexture } from "coercion";
 import { CanvasNotInitializedError, InvalidTextureError, UnknownDocumentTypeError } from "errors";
-import { Border } from "types";
+import { Border, Scope } from "types";
 import presetData from "./pathPresets.json";
 
 const presetPaths: Record<string, Record<string, Record<string, string>>> = presetData;
@@ -302,4 +302,21 @@ export function setPathSuggestions(parent: HTMLElement, inputSelector: string, l
   }
 
 
+}
+
+
+export function setScopeConfigs(element: HTMLElement, scope?: Scope) {
+  if (!scope) {
+    const select = element.querySelector(`select[name="scope"]`);
+    if (select instanceof HTMLSelectElement) {
+      setScopeConfigs(element, select.value as "global" | "scene" | "user" | "temp");
+    } else {
+      throw new Error();
+    }
+  } else {
+    const nonConfigs = element.querySelectorAll(`[data-scope]:not([data-scope="${scope}"])`) as unknown as HTMLElement[];
+    for (const config of nonConfigs) config.style.display = "none";
+    const config = element.querySelector(`[data-scope="${scope}"]`);
+    if (config instanceof HTMLElement) config.style.display = "block";
+  }
 }

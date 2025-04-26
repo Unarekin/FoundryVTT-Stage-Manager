@@ -30,6 +30,35 @@
     </div>
 
     <div class="form-group">
+      <label for="temporary">{{localize "STAGEMANAGER.EDITDIALOG.TEMPORARY"}}</label>
+      <input type="checkbox" name="temporary" id="temporary" {{checked temporary}}>
+    </div>
+
+    <div class="form-group">
+      <label for="scope">{{localize "STAGEMANAGER.EDITDIALOG.SCOPE"}}</label>
+      <select name="scope" id="scope">
+        {{selectOptions ../scopeSelect localize=true selected=scope}}
+      </select>
+    </div>
+    <section data-scope="user" style="display:none">
+      <div class="form-group">
+        <label for="scopeOwners.users">{{localize "STAGEMANAGER.EDITDIALOG.USERS"}}</label>
+        <multi-select name="scopeOwners.users" id="scopeOwners.users">
+          {{selectOptions ../usersSelect localize="true"}}
+        </multi-select>
+      </div>
+    </section>
+    <section data-scope="scene" style="display:none">
+      <div class="form-group">
+        <label for="scopeOwners.scenes">{{localize "STAGEMANAGER.EDITDIALOG.SCENES"}}</label>
+        <multi-select name="scopeOwners.scenes" id="scopeOwners.scenes">
+          {{selectOptions ../scenesSelect localize="true"}}
+        </multi-select>
+      </div>
+    </section>
+
+
+    <div class="form-group">
       <label for="clickThrough">{{localize "STAGEMANAGER.EDITDIALOG.CLICKTHROUGH"}}</label>
       <input type="checkbox" name="clickThrough" id="clickThrough" {{checked clickThrough}}>
     </div>
