@@ -1,41 +1,25 @@
 import { StageObject } from "../stageobjects";
 
-
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 export function hitTestFn(wrapped: Function, target: PIXI.DisplayObject, pos: PIXI.Point): boolean {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   const stageObject: StageObject = (target as any).stageObject;
-
   if (stageObject instanceof StageObject) {
-    // console.groupCollapsed("hitTestFn:", stageObject.name);
-    // try {
+    // Ignore mouse events if not on this layer's select tool and clickThrough is true
+    if (stageObject.clickThrough && game.activeTool != stageObject.selectTool) return false;
 
-    // Course check
-    if (!target.getBounds(true).contains(pos.x, pos.y)) {
-      // log("Not in bounds");
-      return false;
-    }
-    if (game.activeTool !== stageObject.selectTool && stageObject.clickThrough) {
-      // log("Clickthrough");
-      return false;
-    }
+    // Check if point is in object bounds
+    if (!target.getBounds(true).contains(pos.x, pos.y)) return false;
 
-    const local = stageObject.displayObject.toLocal(pos);
-    const color = stageObject.getPixelColor(local.x, local.y);
+    // Check pixel
+    const localPos = target.toLocal(pos);
+    if (!canvas?.app) return false;
 
-
-    // log("Color:", color.toHexa())
-    // output.style.background = color.alpha ? color.toHexa() : "#000000aa";
-    const alpha = color.alpha !== 0;
-    // console.log("Alpha:", alpha);
-    // return hitResult;
-    return alpha;
-    // } finally {
-    //   console.groupEnd();
-    // }
+    const pixel = Uint8ClampedArray.from(canvas.app.renderer.extract.pixels(target, new PIXI.Rectangle(localPos.x, localPos.y, 1, 1)));
+    const color = new PIXI.Color(pixel);
+    return !!color.alpha
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return wrapped(target, pos);
-
 }

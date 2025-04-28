@@ -1,11 +1,10 @@
-import { inputPrompt } from "./applications/functions";
 import { InvalidUserError } from "./errors";
-import { localize } from "./functions";
+import { localize, inputPrompt } from "./functions";
 import { InputManager } from "./InputManager";
 import { log, logError } from "./logging";
 import { StageManager } from "./StageManager";
-import { DialogueStageObject, ImageStageObject, TextStageObject } from "./stageobjects";
-import { TOOL_LAYERS } from "./types";
+import { DialogueStageObject, ImageStageObject, PanelStageObject, ProgressBarStageObject, ProgressClockStageObject, ResourceBarStageObject, ResourceClockStageObject, TextStageObject } from "./stageobjects";
+import { PartialWithRequired, SerializedImageStageObject, SerializedPanelStageObject, SerializedProgressBarStageObject, SerializedProgressClockStageObject, SerializedResourceBarStageObject, SerializedResourceClockStageObject, SerializedTextStageObject, TOOL_LAYERS } from "./types";
 // import { StageManager } from "./StageManager";
 
 let controlsInitialized = false;
@@ -17,6 +16,17 @@ export class StageManagerControlsLayer extends InteractionLayer {
       if (StageManager.canModifyStageObject(game?.user?.id ?? "", obj.id) && obj.selectTool === game.activeTool)
         obj.selected = true;
     });
+  }
+
+  _sendToBackOrBringToFront(front: boolean): boolean {
+    StageManager.StageObjects.selected.sort((a, b) => a.zIndex - b.zIndex).forEach(obj => {
+      if (!obj.canUserModify(game.user as User, "modify")) return;
+      if (front)
+        obj.bringToFront();
+      else
+        obj.sendToBack();
+    });
+    return true;
   }
 }
 
@@ -68,7 +78,7 @@ export class ControlButtonsHandler {
         icon: "fas fa-image",
         onClick: () => {
           StageManager.DeselectAll();
-          addImage();
+          void addImage();
         },
         visible: StageManager.canAddStageObjects(game?.user?.id ?? ""),
         button: true
@@ -85,6 +95,17 @@ export class ControlButtonsHandler {
         button: true
       },
       {
+        name: "add-panel",
+        title: "STAGEMANAGER.SCENECONTROLS.PANEL",
+        icon: "fas fa-window-maximize",
+        button: true,
+        visible: StageManager.canAddStageObjects(game?.user?.id ?? ""),
+        onClick: () => {
+          StageManager.DeselectAll();
+          void addPanel();
+        }
+      },
+      {
         name: "add-dialogue",
         title: "STAGEMANAGER.SCENECONTROLS.DIALOGUE",
         icon: `fas fa-comments`,
@@ -93,6 +114,28 @@ export class ControlButtonsHandler {
         onClick: () => {
           StageManager.DeselectAll();
           void addDialogue();
+        }
+      },
+      {
+        name: "add-progress-bar",
+        title: "STAGEMANAGER.SCENECONTROLS.PROGRESSBAR",
+        icon: "fas fa-bars-progress",
+        button: true,
+        visible: StageManager.canAddStageObjects(game?.user?.id ?? ""),
+        onClick: () => {
+          StageManager.DeselectAll();
+          void addProgressBar();
+        }
+      },
+      {
+        name: "add-progress-clock",
+        title: "STAGEMANAGER.SCENECONTROLS.PROGRESSCLOCK",
+        icon: "fas fa-clock",
+        button: true,
+        visible: StageManager.canAddStageObjects(game?.user?.id ?? ""),
+        onClick: () => {
+          StageManager.DeselectAll();
+          void addProgressClock();
         }
       },
       {
@@ -121,36 +164,6 @@ export class ControlButtonsHandler {
 
 }
 
-async function addText() {
-  try {
-    const layer = TOOL_LAYERS[game?.activeTool ?? ""];
-    if (!layer) return;
-
-    const content = await renderTemplate(`modules/${__MODULE_ID__}/templates/textInput.hbs`, {})
-    const text = await inputPrompt(content, "STAGEMANAGER.ADDTEXT.TITLE");
-    if (!text) return;
-
-    const tempObj = new PIXI.HTMLText(TextStageObject.prepareText(text));
-    tempObj.anchor.x = .5;
-    tempObj.anchor.y = .5;
-
-    const obj = await InputManager.PlaceDisplayObject(tempObj, layer);
-
-    const textObj = new TextStageObject(text);
-    textObj.x = obj.x;
-    textObj.y = obj.y;
-
-    tempObj.destroy();
-
-    const created = await StageManager.CreateStageObject<TextStageObject>({ ...textObj.serialize() });
-    if (created) StageManager.addStageObject(created, layer);
-
-  } catch (err) {
-    logError(err as Error);
-  }
-}
-
-
 async function addDialogue() {
   const layer = TOOL_LAYERS[game?.activeTool ?? ""];
   if (!layer) return;
@@ -158,61 +171,160 @@ async function addDialogue() {
   const dialogue = new DialogueStageObject();
 
   if (!dialogue.panel.displayObject.texture.valid) {
-    await new Promise(resolve => {
-      dialogue.panel.displayObject.texture.baseTexture.once("loaded", () => { resolve();});
+    await new Promise<void>(resolve => {
+      dialogue.panel.displayObject.texture.baseTexture.once("loaded", () => { resolve(); });
     });
   }
-  
+
   const obj = await StageManager.CreateStageObject<DialogueStageObject>({
     ...dialogue.serialize()
   });
   dialogue.destroy();
-  
+
   if (obj) StageManager.addStageObject(obj, layer);
 }
 
-function addImage() {
-  new FilePicker({
-    type: "imagevideo",
-    displayMode: "tiles",
-    callback: result => {
-      if (result) {
+async function addText() {
+  try {
+    const layer = TOOL_LAYERS[game?.activeTool ?? ""];
+    if (!layer) return;
+
+    const inputText = await inputPrompt(
+      await renderTemplate(`modules/${__MODULE_ID__}/templates/textInput.hbs`, {}),
+      "STAGEMANAGER.ADDTEXT.TITLE"
+    );
+
+    if (!inputText) return;
+
+    const textObj = new PIXI.HTMLText(inputText);
+    textObj.anchor.x = textObj.anchor.y = 0.5;
+
+    const displayObject = await InputManager.PlaceDisplayObject(textObj, layer) as PIXI.HTMLText;
+    if (!(displayObject instanceof PIXI.HTMLText)) return;
+
+    const text: PartialWithRequired<SerializedTextStageObject, "type"> = {
+      type: "text",
+      id: foundry.utils.randomID(),
+      text: inputText,
+      bounds: {
+        x: displayObject.x / window.innerWidth,
+        y: displayObject.y / window.innerHeight,
+        width: displayObject.width / window.innerWidth,
+        height: displayObject.height / window.innerHeight
+      },
+      layer,
+      ...((StageManager.ViewingAs instanceof User && StageManager.ViewingAs !== game.user) ? { scope: "user", scopeOwners: [StageManager.ViewingAs.uuid] } : {})
+    }
+
+    displayObject.destroy();
+
+    const obj = await StageManager.CreateStageObject(text, true);
+    if (obj instanceof TextStageObject) StageManager.addStageObject(obj);
+
+  } catch (err) {
+    logError(err as Error);
+  }
+}
+
+async function pickImage(): Promise<string | undefined> {
+  return new Promise<string | undefined>(resolve => {
+    new FilePicker({
+      type: "imagevideo",
+      displayMode: "tiles",
+      callback: result => { resolve(result); }
+    }).render(true);
+  });
+}
+
+async function addPanel() {
+  try {
+    const layer = TOOL_LAYERS[game?.activeTool ?? ""];
+    if (!layer) return;
+
+    const image = await pickImage();
+    if (!image) return;
+
+    const sprite = PIXI.Sprite.from(image);
+    sprite.anchor.x = sprite.anchor.y = 0.5;
+
+    const displayObject = await InputManager.PlaceDisplayObject(sprite, layer) as PIXI.Sprite;
+
+    // Ensure texture is loaded.
+    if (!displayObject.texture.valid)
+      await new Promise<void>(resolve => { displayObject.texture.baseTexture.once("loaded", () => { resolve(); }) })
+
+    const panel: PartialWithRequired<SerializedPanelStageObject, "type"> = {
+      id: foundry.utils.randomID(),
+      type: "panel",
+      version: __MODULE_VERSION__,
+      src: image,
+      bounds: {
+        x: sprite.x / window.innerWidth,
+        y: sprite.y / window.innerHeight,
+        width: sprite.width / window.innerWidth,
+        height: sprite.height / window.innerHeight
+      },
+      borders: {
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0
+      },
+      layer,
+      ...((StageManager.ViewingAs instanceof User && StageManager.ViewingAs !== game.user) ? { scope: "user", scopeOwners: [StageManager.ViewingAs.uuid] } : {})
+    };
+
+    displayObject.destroy();
+
+    const obj = await StageManager.CreateStageObject(panel, true);
+    if (obj instanceof PanelStageObject) StageManager.addStageObject(obj, layer);
+  } catch (err) {
+    logError(err as Error);
+  }
+}
+
+async function addImage() {
+  try {
+    const layer = TOOL_LAYERS[game?.activeTool ?? ""];
+    if (!layer) return;
+
+    const result = await pickImage();
+
+    if (!result) return;
+
+    const sprite = PIXI.Sprite.from(result);
+    sprite.anchor.x = 0.5;
+    sprite.anchor.y = 0.5;
+
+    const displayObject = await InputManager.PlaceDisplayObject(sprite, layer) as PIXI.Sprite;
+
+    // Ensure texture is loaded.
+    if (!displayObject.texture.valid)
+      await new Promise<void>(resolve => { displayObject.texture.baseTexture.once("loaded", () => { resolve(); }) })
 
 
-        const layer = TOOL_LAYERS[game?.activeTool ?? ""];
-        if (!layer) return;
+    const img: PartialWithRequired<SerializedImageStageObject, "type"> = {
+      type: "image",
+      id: foundry.utils.randomID(),
+      version: __MODULE_VERSION__,
+      src: result,
+      bounds: {
+        x: displayObject.x / window.innerWidth,
+        y: displayObject.y / window.innerHeight,
+        width: displayObject.width / window.innerWidth,
+        height: displayObject.height / window.innerHeight
+      },
+      layer,
+      ...((StageManager.ViewingAs instanceof User && StageManager.ViewingAs !== game.user) ? { scope: "user", scopeOwners: [StageManager.ViewingAs.uuid] } : {})
+    }
 
-        const sprite = PIXI.Sprite.from(result);
-        sprite.anchor.x = 0.5;
-        sprite.anchor.y = 0.5;
+    displayObject.destroy();
 
-        InputManager.PlaceDisplayObject(sprite, layer)
-          .then(obj => {
-            const image = new ImageStageObject(result);
-            image.x = obj.x;
-            image.y = obj.y;
-            sprite.destroy();
-
-            if (StageManager.ViewingAs instanceof User && StageManager.ViewingAs !== game.user) {
-              image.scope = "user";
-              image.scopeOwners = [StageManager.ViewingAs.uuid];
-            }
-
-            return StageManager.CreateStageObject<ImageStageObject>({
-              ...image.serialize()
-            })
-          })
-          .then(obj => {
-            // this.stageObject.displayObject.removeFromParent();
-            if (obj) StageManager.addStageObject(obj, layer);
-          })
-          .catch((err: Error) => {
-            logError(err);
-          })
-
-      }
-    },
-  }).render(true);
+    const obj = await StageManager.CreateStageObject(img, true);
+    if (obj instanceof ImageStageObject) StageManager.addStageObject(obj, layer);
+  } catch (err) {
+    logError(err as Error);
+  }
 }
 
 function setViewAsIcon() {
@@ -265,5 +377,171 @@ async function viewAsUser() {
       else throw new InvalidUserError(selected);
       setViewAsIcon();
     }
+  }
+}
+
+async function addProgressClock() {
+  try {
+
+    const layer = TOOL_LAYERS[game?.activeTool ?? ""];
+    if (!layer) return;
+
+    const input = await foundry.applications.api.DialogV2.wait({
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      window: ({ title: localize("STAGEMANAGER.ADDPROGRESSBAR.TITLE") }) as any,
+      content: await renderTemplate(`modules/${__MODULE_ID__}/templates/addProgressBar.hbs`, {}),
+      rejectClose: false,
+      buttons: [
+        {
+          icon: "fas fa-check",
+          label: localize("Confirm"),
+          action: "confirm",
+          callback: (e, button, dialog) => {
+            const form = dialog.querySelector(`form`);
+            if (!(form instanceof HTMLFormElement)) return Promise.resolve();
+            const data = new FormDataExtended(form);
+
+            const { type, fg, bg } = data.object as Record<string, string>;
+            return Promise.resolve(type && fg && bg ? { type, fg, bg } : undefined);
+          }
+        },
+        {
+          icon: "fas fa-times",
+          label: localize("Cancel"),
+          action: "cancel"
+        }
+      ]
+    });
+
+    if (!input) return;
+    if (typeof input === "string") return;
+    if (!(input.type && input.fg && input.bg)) return;
+
+
+    const sprite = PIXI.Sprite.from(input.bg);
+    sprite.anchor.x = sprite.anchor.y = 0.5;
+
+    const displayObject = await InputManager.PlaceDisplayObject(sprite, layer) as PIXI.Sprite;
+
+    // Ensure texture is loaded.
+    if (!displayObject.texture.valid)
+      await new Promise<void>(resolve => { displayObject.texture.baseTexture.once("loaded", () => { resolve(); }) })
+
+    const clock: PartialWithRequired<SerializedProgressClockStageObject, "type"> | PartialWithRequired<SerializedResourceClockStageObject, "type"> = {
+      version: __MODULE_VERSION__,
+      fgSprite: input.fg,
+      bgSprite: input.bg,
+      lerpSprite: "transparent",
+      ...(
+        input.type === "manual" ? {
+          type: "progressClock",
+          value: 0,
+          max: 0
+        } : {
+          type: "resourceClock",
+          valuePath: "",
+          maxPath: "",
+          object: ""
+        }
+      ),
+      bounds: {
+        x: displayObject.x / window.innerWidth,
+        y: displayObject.y / window.innerHeight,
+        width: displayObject.width / window.innerWidth,
+        height: displayObject.height / window.innerHeight
+      },
+      layer,
+      ...((StageManager.ViewingAs instanceof User && StageManager.ViewingAs !== game.user) ? { scope: "user", scopeOwners: [StageManager.ViewingAs.uuid] } : {})
+    };
+
+    displayObject.destroy();
+
+    const obj = await StageManager.CreateStageObject(clock, true);
+    if ((input.type === "manual" && obj instanceof ProgressClockStageObject) || (input.type === "resource" && obj instanceof ResourceClockStageObject)) StageManager.addStageObject(obj, layer);
+  } catch (err) {
+    logError(err as Error);
+  }
+}
+
+async function addProgressBar() {
+  try {
+
+    const layer = TOOL_LAYERS[game?.activeTool ?? ""];
+    if (!layer) return;
+
+    const input = await foundry.applications.api.DialogV2.wait({
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      window: ({ title: localize("STAGEMANAGER.ADDPROGRESSBAR.TITLE") }) as any,
+      content: await renderTemplate(`modules/${__MODULE_ID__}/templates/addProgressBar.hbs`, {}),
+      rejectClose: false,
+      buttons: [
+        {
+          icon: "fas fa-check",
+          label: localize("Confirm"),
+          action: "confirm",
+          callback: (e, button, dialog) => {
+            const form = dialog.querySelector(`form`);
+            if (!(form instanceof HTMLFormElement)) return Promise.resolve();
+            const data = new FormDataExtended(form);
+
+            const { type, fg, bg } = data.object as Record<string, string>;
+            return Promise.resolve(type && fg && bg ? { type, fg, bg } : undefined);
+          }
+        },
+        {
+          icon: "fas fa-times",
+          label: localize("Cancel"),
+          action: "cancel"
+        }
+      ]
+    });
+
+    if (!input) return;
+    if (typeof input === "string") return;
+    if (!(input.type && input.fg && input.bg)) return;
+
+
+    const sprite = PIXI.Sprite.from(input.bg);
+    sprite.anchor.x = sprite.anchor.y = 0.5;
+
+    const displayObject = await InputManager.PlaceDisplayObject(sprite, layer) as PIXI.Sprite;
+
+    // Ensure texture is loaded.
+    if (!displayObject.texture.valid)
+      await new Promise<void>(resolve => { displayObject.texture.baseTexture.once("loaded", () => { resolve(); }) })
+
+    const bar: PartialWithRequired<SerializedProgressBarStageObject, "type"> | PartialWithRequired<SerializedResourceBarStageObject, "type"> = {
+      version: __MODULE_VERSION__,
+      fgSprite: input.fg,
+      bgSprite: input.bg,
+      lerpSprite: "transparent",
+      ...(
+        input.type === "manual" ? {
+          type: "progressBar",
+          value: 0,
+          max: 0
+        } : {
+          type: "resourceBar",
+          valuePath: "",
+          maxPath: "",
+          object: ""
+        }
+      ),
+      bounds: {
+        x: displayObject.x / window.innerWidth,
+        y: displayObject.y / window.innerHeight,
+        width: displayObject.width / window.innerWidth,
+        height: displayObject.height / window.innerHeight
+      },
+      layer,
+      ...((StageManager.ViewingAs instanceof User && StageManager.ViewingAs !== game.user) ? { scope: "user", scopeOwners: [StageManager.ViewingAs.uuid] } : {})
+    };
+
+    displayObject.destroy();
+
+    const obj = await StageManager.CreateStageObject(bar, true);
+    if ((input.type === "manual" && obj instanceof ProgressBarStageObject) || (input.type === "resource" && obj instanceof ResourceBarStageObject)) StageManager.addStageObject(obj, layer);
+  } catch (err) {
+    logError(err as Error);
   }
 }

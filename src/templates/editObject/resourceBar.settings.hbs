@@ -1,0 +1,46 @@
+<section class="tab {{cssClass}}" data-group="progressBar" data-tab="settings">
+  {{#with stageObject}}
+    <div class="form-group slim">
+      <label>{{localize "STAGEMANAGER.EDITDIALOG.SIZE"}}</label>
+      <div class="form-fields">
+        <label for="{{../formPrefix}}bounds.width">{{localize "STAGEMANAGER.EDITDIALOG.WIDTH"}}</label>
+        <input type="number" name="{{../formPrefix}}bounds.width" id="{{../formPrefix}}bounds.width" value="{{bounds.width}}" step="any">
+        <label for="{{../formPrefix}}bounds.height">{{localize "STAGEMANAGER.EDITDIALOG.HEIGHT"}}</label>
+        <input type="number" name="{{../formPrefix}}bounds.height" id="{{../formPrefix}}bounds.height" value="{{bounds.height}}" step="any">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="object">{{localize "STAGEMANAGER.EDITDIALOG.UUID"}}</label>
+      <input type="text" name="{{../formPrefix}}object" id="{{../formPrefix}}object" value="{{object}}" required data-role="object-uuid">
+    </div>
+
+    <fieldset>
+      <legend>Resource</legend>
+      <div class="form-group" {{#unless ../hasPresets}} style="display:none"{{/unless}} id="pathSelectParent">
+        <label for="{{../formPrefix}}pathPreset">{{localize "STAGEMANAGER.EDITDIALOG.PATHPRESETS"}}</label>
+        <select id="{{../formPrefix}}pathPreset" data-role="path-select">
+          <option></option>
+          {{selectOptions ../pathPresetSelect localize=true}}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="{{../formPrefix}}valuePath">{{localize "STAGEMANAGER.EDITDIALOG.VALUEPATH"}}</label>
+        <input type="text" name="{{../formPrefix}}valuePath" id="{{../formPrefix}}valuePath" value="{{valuePath}}" required list="{{../formPrefix}}valuePathSuggestions" data-role="value-path">
+        <datalist data-role="value-path-suggestions" id="{{../formPrefix}}valuePathSuggestions"></datalist>
+      </div>
+
+      <div class="form-group">
+        <label for="{{../formPrefix}}maxPath">{{localize "STAGEMANAGER.EDITDIALOG.MAXPATH"}}</label>
+        <input type="text" name="{{../formPrefix}}maxPath" id="{{../formPrefix}}maxPath" value="{{maxPath}}" required list="{{../formPrefix}}maxPathSuggestions" data-role="max-path">
+        <datalist data-role="max-path-suggestions" id="{{../formPrefix}}maxPathSuggestions"></datalist>
+      </div>
+    </fieldset>
+
+    <div class="form-group">
+      <label for="clamp">{{localize "STAGEMANAGER.EDITDIALOG.CLAMP"}}</label>
+      <input type="checkbox" name="{{../formPrefix}}clamp" id="{{../formPrefix}}clamp" {{checked clamp}}>
+    </div>
+  {{/with}}
+</section>

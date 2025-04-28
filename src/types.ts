@@ -5,7 +5,7 @@ import { StageObject } from "./stageobjects";
 export const StageLayers = ["primary", "foreground", "background", "ui"] as const;
 export type StageLayer = typeof StageLayers[number];
 
-export const Scopes = ["scene", "global", "user", "temp"] as const;
+export const Scopes = ["scene", "global", "user"] as const;
 export type Scope = typeof Scopes[number];
 
 
@@ -17,11 +17,19 @@ export interface SerializedStageObject {
   layer: StageLayer;
   name: string;
   scope: Scope;
+  tags: string[];
   scopeOwners: string[];
   clickThrough: boolean;
   triggersEnabled: boolean;
   visible: boolean;
+  temporary: boolean;
   triggers: Partial<Record<keyof TriggerEventSignatures, SerializedTrigger[]>>;
+  pin: {
+    top: boolean;
+    bottom: boolean;
+    left: boolean;
+    right: boolean;
+  };
   bounds: {
     x: number;
     y: number;
@@ -31,6 +39,7 @@ export interface SerializedStageObject {
   skew: { x: number, y: number };
   angle: number;
   locked: boolean;
+  mask: string;
   effects: SerializedEffect[];
   effectsEnabled: boolean;
   restrictToVisualArea: boolean;
@@ -42,6 +51,8 @@ export interface SerializedImageStageObject extends SerializedStageObject {
   src: string;
   // playing: boolean;
   loop: boolean;
+  tint: string;
+  blendMode: number;
   anchor: {
     x: number;
     y: number;
@@ -62,13 +73,10 @@ export interface SerializedTextStageObject extends SerializedStageObject {
 }
 
 export interface SerializedPanelStageObject extends SerializedStageObject {
-  borders: {
-    left: number;
-    right: number;
-    top: number;
-    bottom: number;
-  }
+  borders: Border;
   src: string;
+  blendMode: number;
+  tint: string;
 }
 
 export interface SerializedDialogueStageObject extends SerializedStageObject {
@@ -86,18 +94,95 @@ export interface SerializedDialogueStageObject extends SerializedStageObject {
 
 export type SerializedSpeaker = SerializedImageStageObject | SerializedActorStageObject;
 
+export const ProgressTextModes = ["none", "values", "percentage"] as const;
+export type ProgressTextMode = typeof ProgressTextModes[number];
+
+export interface Border {
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+}
+
+export interface SerializedProgressStageObject extends SerializedStageObject {
+  max: number;
+  value: number;
+  textMode: ProgressTextMode;
+  textStyle: Record<string, unknown>;
+  lerpEasing: Easing;
+  primaryLerpTime: number;
+  secondaryLerpTime: number;
+  clamp: boolean;
+  animateValueChanges: boolean;
+}
+
+export interface SerializedProgressBarStageObject extends SerializedProgressStageObject {
+  bgSprite: string;
+  fgSprite: string;
+  lerpSprite: string;
+
+  fgBorder: Border;
+  bgBorder: Border;
+  lerpBorder: Border;
+
+  fgBlendMode: number;
+  bgBlendMode: number;
+  lerpBlendMode: number;
+
+  fgTint: string;
+  bgTint: string;
+  lerpTint: string;
+
+  fgPadding: Border;
+
+  textAlignment: "left" | "right" | "center"
+}
+
+export interface SerializedResourceBarStageObject extends SerializedProgressBarStageObject {
+  object: string;
+  maxPath: string;
+  valuePath: string;
+}
+
+export interface SerializedProgressClockStageObject extends SerializedProgressStageObject {
+  bgSprite: string;
+  fgSprite: string;
+  lerpSprite: string;
+
+  fgBlendMode: number;
+  bgBlendMode: number;
+  lerpBlendMode: number;
+
+  fgTint: string;
+  bgTint: string;
+  lerpTint: string;
+
+  fgPadding: Border;
+  textHAlignment: "left" | "center" | "right";
+  textVAlignment: "top" | "center" | "bottom";
+
+  swapLayers: boolean;
+}
+
+export interface SerializedResourceClockStageObject extends SerializedProgressClockStageObject {
+  object: string;
+  maxPath: string;
+  valuePath: string;
+}
+
 /*
 export const StageLayers = ["primary", "foreground", "background", "text", "ui"] as const;
 export type StageLayer = typeof StageLayers[number];
 */
 
-export const EffectTypes = ["outline", "dropshadow", "blur", "pixelate", "glow", "bevel", "chromakey"] as const;
+export const EffectTypes = ["outline", "dropshadow", "blur", "pixelate", "glow", "bevel", "chromakey", "hologram", "invert"] as const;
 export type EffectType = typeof EffectTypes[number];
 
 export interface SerializedEffect {
   id: string;
   type: EffectType;
   version: string;
+  temporary: boolean;
 }
 
 export interface SerializedOutlineEffect extends SerializedEffect {
@@ -152,7 +237,18 @@ export interface SerializedChromaKeyEffect extends SerializedEffect {
   backgroundColor?: string;
 }
 
+export interface SerializedHologramEffect extends SerializedEffect {
+  type: "hologram";
+  noise: number;
+  alpha: number;
+  speed: number;
+  color1: string;
+  color2: string;
+  lines: number;
+}
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface SerializedInvertEffect extends SerializedEffect { }
 
 export interface SynchronizationMessage {
   timestamp: number;
@@ -168,6 +264,7 @@ export const TOOL_LAYERS: Record<string, StageLayer> = {
   "sm-select-foreground": "foreground",
   "sm-select-background": "background"
 }
+
 
 export type StageObjectLike = string | StageObject | PIXI.DisplayObject;
 
@@ -185,10 +282,10 @@ export interface TriggerEventSignatures {
   doubleClick: { pos: { x: number, y: number, clientX: number; clientY: number }, modKeys: { ctrl: boolean, shift: boolean, alt: boolean }, user: User; };
   rightClick: { pos: { x: number, y: number, clientX: number; clientY: number }, modKeys: { ctrl: boolean, shift: boolean, alt: boolean }, user: User; };
   combatStart: { combat: Combat };
-  combatEnd: { combat: Combat };
+  combatEnd: { combat?: Combat };
   combatRound: { combat: Combat };
-  combatTurnStart: { combat: Combat, actor: Actor };
-  combatTurnEnd: { combat: Combat, actor: Actor };
+  combatTurnStart: { combat: Combat, combatant: Combatant, token?: Token, actor: Actor };
+  combatTurnEnd: { combat: Combat, combatant: Combatant, token?: Token, actor: Actor };
   sceneChange: { scene: Scene };
   pause: undefined;
   unpause: undefined;
@@ -204,6 +301,10 @@ export interface TriggerEventSignatures {
   untargetToken: { user: User, token: Token, actor: Actor };
   worldTimeChange: { time: number };
   actorChange: { actor: Actor };
+
+  itemRoll: { actor: Actor, item: Item, rollData: Record<string, unknown> };
+  preHook: { hook: string, hookArgs: unknown[] };
+  postHook: { hook: string, hookArgs: unknown[] };
 }
 
 
@@ -228,9 +329,13 @@ interface ActorSerializedTrigger extends BaseSerializedTrigger {
   actor: string;
 }
 
+interface HookSerializedTrigger extends BaseSerializedTrigger {
+  event: "postHook" | "preHook";
+  hook: string;
+}
 
 
-export type SerializedTrigger = BaseSerializedTrigger | ActorSerializedTrigger;
+export type SerializedTrigger = BaseSerializedTrigger | ActorSerializedTrigger | HookSerializedTrigger;
 
 export type SerializedMacroTrigger = SerializedTrigger & ({
   macro: string;
@@ -268,4 +373,10 @@ export interface SpeakerPosition {
   x: PositionCoordinate;
   y: PositionCoordinate;
   z: PositionCoordinate;
+}
+
+export interface ActorResource {
+  max: number;
+  value: number;
+  min?: number;
 }

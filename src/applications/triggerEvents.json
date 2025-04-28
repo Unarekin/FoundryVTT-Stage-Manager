@@ -376,5 +376,49 @@
         "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR"
       }
     ]
+  },
+  {
+    "value": "itemRoll",
+    "label": "STAGEMANAGER.TRIGGERS.EVENTS.ITEMROLL",
+    "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
+    "category": "misc",
+    "addlArgs": [
+      {
+        "name": "actor",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR"
+      },
+      {
+        "name": "item",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ITEM"
+      },
+      {
+        "name": "rollData",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.DATA"
+      }
+    ]
+  },
+  {
+    "value": "preHook",
+    "label": "STAGEMANAGER.TRIGGERS.EVENTS.PREHOOK",
+    "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
+    "category": "misc",
+    "addlArgs": [
+      {
+        "name": "hookArgs",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.HOOKARGS"
+      }
+    ]
+  },
+  {
+    "value": "postHook",
+    "label": "STAGEMANAGER.TRIGGERS.EVENTS.POSTHOOK",
+    "categoryLabel": "STAGEMANAGER.TRIGGERS.CATEGORIES.MISC",
+    "category": "misc",
+    "addlArgs": [
+      {
+        "name": "hookArgs",
+        "label": "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.HOOKARGS"
+      }
+    ]
   }
 ]

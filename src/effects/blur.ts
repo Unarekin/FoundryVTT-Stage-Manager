@@ -9,7 +9,8 @@ export const BlurEffect: Effect<SerializedBlurEffect> = {
     version: __MODULE_VERSION__,
     strength: 0,
     quality: 4,
-    id: ""
+    id: "",
+    temporary: false
   },
   template: "blur.hbs",
   fromForm(parent: HTMLElement) {
@@ -25,11 +26,17 @@ export const BlurEffect: Effect<SerializedBlurEffect> = {
     };
   },
   typeCheck(filter) { return filter instanceof PIXI.BlurFilter; },
-  deserialize(serialized: SerializedBlurEffect) { return new PIXI.BlurFilter(serialized.strength, serialized.quality); },
+  deserialize(serialized: SerializedBlurEffect) {
+    const filter = new PIXI.BlurFilter(serialized.strength, serialized.quality);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    (filter as any).id = serialized.id ?? foundry.utils.randomID();
+    return filter;
+  },
   serialize(filter: PIXI.BlurFilter) {
     return {
       ...BlurEffect.default,
-      id: foundry.utils.randomID(),
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+      id: (filter as any).id ?? foundry.utils.randomID(),
       strength: filter.blur,
       quality: filter.quality
     };

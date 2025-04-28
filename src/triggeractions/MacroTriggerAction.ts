@@ -1,3 +1,4 @@
+import { localize } from 'functions';
 import { coerceJSON, coerceMacro } from '../coercion';
 import { InvalidMacroError, MacroPermDeniedError } from '../errors';
 import { SerializedMacroTrigger, SerializedTrigger, TriggerEventSignatures } from '../types';
@@ -11,6 +12,8 @@ export class MacroTriggerAction extends TriggerAction {
   public static getArguments(item: SerializedTrigger): Record<string, any> {
     return {}
   }
+
+  // public static readonly customArgumentTemplate = `macro.hbs`;
 
   // eslint-disable-next-line @typescript-eslint/class-literal-property-style
   public static get category(): string { return "misc"; }
@@ -33,8 +36,6 @@ export class MacroTriggerAction extends TriggerAction {
       ...args,
       ...Object.fromEntries(serialized.arguments.map(item => [item.name, item.value]))
     }))
-
-
     for (const key in parsedArgs) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const value = parsedArgs[key];
@@ -61,20 +62,34 @@ export class MacroTriggerAction extends TriggerAction {
   public static getDialogLabel(item: SerializedMacroTrigger): string {
     const macro = fromUuidSync(item.macro) as Macro;
     if (!(macro)) throw new InvalidMacroError(item.macro);
-    return game.i18n?.format(`STAGEMANAGER.EDITDIALOG.TRIGGERLABELS.MACRO`, { macro: macro.name }) ?? "";
+    return localize("STAGEMANAGER.EDITDIALOG.TRIGGERLABELS.MACRO", { macro: macro.name });
   }
 
   public static fromFormData(data: Record<string, unknown>): SerializedMacroTrigger {
+
+    const event = data.event as keyof TriggerEventSignatures ?? "";
+    const hook: Record<string, string> = {};
+
+    const eventArgs: Record<string, Record<string, string | boolean | number>> = data.eventArgs as Record<string, Record<string, string | boolean | number>>;
+
+    if (event === "preHook")
+      foundry.utils.mergeObject(hook, { hook: eventArgs.preHook.hook ?? "" });
+    else if (event === "postHook")
+      foundry.utils.mergeObject(hook, { hook: eventArgs.postHook.hook ?? "" });
+
+
     return {
-      id: data.id as string ?? foundry.utils.randomID(),
+      id: data.id ? data.id as string : foundry.utils.randomID(),
       label: data.label as string ?? "",
       version: data.version as string ?? "1.0.0",
       action: "macro",
       macro: data.macro as string ?? "",
-      event: data.event as TriggerEventSignatures ?? "",
+      event,
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       arguments: data.arg ? Object.values(data.arg) : [],
-      ...(data.actor ? { actor: data.actor as string } : {})
+      // ...(data.actor ? { actor: data.actor as string } : {}),
+      ...(eventArgs.actor ? { actor: eventArgs.actor.actor ?? "" } : {}),
+      ...hook
     };
   }
 

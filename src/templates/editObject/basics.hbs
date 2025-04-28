@@ -8,6 +8,16 @@
     </div>
 
     <div class="form-group">
+      <label for="tags">{{localize "STAGEMANAGER.EDITDIALOG.TAGS"}}</label>
+      <string-tags name="tags" id="tags">{{tags}}</string-tags>
+    </div>
+
+    <div class="form-group">
+      <label for="mask">{{localize "STAGEMANAGER.EDITDIALOG.MASK"}}</label>
+      <file-picker type="image" value="{{mask}}" name="mask" id="mask"></file-picker>
+    </div>
+
+    <div class="form-group">
       <label for="visible">{{localize "STAGEMANAGER.EDITDIALOG.VISIBLE"}}</label>
       <input type="checkbox" name="visible" id="visible" {{checked visible}}>
     </div>
@@ -20,12 +30,17 @@
     </div>
 
     <div class="form-group">
+      <label for="temporary">{{localize "STAGEMANAGER.EDITDIALOG.TEMPORARY"}}</label>
+      <input type="checkbox" name="temporary" id="temporary" {{checked temporary}}>
+    </div>
+
+    <div class="form-group">
       <label for="scope">{{localize "STAGEMANAGER.EDITDIALOG.SCOPE"}}</label>
       <select name="scope" id="scope">
         {{selectOptions ../scopeSelect localize=true selected=scope}}
       </select>
     </div>
-    <section data-scope="user">
+    <section data-scope="user" style="display:none">
       <div class="form-group">
         <label for="scopeOwners.users">{{localize "STAGEMANAGER.EDITDIALOG.USERS"}}</label>
         <multi-select name="scopeOwners.users" id="scopeOwners.users">
@@ -33,7 +48,7 @@
         </multi-select>
       </div>
     </section>
-    <section data-scope="scene">
+    <section data-scope="scene" style="display:none">
       <div class="form-group">
         <label for="scopeOwners.scenes">{{localize "STAGEMANAGER.EDITDIALOG.SCENES"}}</label>
         <multi-select name="scopeOwners.scenes" id="scopeOwners.scenes">
@@ -42,12 +57,6 @@
       </div>
     </section>
 
-    <div class="form-group">
-      <label for="owners">{{localize "STAGEMANAGER.EDITDIALOG.OWNERS"}}</label>
-      <multi-select name="owners" id="owners">
-        {{selectOptions ../ownersSelect localize=true}}
-      </multi-select>
-    </div>
 
     <div class="form-group">
       <label for="clickThrough">{{localize "STAGEMANAGER.EDITDIALOG.CLICKTHROUGH"}}</label>
@@ -102,9 +111,33 @@
     <p class="hint">{{localize "STAGEMANAGER.EDITDIALOG.VISUALBOUNDSHINT"}}</p>
 
     <div class="form-group">
-      <label for="zIndex">{{localize "STAGEMANAGER.EDITDIALOG.ZINDEX"}}</label>
-      <input type="number" name="zIndex" id="zIndex" value="{{zIndex}}">
+      <label>{{localize "STAGEMANAGER.EDITDIALOG.PIN"}}</label>
+      <div class="form-fields">
+        <label for="pin.top">{{localize "STAGEMANAGER.EDITDIALOG.PINTOP"}}</label>
+        <input type="checkbox" name="pin.top" id="pin.top" {{checked pin.top}}>
+        
+        <label for="pin.bottom">{{localize "STAGEMANAGER.EDITDIALOG.PINBOTTOM"}}</label>
+        <input type="checkbox" name="pin.bottom" id="pin.bottom" {{checked pin.bottom}}>
+
+        <label for="pin.left">{{localize "STAGEMANAGER.EDITDIALOG.PINLEFT"}}</label>
+        <input type="checkbox" name="pin.left" id="pin.left" {{checked pin.left}}>
+
+        <label for="pin.right">{{localize "STAGEMANAGER.EDITDIALOG.PINRIGHT"}}</label>
+        <input type="checkbox" name="pin.right" id="pin.right" {{checked pin.right}}>
+      </div>
     </div>
 
+    <div class="form-group">
+      <label for="{{../formPrefix}}angle">
+        {{localize "STAGEMANAGER.EDITDIALOG.ANGLE"}}
+        <span class="units">{{localize "STAGEMANAGER.EDITDIALOG.ANGLEHINT"}}</span>
+      </label>
+      <range-picker value="{{angle}}" min="0" max="360" step="any" name="{{../formPrefix}}angle" id="{{../formPrefix}}angle"></range-picker>
+    </div>
+
+    <div class="form-group">
+      <label for="{{../formPrefix}}alpha">{{localize "STAGEMANAGER.EDITDIALOG.ALPHA"}}</label>
+      <range-picker value="{{alpha}}" min="0" max="100" step="1" id="{{../formPrefix}}alpha" name="{{../formPrefix}}alpha"></range-picker>
+    </div>
   {{/with}}
 </section>

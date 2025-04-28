@@ -1,98 +1,71 @@
-import { StageObjectApplication } from "./StageObjectApplication";
+import { StageManager } from "StageManager";
 import { ImageStageObject } from "../stageobjects";
 import { SerializedImageStageObject } from "../types";
-import { Tab } from "./types";
-import { StageManager } from "../StageManager";
+import { StageObjectApplication } from "./StageObjectApplication";
+import { EmptyObject } from "Foundry-VTT/src/types/utils.mjs";
 
 export class ImageStageObjectApplication extends StageObjectApplication<ImageStageObject, SerializedImageStageObject> {
-  static PARTS = {
-    tabs: {
-      template: "templates/generic/tab-navigation.hbs"
-    },
-    basics: {
-      template: `modules/${__MODULE_ID__}/templates/editObject/basics.hbs`
-    },
+  public static PARTS: Record<string, foundry.applications.api.HandlebarsApplicationMixin.HandlebarsTemplatePart> = {
+    ...ImageStageObjectApplication.FRONT_PARTS,
     image: {
       template: `modules/${__MODULE_ID__}/templates/editObject/image.hbs`
     },
-    effects: {
-      template: `modules/${__MODULE_ID__}/templates/editObject/effects.hbs`
-    },
-    triggers: {
-      template: `modules/${__MODULE_ID__}/templates/editObject/triggers.hbs`
-    },
-    footer: {
-      template: "templates/generic/form-footer.hbs"
-    }
+    ...ImageStageObjectApplication.BACK_PARTS
   }
 
-  protected getTabs(): Record<string, Tab> {
+  protected parseForm(form: HTMLFormElement): SerializedImageStageObject {
+    const data = super.parseForm(form);
+
+    const bounds = data.restrictToVisualArea ? StageManager.VisualBounds : StageManager.ScreenBounds;
+
+    data.bounds = {
+      ...data.bounds,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      width: (data.bounds as any).width / bounds.width,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      height: (data.bounds as any).height / bounds.height
+    }
+
+    if (typeof data.blendMode === "string") {
+      data.blendMode = parseInt(data.blendMode);
+      if (isNaN(data.blendMode)) data.blendMode = 0;
+    }
+
+    return data;
+  }
+
+  protected async _prepareContext(options: { force?: boolean | undefined; position?: { top?: number | undefined; left?: number | undefined; width?: number | 'auto' | undefined; height?: number | 'auto' | undefined; scale?: number | undefined; zIndex?: number | undefined; } | undefined; window?: { title?: string | undefined; icon?: string | false | undefined; controls?: boolean | undefined; } | undefined; parts?: string[] | undefined; isFirstRender?: boolean | undefined; }): Promise<EmptyObject> {
+    const context = await super._prepareContext(options) as Record<string, unknown>
+    const bounds = this.stageObject.actualBounds;
+
+    const serialized = context.stageObject as SerializedImageStageObject;
+    serialized.bounds = {
+      ...serialized.bounds,
+      width: serialized.bounds.width * bounds.width,
+      height: serialized.bounds.height * bounds.height
+    }
+
+    context.blendModeSelect = {
+      0: `STAGEMANAGER.BLENDMODES.NORMAL`,
+      1: `STAGEMANAGER.BLENDMODES.ADD`,
+      2: `STAGEMANAGER.BLENDMODES.MULTIPLY`,
+      3: `STAGEMANAGER.BLENDMODES.SCREEN`,
+      28: `STAGEMANAGER.BLENDMODES.SUBTRACT`
+    };
+
+    return context as EmptyObject;
+  }
+
+  protected getTabs(): Record<string, foundry.applications.api.ApplicationV2.Tab> {
     return {
       image: {
         id: "image",
-        icon: "fas fa-image",
-        label: "STAGEMANAGER.TABS.IMAGE",
-        active: false,
         cssClass: "",
-        group: "primary"
+        group: "primary",
+        active: false,
+        icon: "fas fa-image",
+        label: "STAGEMANAGER.TABS.IMAGE"
       }
     }
-  }
-
-  protected toLeft(): this {
-    const elem = $(this.element);
-    const bounds = elem.find("#restrictToVisualArea").is(":checked") ? StageManager.VisualBounds : StageManager.ScreenBounds;
-    elem.find("[name='bounds.x']").val(bounds.left + (this.stageObject.width * this.stageObject.anchor.x))
-    return this;
-  }
-
-  protected topTop(): this {
-    const elem = $(this.element);
-    const bounds = elem.find("#restrictToVisualArea").is(":checked") ? StageManager.VisualBounds : StageManager.ScreenBounds;
-    elem.find("[name='bounds.y']").val(bounds.top + (this.stageObject.height * this.stageObject.anchor.y))
-    return this;
-  }
-
-  protected toRight(): this {
-    const elem = $(this.element);
-    const bounds = elem.find("#restrictToVisualArea").is(":checked") ? StageManager.VisualBounds : StageManager.ScreenBounds;
-    elem.find("[name='bounds.x']").val(bounds.right - (this.stageObject.width * this.stageObject.anchor.x));
-    return this;
-  }
-
-  protected toBottom(): this {
-    const elem = $(this.element);
-    const bounds = elem.find("#restrictToVisualArea").is(":checked") ? StageManager.VisualBounds : StageManager.ScreenBounds;
-    elem.find("[name='bounds.y']").val(bounds.bottom - (this.stageObject.height * this.stageObject.anchor.y));
-    return this;
-  }
-
-  protected prepareStageObject(): SerializedImageStageObject {
-    const prep = super.prepareStageObject();
-    const bounds = this.originalObject.restrictToVisualArea ? StageManager.VisualBounds : StageManager.ScreenBounds;
-    return {
-      ...prep,
-      bounds: {
-        ...prep.bounds,
-        width: this.originalObject.bounds.width * bounds.width,
-        height: this.originalObject.bounds.height * bounds.height
-      }
-    }
-  }
-
-  _onChangeForm(): void {
-    super._onChangeForm();
-    const form = this.element instanceof HTMLFormElement ? new FormDataExtended(this.element) : new FormDataExtended($(this.element).find("form")[0]);
-    const data = this.parseFormData(form.object);
-    if (this.ghost instanceof PIXI.Sprite) {
-      if (this.ghost.texture.baseTexture.resource.src !== data.src)
-        this.ghost.texture = PIXI.Texture.from(data.src);
-    }
-  }
-
-  protected parseFormData(data: Record<string, unknown>): SerializedImageStageObject {
-    const parsed = super.parseFormData(data);
-
-    return parsed;
   }
 }

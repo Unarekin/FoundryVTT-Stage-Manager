@@ -10,26 +10,72 @@
   <div class="center">{{localize "STAGEMANAGER.EDITDIALOG.EFFECTS.BEVEL"}}</div>
 
   <div class="form-group">
-    <label for="effect.thickness">{{localize "STAGEMANAGER.EDITDIALOG.EFFECTS.CONFIG.BEVEL.THICKNESS"}}</label>
-    <input type="number" min="0" stype="any" name="effect.thickness" id="effect.thickness" value="{{thickness}}">
+    <label for="effect.temporary">{{localize
+        "STAGEMANAGER.EDITDIALOG.TEMPORARY"
+      }}</label>
+    <input
+      type="checkbox"
+      {{checked temporary}}
+      name="effect.temporary"
+      id="effect.temporary"
+    />
   </div>
-  <br>
 
   <div class="form-group">
-    <label for="effect.rotation">{{localize "STAGEMANAGER.EDITDIALOG.EFFECTS.CONFIG.BEVEL.ROTATION"}}</label>
-    <input type="number" min="0" step="any" name="effect.rotation" id="effect.thickness" value="{{rotation}}">
+    <label for="effect.thickness">{{localize
+        "STAGEMANAGER.EDITDIALOG.EFFECTS.CONFIG.BEVEL.THICKNESS"
+      }}</label>
+    <input
+      type="number"
+      min="0"
+      stype="any"
+      name="effect.thickness"
+      id="effect.thickness"
+      value="{{thickness}}"
+    />
   </div>
-  <br>
+  <br />
 
   <div class="form-group">
-    <label for="effect.lightColor">{{localize "STAGEMANAGER.EDITDIALOG.EFFECTS.CONFIG.BEVEL.LIGHTCOLOR"}}</label>
-    <input type="text" data-color-picker="{alphaChannel: true}" value="{{lightColor}}" name="effect.lightColor" id="effect.lightColor">
+    <label for="effect.rotation">{{localize
+        "STAGEMANAGER.EDITDIALOG.EFFECTS.CONFIG.BEVEL.ROTATION"
+      }}</label>
+    <input
+      type="number"
+      min="0"
+      step="any"
+      name="effect.rotation"
+      id="effect.thickness"
+      value="{{rotation}}"
+    />
   </div>
-  <br>
+  <br />
 
   <div class="form-group">
-    <label for="effect.shadowColor">{{localize "STAGEMANAGER.EDITDIALOG.EFFECTS.CONFIG.BEVEL.SHADOWCOLOR"}}</label>
-    <input type="text" data-color-picker="{alphaChannel: true}" name="effect.shadowColor" id="effect.shadowColor" value="{{shadowColor}}">
+    <label for="effect.lightColor">{{localize
+        "STAGEMANAGER.EDITDIALOG.EFFECTS.CONFIG.BEVEL.LIGHTCOLOR"
+      }}</label>
+    <input
+      type="text"
+      data-color-picker="{alphaChannel: true}"
+      value="{{lightColor}}"
+      name="effect.lightColor"
+      id="effect.lightColor"
+    />
   </div>
-  <br>
+  <br />
+
+  <div class="form-group">
+    <label for="effect.shadowColor">{{localize
+        "STAGEMANAGER.EDITDIALOG.EFFECTS.CONFIG.BEVEL.SHADOWCOLOR"
+      }}</label>
+    <input
+      type="text"
+      data-color-picker="{alphaChannel: true}"
+      name="effect.shadowColor"
+      id="effect.shadowColor"
+      value="{{shadowColor}}"
+    />
+  </div>
+  <br />
 </section>

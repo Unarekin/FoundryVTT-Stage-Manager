@@ -20,6 +20,9 @@ export function registerContextMenu(menu: ContextMenu) {
   }
 }
 
+export function isColor(data: string): boolean {
+  return CSS.supports("color", data);
+}
 
 
 export async function closeAllContextMenus(options?: ContextMenu.CloseOptions) {
@@ -164,4 +167,60 @@ export function awaitFrame(): Promise<void> {
 export function durationOfHold(text: string): number {
   const words = text.split(/\W/).filter(char => !!char);
   return (.2 * words.length) + (words.length >= 10 ? 3 : 2);
+}
+
+export async function inputPrompt(content: string, title?: string): Promise<string | undefined> {
+  const input = await foundry.applications.api.DialogV2.wait({
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    window: ({ title: localize(title ?? "") } as any),
+    content: localize(content),
+    rejectClose: false,
+    buttons: [
+      {
+        icon: `fas fa-check`,
+        label: localize("Confirm"),
+        action: "confirm",
+        callback: (e, button, dialog) => {
+          const input = dialog.querySelector("#text");
+          if (!(input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement)) return Promise.resolve();
+          return Promise.resolve(input.value);
+        }
+      },
+      {
+        icon: `fas fa-times`,
+        label: localize("Cancel"),
+        action: "cancel"
+      }
+    ]
+  });
+
+  if (input === "cancel" || !input || input === "confirm") return undefined;
+  else return input;
+}
+
+export async function confirm(title: string, content: string) {
+  return foundry.applications.api.DialogV2.confirm({
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    window: ({ title } as any),
+    content,
+    rejectOnClose: false
+  });
+}
+
+export function serializeTextStyle(style: PIXI.HTMLTextStyle): Record<string, unknown> {
+  const serialized = JSON.parse(JSON.stringify(style)) as Record<string, unknown>;
+  const keys = Object.keys(serialized).filter(key => key.startsWith("_"));
+  for (const key of keys) {
+    serialized[key.substring(1)] = serialized[key];
+    delete serialized[key];
+  }
+  return serialized;
+}
+
+export function getStyleDiff(style: PIXI.HTMLTextStyle): Record<string, unknown> {
+  const serialized = serializeTextStyle(style);
+  const defaultStyle = serializeTextStyle(PIXI.HTMLTextStyle.defaultStyle as unknown as PIXI.HTMLTextStyle);
+  const diffed = foundry.utils.diffObject(defaultStyle, serialized) as Record<string, unknown>;
+  delete diffed.styleID;
+  return diffed;
 }

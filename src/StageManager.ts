@@ -1,26 +1,27 @@
 import { ScreenSpaceCanvasGroup } from './ScreenSpaceCanvasGroup';
-import { ActorStageObject, ImageStageObject, PanelStageObject, StageObject, TextStageObject, DialogueStageObject } from './stageobjects';
+import { ActorStageObject, ImageStageObject, PanelStageObject, StageObject, TextStageObject, DialogueStageObject, ProgressBarStageObject, ResourceBarStageObject, ProgressClockStageObject, ResourceClockStageObject } from './stageobjects';
 import { PartialWithRequired, SerializedStageObject, StageLayer } from './types';
 import { coerceStageObject, coerceUser } from './coercion';
 import { StageObjects } from './StageObjectCollection';
-import { CannotDeserializeError, CanvasNotInitializedError, InvalidStageObjectError, InvalidUserError, PermissionDeniedError } from './errors';
+import { CannotDeserializeError, CanvasNotInitializedError, InvalidApplicationClassError, InvalidStageObjectError, InvalidUserError, PermissionDeniedError, SystemMismatchError } from './errors';
 import * as stageObjectTypes from "./stageobjects";
 import { addSceneObject, addUserObject, getGlobalObjects, getSceneObjects, getSetting, getUserObjects, removeSceneObject, removeUserObject, setGlobalObjects, setSceneObjects, setSetting, setUserObjects } from './Settings';
 import { CUSTOM_HOOKS } from './hooks';
 import { log, logError } from './logging';
-import { ActorStageObjectApplication, ImageStageObjectApplication, DialogueStageObjectApplication, PanelStageObjectApplication, StageObjectApplication, TextStageObjectApplication } from './applications';
+import { StageObjectApplication } from './applications';
 import { SynchronizationManager } from './SynchronizationManager';
 import { Conversation } from "./conversation";
+import { durationOfHold, localize } from 'functions';
+import { filters } from "effects";
+import * as systemCompatibility from "./compatibility";
+import { SystemCompatibility } from "./compatibility";
 
-const ApplicationHash: Record<string, typeof StageObjectApplication> = {
-  "image": ImageStageObjectApplication as typeof StageObjectApplication,
-  "actor": ActorStageObjectApplication as unknown as typeof StageObjectApplication,
-  "text": TextStageObjectApplication as unknown as typeof StageObjectApplication,
-  "panel": PanelStageObjectApplication as unknown as typeof StageObjectApplication,
-  dialogue: DialogueStageObjectApplication as unknown as typeof StageObjectApplication
-}
+import { triggerEvent } from 'triggerHooks';
+import semver from "semver";
 
-const OpenApplications = new WeakMap<StageObject, StageObjectApplication>();
+const _copiedObjects: SerializedStageObject[] = [];
+
+let screenDarkenObject: ImageStageObject | undefined = undefined;
 
 // #region Classes (1)
 
@@ -31,6 +32,8 @@ export class StageManager {
   // #region Public Static Getters And Setters (10)
 
   public static get HighlightedObjects(): StageObject[] { return StageManager.StageObjects.filter(obj => obj.highlighted); }
+
+  public static get filters() { return filters; }
 
   public static get ScreenBounds(): { left: number, right: number, top: number, bottom: number, width: number, height: number } {
     return {
@@ -144,6 +147,122 @@ export class StageManager {
     }
   }
 
+
+
+
+  /**
+   * 
+   * @param {string} uuid 
+   * @param {string} valuePath 
+   * @param {string} maxPath 
+   * @param {PIXI.ColorSource | PIXI.TextureSource} fg - {@link PIXI.ColorSource} or {@link PIXI.TextureSource} representing foreground object (bar fill)
+   * @param {PIXI.ColorSource | PIXI.TextureSource} bg - {@link PIXI.ColorSource} or {@link PIXI.TextureSource} representing the background image
+   * @param {PIXI.ColorSource | PIXI.TextureSource} lerp - {@link PIXI.ColorSource} or {@link PIXI.TextureSource} for the temporary bar shown during value change animation
+   * @param {number} x 
+   * @param {number} y 
+   * @param {StageLayer} layer - {@link StageLayer}
+   * @returns 
+   */
+  public static addResourceBar(uuid: string, valuePath: string, maxPath: string, fg: PIXI.ColorSource | PIXI.TextureSource, bg: PIXI.ColorSource | PIXI.TextureSource, lerp: PIXI.ColorSource | PIXI.TextureSource = "transparent", x?: number, y?: number, layer: StageLayer = "primary"): ResourceBarStageObject | undefined {
+    try {
+      if (!StageManager.canAddStageObjects(game.user?.id ?? "")) throw new PermissionDeniedError();
+      const obj = new ResourceBarStageObject(uuid, valuePath, maxPath, fg, bg, lerp);
+      if (typeof x === "number") obj.x = x;
+      if (typeof y === "number") obj.y = y;
+      if (typeof x !== "number" && typeof y !== "number") {
+        obj.x = (window.innerWidth - obj.width) / 2;
+        obj.y = (window.innerHeight - obj.height) / 2;
+      }
+
+      StageManager.addStageObject(obj, layer ?? "primary");
+      return obj;
+    } catch (err) {
+      logError(err as Error);
+    }
+  }
+
+  /**
+   * 
+   * @param {string} uuid 
+   * @param {string} valuePath 
+   * @param {string} maxPath 
+   * @param {PIXI.ColorSource | PIXI.TextureSource} fg
+   * @param {PIXI.ColorSource | PIXI.TextureSource} bg 
+   * @param {PIXI.ColorSource | PIXI.TextureSource} lerp 
+   * @param {number} x 
+   * @param {number} y 
+   * @param {StageLayer} [layer="primary"] - {@link StageLayer}
+   * @returns 
+   */
+  public static addResourceClock(uuid: string, valuePath: string, maxPath: string, fg: PIXI.ColorSource | PIXI.TextureSource, bg: PIXI.ColorSource | PIXI.TextureSource, lerp: PIXI.ColorSource | PIXI.TextureSource = "transparent", x?: number, y?: number, layer: StageLayer = "primary"): ResourceClockStageObject | undefined {
+    try {
+      if (!StageManager.canAddStageObjects(game.user?.id ?? "")) throw new PermissionDeniedError();
+      const obj = new ResourceClockStageObject(uuid, valuePath, maxPath, fg, bg, lerp);
+      if (typeof x === "number") obj.x = x;
+      if (typeof y === "number") obj.y = y;
+      if (typeof x !== "number" && typeof y !== "number") {
+        obj.x = (window.innerWidth - obj.width) / 2;
+        obj.y = (window.innerHeight - obj.height) / 2;
+      }
+
+      StageManager.addStageObject(obj, layer ?? "primary");
+      return obj;
+    } catch (err) {
+      logError(err as Error);
+    }
+  }
+
+
+  public static addProgressClock(max: number, fg: PIXI.ColorSource | PIXI.TextureSource, bg: PIXI.ColorSource | PIXI.TextureSource, lerp: PIXI.ColorSource | PIXI.TextureSource = "transparent", x?: number, y?: number, layer: StageLayer = "primary"): ProgressClockStageObject | undefined {
+    try {
+      if (!StageManager.canAddStageObjects(game.user?.id ?? "")) throw new PermissionDeniedError();
+      const obj = new ProgressClockStageObject(max, max, fg, bg, lerp);
+      if (typeof x === "number") obj.x = x;
+      if (typeof y === "number") obj.y = y;
+      if (typeof x !== "number" && typeof y !== "number") {
+        obj.x = (window.innerWidth - obj.width) / 2;
+        obj.y = (window.innerHeight - obj.height) / 2;
+      }
+
+      StageManager.addStageObject(obj, layer ?? "primary");
+
+      return obj;
+    } catch (err) {
+      logError(err as Error);
+    }
+  }
+
+  /**
+   * Adds a progress bar
+   * @param {max} max - Maximum value
+   * @param {PIXI.ColorSource | PIXI.TextureSource} fg - {@link PIXI.ColorSource} or {@link PIXI.TextureSource} representing foreground object (bar fill)
+   * @param {PIXI.ColorSource | PIXI.TextureSource} bg - {@link PIXI.ColorSource} or {@link PIXI.TextureSource} representing the background image
+   * @param {PIXI.ColorSource | PIXI.TextureSource} lerp - {@link PIXI.ColorSource} or {@link PIXI.TextureSource} for the temporary bar shown during value change animation
+   * @param {number} x 
+   * @param {number} y 
+   * @param {StageLayer} layer - {@link StageLayer}
+   * @returns 
+   */
+  public static addProgressBar(max: number, fg: PIXI.ColorSource | PIXI.TextureSource, bg: PIXI.ColorSource | PIXI.TextureSource, lerp: PIXI.ColorSource | PIXI.TextureSource = "transparent", x?: number, y?: number, layer: StageLayer = "primary"): ProgressBarStageObject | undefined {
+    try {
+      if (!StageManager.canAddStageObjects(game.user?.id ?? "")) throw new PermissionDeniedError();
+      const obj = new ProgressBarStageObject(max, max, fg, bg, lerp);
+      if (typeof x === "number") obj.x = x;
+      if (typeof y === "number") obj.y = y;
+      if (typeof x !== "number" && typeof y !== "number") {
+        obj.x = (window.innerWidth - obj.width) / 2;
+        obj.y = (window.innerHeight - obj.height) / 2;
+      }
+
+      StageManager.addStageObject(obj, layer ?? "primary");
+
+      return obj;
+    } catch (err) {
+      logError(err as Error);
+    }
+  }
+
+
   /**
    * Adds an {@link ImageStageObject} to the Stage.
    * @param {string} path - Path to the image to use as a texture
@@ -157,8 +276,14 @@ export class StageManager {
     try {
       if (!StageManager.canAddStageObjects(game.user?.id ?? "")) throw new PermissionDeniedError();
       const obj = new ImageStageObject(path, name);
-      obj.x = typeof x === "number" ? x : window.innerWidth / 2;
-      obj.y = typeof y === "number" ? y : window.innerHeight / 2;
+      if (typeof x === "number") obj.x = x;
+      if (typeof y === "number") obj.y = y;
+      if (!obj.texture.valid && (typeof x !== "number" || typeof y !== "number")) {
+        obj.texture.baseTexture.once("loaded", () => {
+          if (typeof x !== "number") obj.x = (window.innerWidth - obj.width) / 2;
+          if (typeof y !== "number") obj.y = (window.innerHeight - obj.height) / 2;
+        });
+      }
 
       StageManager.addStageObject(obj, layer);
       return obj;
@@ -170,7 +295,7 @@ export class StageManager {
 
   public static addPanel(path: string, left: number, right: number, top: number, bottom: number, layer?: StageLayer): PanelStageObject | undefined
   public static addPanel(path: string, horizontal: number, vertical: number, layer?: StageLayer): PanelStageObject | undefined
-  public static addPanel(path: string, ...args: (number | StageLayer)[]): PanelStageObject | undefined {
+  public static addPanel(path: string, ...args: unknown[]): PanelStageObject | undefined {
     try {
       const left = args[0] as number;
       const right = ((args.length === 2 || args.length === 3) ? args[0] : args[1]) as number;
@@ -191,8 +316,8 @@ export class StageManager {
     try {
       if (!StageManager.canAddStageObjects(game.user?.id ?? "")) throw new PermissionDeniedError();
       const obj = new TextStageObject(text, style);
-      obj.x = typeof x === "number" ? x : window.innerWidth / 2;
-      obj.y = typeof y === "number" ? y : window.innerHeight / 2;
+      obj.x = typeof x === "number" ? x : (window.innerWidth - obj.width) / 2;
+      obj.y = typeof y === "number" ? y : (window.innerHeight - obj.height) / 2;
       StageManager.addStageObject(obj, layer);
       return obj;
     } catch (err) {
@@ -204,8 +329,14 @@ export class StageManager {
     try {
       if (!StageManager.canAddStageObjects(game.user?.id ?? "")) throw new PermissionDeniedError();
       const obj = new ActorStageObject(actor);
-      obj.x = typeof x === "number" ? x : window.innerWidth / 2;
-      obj.y = typeof y === "number" ? y : window.innerHeight / 2;
+      if (typeof x === "number") obj.x = x;
+      if (typeof y === "number") obj.y = y;
+      if (!obj.texture.valid && (typeof x !== "number" || typeof y !== "number")) {
+        obj.texture.baseTexture.once("loaded", () => {
+          if (typeof x !== "number") obj.x = (window.innerWidth - obj.width) / 2;
+          if (typeof y !== "number") obj.y = (window.innerHeight - obj.height) / 2;
+        });
+      }
       StageManager.addStageObject(obj, layer);
       return obj;
     } catch (err) {
@@ -213,60 +344,112 @@ export class StageManager {
     }
   }
 
-  public static async CreateStageObject<t extends StageObject = StageObject>(serialized: PartialWithRequired<SerializedStageObject, "type">): Promise<t | undefined> {
-    if (!ApplicationHash[serialized.type]) throw new InvalidStageObjectError(serialized.type);
+  public static async CreateStageObject<t extends StageObject = StageObject>(serialized: PartialWithRequired<SerializedStageObject, "type">, removeOnCancel = false): Promise<t | undefined> {
+    try {
+      const obj = StageManager.deserialize(serialized as SerializedStageObject);
+      if (!obj) throw new InvalidStageObjectError(serialized);
 
-    const obj = StageManager.deserialize(serialized as SerializedStageObject);
-    if (!(obj instanceof StageObject)) throw new InvalidStageObjectError(serialized.type);
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-    const app = (new (ApplicationHash[serialized.type] as any)(obj) as StageObjectApplication);
-    void app.render(true);
-    return app.closed
-      .then(data => {
-        if (data) return StageManager.deserialize(data) as t;
-      })
+      const app = Object.values(obj.apps)[0];
+      if (app instanceof StageObjectApplication) {
+        await app.render(!app.rendered);
+        app.bringToFront();
+        return (app.closed as Promise<t | undefined>)
+          .then(obj => {
+            if (removeOnCancel && !obj) {
+              delete app.stageObject.apps[app.appId];
+              app.stageObject.destroy();
+            }
+            return obj;
+          })
+      } else if (!obj.ApplicationType) {
+        throw new InvalidStageObjectError(obj);
+      } else {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        const app = new (obj.ApplicationType as any)(obj) as StageObjectApplication;
+        await app.render(true);
+        return (app.closed as Promise<t | undefined>)
+          .then(obj => {
+            if (removeOnCancel && !obj) {
+              delete app.stageObject.apps[app.appId];
+              app.stageObject.destroy();
+            }
+            return obj;
+          })
+      }
+    } catch (err) {
+      logError(err as Error);
+    }
   }
 
-  public static async EditStageObject(id: string): Promise<SerializedStageObject | undefined>
-  public static async EditStageObject(name: string): Promise<SerializedStageObject | undefined>
-  public static async EditStageObject(stageObject: StageObject): Promise<SerializedStageObject | undefined>
-  public static async EditStageObject(arg: unknown): Promise<SerializedStageObject | undefined> {
-    const obj = coerceStageObject(arg);
-    if (!(obj instanceof StageObject)) throw new InvalidStageObjectError(arg);
-    if (OpenApplications.has(obj)) {
-      const app = OpenApplications.get(obj);
-      if (!app) throw new InvalidStageObjectError(arg);
-      app.bringToFront();
-    } else {
-      return new Promise<SerializedStageObject | undefined>((resolve, reject) => {
-        try {
-          const appClass = ApplicationHash[obj.type];
-          if (!appClass) throw new InvalidStageObjectError(obj.type);
+  public static async EditStageObject<t extends StageObject = StageObject>(id: string): Promise<t | undefined>
+  public static async EditStageObject<t extends StageObject = StageObject>(name: string): Promise<t | undefined>
+  public static async EditStageObject<t extends StageObject = StageObject>(stageObject: StageObject): Promise<t | undefined>
+  public static async EditStageObject<t extends StageObject = StageObject>(arg: unknown): Promise<t | undefined> {
+    try {
+      const obj = coerceStageObject(arg);
+      if (!(obj instanceof StageObject)) throw new InvalidStageObjectError(arg);
 
-          const layer = obj.layer;
+      const app = Object.values(obj.apps)[0];
+      if (app instanceof StageObjectApplication) {
+        await app.render(!app.rendered);
+        app.bringToFront();
+        return app.closed as Promise<t | undefined>;
+      } else {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const appClass = obj.ApplicationType as any;
+        if (!appClass) throw new InvalidApplicationClassError(obj.type);
 
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-          const app = new (appClass as any)(obj, { layer: obj.layer ?? "primary" }) as StageObjectApplication;
-          OpenApplications.set(obj, app);
-          app.render(true).catch(reject);
-          app.closed
-            .then(data => {
-              if (data?.layer && StageManager.layers[data.layer]) StageManager.layers[data.layer].addChild(obj.displayObject);
-              else if (layer && StageManager.layers[layer]) StageManager.layers[layer].addChild(obj.displayObject);
-              OpenApplications.delete(obj);
-              resolve(data);
-            })
-            .catch((err: Error) => {
-              logError(err);
-              reject(err);
-              if (layer && StageManager.layers[layer]) StageManager.layers[layer].addChild(obj.displayObject);
-            })
-        } catch (err) {
-          OpenApplications.delete(obj);
-          reject(err as Error);
-        }
-      });
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        const app = new appClass(obj) as StageObjectApplication;
+        await app.render(true);
+        return app.closed as Promise<t | undefined>;
+      }
+    } catch (err) {
+      logError(err as Error);
+    }
+  }
+
+  public static async Darken(amount: number, duration = 0): Promise<void> {
+    try {
+      if (!StageManager.canAddStageObjects(game.user?.id ?? "")) throw new PermissionDeniedError();
+      if (!(screenDarkenObject instanceof ImageStageObject)) screenDarkenObject = new ImageStageObject(`modules/${__MODULE_ID__}/assets/black.webp`);
+
+      StageManager.addStageObject(screenDarkenObject, "background");
+      screenDarkenObject.sendToBack();
+      screenDarkenObject.x = screenDarkenObject.y = 0;
+      screenDarkenObject.width = window.innerWidth;
+      screenDarkenObject.height = window.innerHeight;
+
+      if (duration) {
+        screenDarkenObject.alpha = 0;
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+        await gsap.to(screenDarkenObject, { alpha: amount, duration: duration / 1000, ease: "none" });
+      } else {
+        screenDarkenObject.alpha = amount;
+      }
+    } catch (err) {
+      logError(err as Error);
+      if (screenDarkenObject instanceof ImageStageObject) screenDarkenObject.destroy();
+      screenDarkenObject = undefined;
+    }
+  }
+
+  public static async Undarken(duration = 0): Promise<void> {
+    try {
+      if (!StageManager.canAddStageObjects(game.user?.id ?? "")) throw new PermissionDeniedError();
+      if (!(screenDarkenObject instanceof ImageStageObject)) return;
+      if (duration) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+        await gsap.to(screenDarkenObject, { alpha: 0, duration: duration / 1000, ease: "none" });
+
+      } else {
+        StageManager.removeStageObject(screenDarkenObject);
+      }
+    } catch (err) {
+      logError(err as Error);
+    } finally {
+      if (screenDarkenObject instanceof ImageStageObject) screenDarkenObject.destroy();
+      screenDarkenObject = undefined;
     }
   }
 
@@ -297,6 +480,10 @@ export class StageManager {
         deserialized.dirty = false;
       }
     }
+
+    const darkenObj = StageManager.StageObjects.find(obj => obj.name === "ScreenDarken");
+    if ((darkenObj instanceof ImageStageObject)) screenDarkenObject = darkenObj;
+
   }
 
   public static Conversation(dialogue?: DialogueStageObject): Conversation {
@@ -311,7 +498,7 @@ export class StageManager {
       case "user": {
         if (!game.users) return;
         // const users = (game.users as User[]).filter(user => user.canUserModify(game.user, "update"));
-        const users = game.users.filter((user: User) => !!user && user.canUserModify(game.user, "update")) as User[];
+        const users = game.users.filter((user: User) => !!user && user.canUserModify(game.user as User, "update")) as User[];
 
         for (const user of users) {
           if (owners.includes(user.id ?? "") || owners.includes(user.uuid))
@@ -324,7 +511,7 @@ export class StageManager {
       case "scene": {
         if (!game.scenes) return;
 
-        const scenes = game.scenes.filter((scene: Scene) => !!scene && scene.canUserModify(game.user, "update")) as Scene[];
+        const scenes = game.scenes.filter((scene: Scene) => !!scene && scene.canUserModify(game.user as User, "update")) as Scene[];
         for (const scene of scenes) {
           if (owners.includes(scene.id ?? "") || owners.includes(scene.uuid))
             promises.push(addSceneObject(scene, object));
@@ -336,13 +523,13 @@ export class StageManager {
       case "global":
       case "temp": {
         if (game.scenes) {
-          const scenes = game.scenes.filter((scene: Scene) => !!scene && scene.canUserModify(game.user, "update")) as Scene[];
+          const scenes = game.scenes.filter((scene: Scene) => !!scene && scene.canUserModify(game.user as User, "update")) as Scene[];
           for (const scene of scenes)
             promises.push(removeSceneObject(scene, object));
 
         }
         if (game.users) {
-          const users = game.users.filter((user: User) => !!user && user.canUserModify(game.user, "update")) as User[];
+          const users = game.users.filter((user: User) => !!user && user.canUserModify(game.user as User, "update")) as User[];
           for (const user of users)
             promises.push(removeUserObject(user, object));
         }
@@ -360,26 +547,28 @@ export class StageManager {
       if (!(game.user instanceof User)) throw new InvalidUserError(game.user);
 
       const promises: Promise<any>[] = [];
-      log("Persisting");
 
       // Global
       if (game.user.can("SETTINGS_MODIFY"))
-        promises.push(setGlobalObjects(StageManager.StageObjects.global));
+        promises.push(setGlobalObjects(StageManager.StageObjects.global.filter(obj => obj.synchronize)));
 
       // Scene
       if (canvas.scene.canUserModify(game.user, "update"))
-        promises.push(setSceneObjects(canvas.scene, StageManager.StageObjects.scene));
+        promises.push(setSceneObjects(canvas.scene, StageManager.StageObjects.scene.filter(obj => obj.synchronize)));
 
       // Users
 
       const user = StageManager.ViewingAs;
 
       if (user instanceof User && user.canUserModify(game.user, "update")) {
-        const objects = StageManager.StageObjects.filter(obj => obj.scope === "user" && (obj.scopeOwners.includes(game.user?.id ?? "") || obj.scopeOwners.includes(game.user?.uuid ?? "")));
+        const objects = StageManager.StageObjects.filter(obj => obj.synchronize && obj.scope === "user" && (obj.scopeOwners.includes(game.user?.id ?? "") || obj.scopeOwners.includes(game.user?.uuid ?? "")));
         promises.push(setUserObjects(game.user, objects));
       }
 
-      await Promise.all(promises);
+      if (promises.length) {
+        log("Persisting");
+        await Promise.all(promises);
+      }
     } catch (err) {
       logError(err as Error);
     }
@@ -476,7 +665,6 @@ export class StageManager {
       logError(err as Error);
     }
   }
-
   /**
    * Returns a list of user IDs that are considered to have ownership over a given {@link StageObject}
    * @param {string} objId - id of the {@link StageObject} for which to get owners
@@ -491,6 +679,67 @@ export class StageManager {
     return owners?.[id] ?? [];
   }
 
+  public static get CopiedObjects() { return _copiedObjects; }
+
+  public static CopyObjects(objects: StageObject[]): SerializedStageObject[] {
+    this.CopiedObjects.splice(0, this.CopiedObjects.length, ...objects.map(obj => obj.serialize()));
+    return this.CopiedObjects;
+  }
+
+  public static durationOfHold(text: string): number {
+    return durationOfHold(text);
+  }
+
+  public static PasteObjects(position: PIXI.Point): StageObject[] | undefined {
+    try {
+      if (!this.CopiedObjects.length) return [];
+      if (!StageManager.canAddStageObjects(game.user?.id ?? "")) throw new PermissionDeniedError();
+
+      const created: StageObject[] = this.CopiedObjects.reduce((prev: StageObject[], curr: SerializedStageObject) => {
+        const obj = StageManager.deserialize(curr);
+        if (!(obj instanceof StageObject)) return prev;
+
+        obj.id = foundry.utils.randomID();
+        return [
+          ...prev,
+          obj
+        ];
+      }, [] as StageObject[]);
+
+      // Calculate average center point of copied objects
+      const center = created.reduce((prev, curr) => {
+        const { x, y } = curr.center;
+        return {
+          x: prev.x + x,
+          y: prev.y + y
+        };
+      }, { x: 0, y: 0 });
+
+      center.x /= created.length;
+      center.y /= created.length;
+
+      for (const obj of created) {
+        // Offset from pasted point
+        obj.x = position.x + (obj.x - center.x) - (obj.width / 2);
+        obj.y = position.y + (obj.y - center.y) - (obj.height / 2);
+
+        StageManager.addStageObject(obj);
+      }
+
+
+      ui.notifications?.info(
+        localize("CONTROLS.PastedObjects", {
+          count: created.length.toString(),
+          type: localize("STAGEMANAGER.STAGEOBJECT")
+        })
+      )
+      return created;
+    } catch (err) {
+      logError(err as Error);
+    }
+  }
+
+
   public static layers: Record<string, ScreenSpaceCanvasGroup> = {};
 
   /** Handles any initiatlization */
@@ -500,9 +749,6 @@ export class StageManager {
       primaryCanvasGroup = new ScreenSpaceCanvasGroup("StageManagerPrimaryCanvasGroup", "primary");
       fgCanvasGroup = new ScreenSpaceCanvasGroup("StageManagerForegroundCanvasGroup", "foreground");
       uiCanvasGroup = new ScreenSpaceCanvasGroup("StageManagerUICanvasGroup", "ui");
-
-
-
 
 
       canvas.stage.addChild(bgCanvasGroup);
@@ -556,7 +802,7 @@ export class StageManager {
       StageManager.ScaleStageObjects();
     });
 
-    let persistTimeout: NodeJS.Timeout | undefined=undefined;
+    let persistTimeout: NodeJS.Timeout | undefined = undefined;
 
     Hooks.on(CUSTOM_HOOKS.SYNC_END, () => {
       if (persistTimeout) clearTimeout(persistTimeout);
@@ -570,6 +816,14 @@ export class StageManager {
       StageManager.StageObjects.set(deserialized.id, deserialized);
       StageManager.setStageObjectLayer(deserialized, item.layer);
       deserialized.dirty = false;
+    });
+
+    Hooks.on(CUSTOM_HOOKS.SYNC_OBJECT, (item: SerializedStageObject) => {
+      const obj = coerceStageObject(item.id);
+      if (obj instanceof StageObject) {
+        obj.deserialize(item);
+        obj.dirty = false;
+      }
     });
 
     Hooks.on("collapseSidebar", () => {
@@ -586,6 +840,20 @@ export class StageManager {
       // if (!(obj instanceof StageObject)) logWarn(localize("STAGEMANAGER.WARNINGS.REMOVEUNKNOWNOBJECT", {id}));
       // else obj.destroy();
     });
+
+
+    // Check for system compatibility modules
+    const system = Object.values(systemCompatibility).find(item => item.SystemID === game?.system?.id)
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    if (system) StageManager.RegisterSystem(system as any);
+  }
+
+  public static RegisterSystem(system: SystemCompatibility) {
+    if (system.SystemID !== game?.system?.id) throw new SystemMismatchError(system.SystemID);
+    if (system.MinVersion && !semver.gte(game.system.version, system.MinVersion)) throw new SystemMismatchError(system.SystemID);
+    if (system.MaxVersion && !semver.lte(game.system.version, system.MaxVersion)) throw new SystemMismatchError(system.SystemID);
+    log(`Registering system compatibility module for ${system.SystemID}.`);
+    system.register(triggerEvent);
   }
 
   /**

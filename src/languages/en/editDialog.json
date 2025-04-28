@@ -4,12 +4,16 @@
       "ACTOR": "Actor",
       "ADDTRIGGER": "Add Trigger",
       "ALPHA": "Opacity",
+      "ANCHOR": "Anchor",
       "ANGLE": "Rotation",
       "ANGLEHINT": "(In degrees)",
+      "ANIMATEVALUECHANGES": "Animate Value Changes",
+      "ANIMATION": "Animation",
       "BGTYPES": {
         "COLOR": "Color",
         "IMAGE": "Image"
       },
+      "BLENDMODE": "Blend Mode",
       "BORDERS": {
         "BOTTOM": "Bottom",
         "LEFT": "Left",
@@ -17,6 +21,8 @@
         "TITLE": "Border Sizes",
         "TOP": "Top"
       },
+      "BREAKWORDS": "Wrap on Whitespace",
+      "CLAMP": "Clamp Values",
       "CLICKTHROUGH": "Ignore Mouse Events",
       "DELETE": "Delete {name}",
       "DELETEEFFECT": {
@@ -68,6 +74,15 @@
             "OUTERSTRENGTH": "Outer Strength",
             "QUALITY": "Quality"
           },
+          "HOLOGRAM": {
+            "ALPHA": "Alpha",
+            "COLOR1": "First Color",
+            "COLOR2": "Second Color",
+            "LINES": "Scanlines",
+            "NOISE": "Noise",
+            "SPEED": "Animation Speed"
+          },
+          "NOOPTIONS": "No configurable options.",
           "OUTLINE": {
             "COLOR": "Color",
             "OUTLINEONLY": "Outline Only",
@@ -82,6 +97,8 @@
         "DROPSHADOW": "Drop Shadow",
         "ENABLE": "Enable Effects",
         "GLOW": "Glow",
+        "HOLOGRAM": "Hologram",
+        "INVERT": "Invert",
         "OUTLINE": "Outline",
         "PIXELATE": "Pixelate"
       },
@@ -98,6 +115,7 @@
       },
       "HEIGHT": "Height",
       "LAYER": "Layer",
+      "LERPEASING": "Lerp Easing",
       "LOCATION": "Screen Location",
       "LOCATIONPRESET": "Screen location presets",
       "LOCATIONPRESETS": {
@@ -111,12 +129,37 @@
         "TOPLEFT": "Top left",
         "TOPRIGHT": "Top right"
       },
+      "MASK": "Masking",
+      "MAX": "Max",
+      "MAXPATH": "Maximum Path",
       "NAME": "Name",
       "OWNERS": "Owner(s)",
+      "PADDING": {
+        "BOTTOM": "Bottom",
+        "LEFT": "Left",
+        "RIGHT": "Right",
+        "TITLE": "Padding Sizes",
+        "TOP": "Top"
+      },
+      "PATHPRESETS": "Path Preset",
+      "PIN": "Pin Settings",
+      "PINBOTTOM": "Bottom",
+      "PINLEFT": "Left",
+      "PINRIGHT": "Right",
+      "PINTOP": "Top",
       "POSX": "X",
       "POSY": "Y",
+      "PREVIEW": "Preview:",
+      "PRIMARYLERP": "Primary Lerp Time",
+      "RESOURCE": "Resource",
+      "RESOURCEPATH": "Resource Path",
+      "RESOURCETEXTMODE": "Text Display Mode",
       "SCENES": "Scenes",
       "SCOPE": "Object scope",
+      "SECONDARYLERP": "Secondary Lerp Time",
+      "SELECTTOKEN": "Select Token",
+      "SELECTTOKENHINT": "Select a token to link its actor.  Press the 'Select Token' button again to cancel.",
+      "SHOWBORDERGUIDES": "Show Border Guides",
       "SHOWPORTRAIT": "Show Portrait",
       "SIZE": "Size",
       "SKEW": "Skew",
@@ -129,15 +172,36 @@
         "IMAGE": "Image",
         "LABEL": "Label",
         "LOCATION": "Position",
-        "SRC": "Image Source",
-        "ZINDEXHINT": "A zIndex > 0 will place the speaker in front of the dialogue panel.",
+        "MAXHEIGHT": "Height",
         "MAXSIZE": "Maximum Size",
         "MAXWIDTH": "Width",
-        "MAXHEIGHT": "Height",
-        "SLOTWIDTH": "Slot Width"
+        "SLOTWIDTH": "Slot Width",
+        "SRC": "Image Source",
+        "ZINDEXHINT": "A zIndex > 0 will place the speaker in front of the dialogue panel."
       },
       "SRC": "Image source",
+      "TAGS": "Tags",
+      "TEMPORARY": "Temporary",
       "TEXT": "Text",
+      "TEXTALIGN": {
+        "BOTTOM": "Bottom",
+        "CENTER": "Center",
+        "HORIZONTAL": "Horizontal",
+        "JUSTIFY": "Justified",
+        "LABEL": "Alignment",
+        "LEFT": "Left",
+        "RIGHT": "Right",
+        "TOP": "Top",
+        "VERTICAL": "Vertical"
+      },
+      "TEXTALIGNMENT": "Text Alignment",
+      "TEXTMODE": {
+        "LABEL": "Text Mode",
+        "NONE": "None",
+        "PERCENTAGE": "Percentage",
+        "VALUES": "Values"
+      },
+      "TINT": "Tint",
       "TITLE": "Edit {name}",
       "TRIGGERLABELS": {
         "MACRO": "Macro: {macro}"
@@ -145,13 +209,61 @@
       "TRIGGERS": "Triggers",
       "TRIGGERSENABLED": "Enable triggers",
       "USERS": "Users",
+      "UUID": "Object UUID",
+      "VALUE": "Value",
+      "VALUEPATH": "Current Value Path",
       "VISIBLE": "Visible",
       "VISUALBOUNDS": "Relative to Visual Bounds",
       "VISUALBOUNDSHIDE": "Hide Visual Bounds",
       "VISUALBOUNDSHINT": "The 'visual bounds' is an area of the screen calculated to ensure that elements placed will not be covered by Foundry's standard UI.",
       "VISUALBOUNDSSHOW": "Show Visual Bounds",
+      "WHITESPACE": {
+        "LABEL": "Whitespace Handling",
+        "NORMAL": "Normal",
+        "PRE": "Preserve",
+        "PRELINE": "Preserve Lines"
+      },
       "WIDTH": "Width",
+      "WORDWRAP": "Word Wrap",
+      "WORDWRAPWIDTH": "Word Wrap Width",
       "ZINDEX": "Sort Index"
+    },
+    "PATHPRESETS": {
+      "DND5E": {
+        "HP": "HP"
+      },
+      "EXALTEDTHIRD": {
+        "EXALTXP": "Exalt XP",
+        "HEALTH": "Health Levels",
+        "PERIPHERALMOTES": "Peripheral Motes",
+        "PERSONALMOTES": "Personal Motes",
+        "PERSONALXP": "Personal XP",
+        "SORCEROUSMOTES": "Sorcerous Motes",
+        "WILLPOWER": "Willpower"
+      },
+      "LANCER": {
+        "HEAT": "Heat",
+        "HP": "HP",
+        "OVERSHIELD": "Overshield",
+        "STRESS": "Stress",
+        "STRUCTURE": "Structure"
+      },
+      "PF2E": {
+        "HEROPOINTS": "Hero Points",
+        "HP": "HP",
+        "MYTHICPOINTS": "Mythic Points"
+      },
+      "PROJECTFU": {
+        "GARDEN": "Magiseed Garden",
+        "HP": "HP",
+        "IP": "IP",
+        "MP": "MP",
+        "PROJECT": "Project",
+        "QUIRK": "Quirk",
+        "RITUAL": "Ritual",
+        "SKILL": "Skill",
+        "ZEROPOWER": "Zero Power"
+      }
     }
   }
 }

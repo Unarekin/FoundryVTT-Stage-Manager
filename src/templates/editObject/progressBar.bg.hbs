@@ -1,0 +1,53 @@
+<section class="tab {{cssClass}}" data-group="progressBar" data-tab="bg">
+  {{#with stageObject}}
+    <div class="form-group">
+      <label for="{{../formPrefix}}bgSprite">{{localize "STAGEMANAGER.EDITDIALOG.SRC"}}</label>
+      <file-picker type="imagevideo" value="{{bgSprite}}" name="{{../formPrefix}}bgSprite" id="{{../formPrefix}}bgSprite"></file-picker>
+    </div>
+    
+
+    <div class="form-group">
+      <label>{{localize "STAGEMANAGER.EDITDIALOG.PREVIEW"}}</label>
+    </div>
+    <div class="form-group">
+      <canvas id="BgPanelPreview">
+    </div>
+    
+    <div class="form-group">
+      <label for="bg.showBorderGuides">{{localize "STAGEMANAGER.EDITDIALOG.SHOWBORDERGUIDES"}}</label>
+      <input type="checkbox" checked id="bg.showBorderGuides">
+    </div>
+
+    <div class="form-group">
+      <label>{{localize "STAGEMANAGER.EDITDIALOG.BORDERS.TITLE"}}</label>
+    </div>
+
+    <div class="form-group slim">
+      <label for="{{../formPrefix}}bgBorder.left">{{localize "STAGEMANAGER.EDITDIALOG.BORDERS.LEFT"}}</label>
+      <input type="number" min="0" step="1" name="{{../formPrefix}}bgBorder.left" id="{{../formPrefix}}bgBorder.left" value="{{bgBorder.left}}">
+      
+      <label for="{{../formPrefix}}bgBorder.right">{{localize "STAGEMANAGER.EDITDIALOG.BORDERS.RIGHT"}}</label>
+      <input type="number" min="0" step="1" name="{{../formPrefix}}bgBorder.right" id="{{../formPrefix}}bgBorder.right" value="{{bgBorder.right}}">
+    </div>
+
+    <div class="form-group">
+      <label for="{{../formPrefix}}bgBorder.top">{{localize "STAGEMANAGER.EDITDIALOG.BORDERS.TOP"}}</label>
+      <input type="number" min="0" step="1" name="{{../formPrefix}}bgBorder.top" id="{{../formPrefix}}bgBorder.top" value="{{bgBorder.top}}">
+      <label for="{{../formPrefix}}bgBorder.bottom">{{localize "STAGEMANAGER.EDITDIALOG.BORDERS.BOTTOM"}}</label>
+      <input type="number" min="0" step="1" name="{{../formPrefix}}bgBorder.bottom" id="{{../formPrefix}}bgBorder.bottom" value="{{bgBorder.bottom}}">
+    </div>
+
+    <div class="form-group">
+      <label for="{{../formPrefix}}bgBlendMode">{{localize "STAGEMANAGER.EDITDIALOG.BLENDMODE"}}</label>
+      <select name="{{../formPrefix}}bgBlendMode" id="{{../formPrefix}}bgBlendMode">
+        {{selectOptions ../blendModeSelect localize=true selected=bgBlendMode}}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="{{../formPrefix}}bgTint">{{localize "STAGEMANAGER.EDITDIALOG.TINT"}}</label>
+      <input type="text" name="{{../formPrefix}}bgTint" id="{{../formPrefix}}bgTint" value="{{tint}}" data-color-picker="{alphaChannel: false}">
+    </div>
+
+  {{/with}}
+</section>

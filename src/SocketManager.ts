@@ -5,7 +5,7 @@ import { StageManager } from "./StageManager";
 import { CanvasNotInitializedError, InvalidUserError, PermissionDeniedError } from "./errors";
 import { CUSTOM_HOOKS } from "./hooks";
 import { setUserObjects } from "./Settings";
-import { log, logError } from "logging";
+import { logError } from "logging";
 
 
 let socket: any;
@@ -39,7 +39,7 @@ export class SocketManager {
 
 
   public static onSynchronizationMessageReceived(this: void, message: SynchronizationMessage) {
-    log("Synchronization message received:", message);
+    // log("Synchronization message received:", message);
     Hooks.callAll(CUSTOM_HOOKS.SYNC_START, message);
     for (const item of message.added) Hooks.callAll(CUSTOM_HOOKS.REMOTE_ADDED, item);
     for (const id of message.removed) Hooks.callAll(CUSTOM_HOOKS.REMOTE_REMOVED, id);

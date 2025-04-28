@@ -1,3 +1,4 @@
+import { ActorStageObjectApplication, StageObjectApplication } from 'applications';
 import { coerceActor } from '../coercion';
 import { InvalidActorError } from '../errors';
 import { localize } from '../functions';
@@ -10,6 +11,9 @@ export class ActorStageObject extends ImageStageObject {
 
   public static readonly type: string = "actor";
   public readonly type: string = "actor";
+
+  public static readonly ApplicationType = ActorStageObjectApplication as typeof StageObjectApplication;
+  public readonly ApplicationType = ActorStageObject.ApplicationType;
 
   public static GetActorObjects(id: string): ActorStageObject[]
   public static GetActorObjects(name: string): ActorStageObject[]
@@ -68,9 +72,9 @@ export class ActorStageObject extends ImageStageObject {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected getTriggerArguments<k extends keyof TriggerEventSignatures>(event: k, args: TriggerEventSignatures[k]): Partial<TriggerEventSignatures[k]> | Record<string, unknown> {
     return {
+      ...super.getTriggerArguments(event, args),
       actor: this.actor
     };
   }
@@ -79,8 +83,16 @@ export class ActorStageObject extends ImageStageObject {
     const actor = coerceActor(serialized.actor);
     if (!(actor instanceof Actor)) throw new InvalidActorError(serialized.actor);
     super.deserialize(serialized);
+
     this.actor = actor;
     // if (serialized.src) this.path = serialized.src;
+  }
+
+  public macroArguments(): { label: string; value: string; key: string; }[] {
+    return [
+      ...super.macroArguments(),
+      { label: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.ACTOR", value: "STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.AUTO", key: "actor" }
+    ]
   }
 
   constructor(actor: Actor)

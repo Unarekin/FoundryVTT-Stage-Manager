@@ -1,6 +1,7 @@
 import { InvalidUserError } from "./errors";
 import { StageObject } from "./stageobjects";
 import { StageManager } from "./StageManager";
+import { loadVideoTexture, pathIsVideo } from "lib/videoTextures";
 
 
 export function coerceUser(id: string): User | undefined
@@ -75,7 +76,7 @@ export function coerceActor(token: TokenDocument): undefined
 export function coerceActor(actor: Actor): Actor
 export function coerceActor(arg: unknown): Actor | undefined {
   if (arg instanceof Actor) return arg;
-  if (arg instanceof Token) return arg.actor as Actor ?? undefined;
+  if (arg instanceof Token) return arg.actor! ?? undefined;
   if (arg instanceof TokenDocument) return arg.actor ?? undefined;
   if (typeof arg === "string") {
     let actor: unknown = fromUuidSync(arg);
@@ -139,6 +140,7 @@ export function coerceTexture(source: unknown): PIXI.Texture | undefined {
 
   // Attempt to get a texture directly
   try {
+    if (typeof source === "string" && pathIsVideo(source)) return loadVideoTexture(source);
     return PIXI.Texture.from(source as PIXI.TextureSource);
   } catch { /* empty */ }
 }

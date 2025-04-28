@@ -1,5 +1,13 @@
 {
   "STAGEMANAGER": {
+    "ADDPROGRESSBAR": {
+      "BG": "Background Image",
+      "FG": "Foreground Image",
+      "MANUAL": "Manual Values",
+      "RESOURCE": "Automatic from Object",
+      "TITLE": "Add Progress Bar",
+      "TYPE": "Type"
+    },
     "ADDTEXT": {
       "CONTENT": "Enter text to add:",
       "TITLE": "Add Text"
@@ -12,9 +20,15 @@
         "AUTO": "Automatic",
         "COMBAT": "combat",
         "COMBATANT": "combatant",
+        "DATA": "data",
+        "HOOKARGS": "hookArgs",
+        "HOOKNAME": "hookName",
+        "ITEM": "item",
         "MODKEYS": "modifierKeys",
         "NAME": "Name",
         "POS": "position",
+        "REGION": "region",
+        "RESOURCE": "Resource",
         "SCENE": "scene",
         "STAGEOBJECT": "stageObject",
         "STATUSEFFECT": "statusEffect",
@@ -32,11 +46,30 @@
     },
     "TABS": {
       "ACTOR": "Actor",
+      "ANIMATION": "Animation",
+      "BACKGROUND": "Background",
       "BASICS": "Basics",
       "EFFECTS": "Effects",
       "FONT": "Font Style",
+      "FOREGROUND": "Foreground",
       "IMAGE": "Image",
       "PANEL": "Panel",
+      "PERMISSIONS": "Permissions",
+      "PROGRESSBAR": {
+        "BG": "Background",
+        "FG": "Foreground",
+        "LERP": "Lerp",
+        "SETTINGS": "Settings",
+        "TAB": "Progress Bar"
+      },
+      "PROGRESSCLOCK": {
+        "BG": "Background",
+        "FG": "Foreground",
+        "LERP": "Lerp",
+        "SETTINGS": "Settings",
+        "TAB": "Progress Clock"
+      },
+      "RESOURCE": "Resource",
       "SPEAKERS": "Speakers",
       "TEXT": "Text",
       "TRIGGERS": "Triggers",

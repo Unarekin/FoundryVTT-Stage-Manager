@@ -14,7 +14,8 @@ export const DropShadowEffect: Effect<SerializedDropShadowEffect> = {
     offsetY: 4,
     color: "#00000080",
     blur: 2,
-    quality: 3
+    quality: 3,
+    temporary: false
   },
   fromForm(parent: HTMLElement) {
     const parsed = parseForm(parent);
@@ -37,25 +38,34 @@ export const DropShadowEffect: Effect<SerializedDropShadowEffect> = {
 
     return {
       ...DropShadowEffect.default,
-      offsetX: offset.x,
-      offsetY: offset.y,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+      id: (filter as any).id ?? foundry.utils.randomID(),
+      ...(typeof offset?.x === "number" ? { offsetX: offset.x } : {}),
+      ...(typeof offset?.y === "number" ? { offsetY: offset.y } : {}),
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       blur: (filter as any).blur,
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       quality: (filter as any).quality,
-      color: color.toHexa()
+      color: color.toHexa(),
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+      temporary: (filter as any).temporary ?? false
     }
   },
   deserialize(serialized: SerializedDropShadowEffect): PIXI.Filter {
     const color = new PIXI.Color(serialized.color);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    return new (PIXI.filters as any).DropShadowFilter({
+    const filter = new (PIXI.filters as any).DropShadowFilter({
       offset: { x: serialized.offsetX, y: serialized.offsetY },
       blur: serialized.blur,
       quality: serialized.quality,
       color: color.toNumber(),
       alpha: color.alpha
     }) as PIXI.Filter;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    (filter as any).id = serialized.id ?? foundry.utils.randomID();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    (filter as any).temporary = serialized.temporary ?? false;
+    return filter;
   },
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   typeCheck(filter: PIXI.Filter): boolean { return filter instanceof (PIXI.filters as any).DropShadowFilter }

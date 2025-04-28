@@ -1,63 +1,16 @@
 import { SerializedPanelStageObject } from "../types";
 import { StageObject } from "./StageObject";
-
-type BorderCallback = (left: number, right: number, top: number, bottom: number) => void;
-
-class ObservableBorder {
-
-  #left = 0;
-  #right = 0;
-  #top = 0;
-  #bottom = 0;
-
-  #cb: BorderCallback;
-
-  public get left() { return this.#left; }
-  public set left(val) {
-    if (val !== this.left) {
-      this.#left = val;
-      this.#callCallback();
-    }
-  }
-
-  public get right() { return this.#right; }
-  public set right(val) {
-    if (val !== this.right) {
-      this.#right = val;
-      this.#callCallback();
-    }
-  }
-
-  public get top() { return this.#top; }
-  public set top(val) {
-    if (val !== this.top) {
-      this.#top = val;
-      this.#callCallback();
-    }
-  }
-
-  public get bottom() { return this.#bottom; }
-  public set bottom(val) {
-    if (val !== this.bottom) {
-      this.#bottom = val;
-      this.#callCallback();
-    }
-  }
-
-  #callCallback() { this.#cb(this.#left, this.#right, this.#top, this.#bottom); }
-
-  constructor(left: number, right: number, top: number, bottom: number, cb: BorderCallback) {
-    this.#left = left;
-    this.#right = right;
-    this.#top = top;
-    this.#bottom = bottom;
-    this.#cb = cb;
-  }
-}
+import { ObservableBorder } from "./ObservableBorder";
+import { PanelStageObjectApplication, StageObjectApplication } from "applications";
+import { unloadVideoTexture, pathIsVideo, loadVideoTexture, pathIsGif } from "lib/videoTextures";
+import { logError } from "logging";
 
 export class PanelStageObject extends StageObject<PIXI.NineSlicePlane> {
   public static readonly type: string = "panel";
   public readonly type: string = "panel";
+
+  public static readonly ApplicationType = PanelStageObjectApplication as typeof StageObjectApplication;
+  public readonly ApplicationType = PanelStageObject.ApplicationType;
 
 
   private _borders: ObservableBorder;
@@ -71,16 +24,20 @@ export class PanelStageObject extends StageObject<PIXI.NineSlicePlane> {
   public get src() { return this._imageSrc; }
   public set src(val) {
     if (val !== this.src) {
-      this.dirty = true;
+      if (pathIsVideo(this.src)) unloadVideoTexture(this.src, this.displayObject.texture);
+
       this._imageSrc = val;
-      this.displayObject.texture = PIXI.Texture.from(val);
-      if (!this.displayObject.texture.valid) {
-        this.displayObject.texture.baseTexture.once("loaded", () => {
-          this.width = this.displayObject.texture.width;
-          this.height = this.displayObject.texture.height;
-          // this.createRenderTexture();
-        });
+      if (pathIsVideo(val)) {
+        this.displayObject.texture = loadVideoTexture(val);
+      } else if (pathIsGif(val)) {
+        PIXI.Assets.load(val)
+          .then((img: PIXI.Sprite) => { this.displayObject.texture = img.texture; })
+          .catch((err: Error) => { logError(err); })
+      } else {
+        this.displayObject.texture = PIXI.Texture.from(val);
       }
+
+      this.dirty = true;
     }
   }
 
@@ -97,19 +54,55 @@ export class PanelStageObject extends StageObject<PIXI.NineSlicePlane> {
 
   public deserialize(serialized: SerializedPanelStageObject) {
     super.deserialize(serialized);
-    this.borders.left = serialized.borders.left;
-    this.borders.right = serialized.borders.right;
-    this.borders.top = serialized.borders.top;
-    this.borders.bottom = serialized.borders.bottom;
 
     this.src = serialized.src;
+
+    if (typeof serialized.blendMode !== "undefined") this.blendMode = serialized.blendMode;
+    if (typeof serialized.tint !== "undefined") this.tint = serialized.tint;
+
+    void this.textureLoaded().then(() => {
+      this.width = Math.abs(this.width);
+      this.height = Math.abs(this.height);
+
+      if (serialized.bounds.width < 0) this.scale.x *= -1;
+      if (serialized.bounds.height < 0) this.scale.y *= -1;
+
+      this.borders.left = serialized.borders?.left ?? 0;
+      this.borders.right = serialized.borders?.right ?? 0;
+      this.borders.top = serialized.borders?.top ?? 0;
+      this.borders.bottom = serialized.borders?.bottom ?? 0;
+    });
+  }
+
+  public get blendMode() { return this.displayObject.blendMode; }
+  public set blendMode(val) {
+    if (this.blendMode !== val) {
+      this.displayObject.blendMode = val;
+      this.dirty = true;
+    }
+  }
+
+  public get tint() { return this.displayObject.tint; }
+  public set tint(val) {
+    if (this.tint !== val) {
+      this.displayObject.tint = val;
+      this.dirty = true;
+    }
   }
 
   public serialize(): SerializedPanelStageObject {
+    const serialized = super.serialize();
     return {
-      ...super.serialize(),
+      ...serialized,
       type: PanelStageObject.type,
       src: this.src,
+      bounds: {
+        ...serialized.bounds,
+        width: (this.width * this.scale.x) / this.actualBounds.width,
+        height: (this.height * this.scale.y) / this.actualBounds.height
+      },
+      blendMode: this.blendMode,
+      tint: new PIXI.Color(this.tint).toHexa(),
       borders: {
         left: this.borders.left,
         right: this.borders.right,
@@ -139,81 +132,66 @@ export class PanelStageObject extends StageObject<PIXI.NineSlicePlane> {
     // this.pivot.y = this.height / 2;
   }
 
-  public get width() { return this.displayObject.width; }
-  public set width(val) {
-    if (val !== this.width) {
+  public get width(): number { return this.displayObject.width; }
+  public set width(val: number | string) {
+    const calculated = typeof val === "string" ? this.calculatePercentageExpression(val, this.actualBounds.width) : val;
+    if (calculated !== this.width) {
       if (!this.displayObject.texture.valid) {
-        this.displayObject.texture.baseTexture.once("loaded", () => { this.width = val; });
+        this.displayObject.texture.baseTexture.once("loaded", () => { this.width = calculated; });
       } else {
         this.dirty = true;
-        this.displayObject.width = val;
+        this.displayObject.width = calculated;
         // this.updateScaledDimensions();
         this.updatePivot();
       }
     }
   }
 
-  public get height() { return this.displayObject.height; }
-  public set height(val) {
-    if (val !== this.height) {
+  public get height(): number { return this.displayObject.height; }
+  public set height(val: number | string) {
+    const calculated = typeof val === "string" ? this.calculatePercentageExpression(val, this.actualBounds.height) : val;
+    if (calculated !== this.height) {
       if (!this.displayObject.texture.valid) {
-        this.displayObject.texture.baseTexture.once("loaded", () => { this.height = val; });
+        this.displayObject.texture.baseTexture.once("loaded", () => { this.height = calculated; });
       } else {
         this.dirty = true;
-        this.displayObject.height = val;
+        this.displayObject.height = calculated;
         // this.updateScaledDimensions();
         this.updatePivot();
       }
     }
   }
 
-  public get left() { return this.x + this.actualBounds.left - this.pivot.x; }
-
-  public set left(val) {
-    if (this.left !== val) {
-      this.x = val + this.actualBounds.left + (this.width * this.pivot.x);
-      // this.updateScaledDimensions();
-      this.updatePinLocations();
-      this.updatePivot()
-    }
+  public textureLoaded(): Promise<void> {
+    return new Promise(resolve => {
+      if (this.displayObject.texture.valid) {
+        resolve();
+      } else {
+        this.displayObject.texture.baseTexture.once("loaded", () => { resolve(); });
+      }
+    })
   }
 
-  public get right() { return this.actualBounds.right - (this.x + this.pivot.x); }
-
-  public set right(val) {
-    if (this.right !== val) {
-      // Set relative to right side of screen
-      this.displayObject.x = this.actualBounds.right - val - this.pivot.x;
-      this.dirty = true;
-
-      // this.updateScaledDimensions();
-      this.updatePinLocations();
+  public get x(): number { return super.x; }
+  public set x(val: number | string) {
+    const calculated = typeof val === "string" ? this.calculatePercentageExpression(val, this.actualBounds.width) : val;
+    if (calculated !== this.x) {
+      super.x = calculated;
       this.updatePivot();
     }
   }
 
-  public get top() { return this.y - this.actualBounds.top - this.pivot.y; }
-
-  public set top(val) {
-    if (this.top !== val) {
-      this.y = val + this.actualBounds.top + this.pivot.y;
-      this.dirty = true;
-      // this.updateScaledDimensions();
-      this.updatePinLocations();
+  public get y(): number { return super.y; }
+  public set y(val: number | string) {
+    const calculated = typeof val === "string" ? this.calculatePercentageExpression(val, this.actualBounds.height) : val;
+    if (calculated !== this.y) {
+      super.y = calculated;
       this.updatePivot();
     }
   }
 
-  public get bottom() { return this.actualBounds.bottom - (this.y + this.pivot.y); }
 
-  public set bottom(val) {
-    if (this.bottom !== val) {
-      this.displayObject.y = this.actualBounds.bottom - val - this.pivot.y;
-      // this.updateScaledDimensions();
-      this.updatePinLocations();
-      this.updatePivot();
-    }
-  }
+
 
   public get baseWidth() { return this.displayObject.texture.width; }
   public get baseHeight() { return this.displayObject.texture.height; }
@@ -234,8 +212,18 @@ export class PanelStageObject extends StageObject<PIXI.NineSlicePlane> {
     const top = sizes.length === 4 ? sizes[2] : sizes[1];
     const bottom = sizes.length === 4 ? sizes[3] : sizes[1];
 
-    const panel = new PIXI.NineSlicePlane(PIXI.Texture.from(image), left, right, top, bottom);
+
+
+    const panel = new PIXI.NineSlicePlane(pathIsVideo(image) ? loadVideoTexture(image) : PIXI.Texture.from(image), left, right, top, bottom);
     super(panel);
+
+    if (pathIsGif(image)) {
+      PIXI.Assets.load(image)
+        .then((img: PIXI.Sprite) => {
+          panel.texture = img.texture;
+        }).catch((err: Error) => { logError(err); });
+    }
+
     this._imageSrc = image;
     this.resizable = true;
 

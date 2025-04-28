@@ -17,16 +17,18 @@ export const ChromaKeyEffect: Effect<SerializedChromaKeyEffect> = {
     backgroundType: "color",
     backgroundColor: "#00000000",
     keyColor: "#00B140",
-    range: [.11, .22]
+    range: [.11, .22],
+    temporary: false
   },
   serialize(filter: ChromaKeyFilter): SerializedChromaKeyEffect {
     return {
       ...ChromaKeyEffect.default,
-      id: foundry.utils.randomID(),
+      id: filter.id,
       backgroundType: filter.backgroundType,
       ...(filter.backgroundType === "image" ? { backgroundImage: filter.background, backgroundColor: "" } : { backgroundColor: filter.background as string, backgroundImage: "" }),
       keyColor: new PIXI.Color(filter.keyRGBA).toHexa(),
-      range: filter.range
+      range: filter.range,
+      temporary: filter.temporary ?? false
     }
   },
   deserialize(serialized: SerializedChromaKeyEffect): ChromaKeyFilter {
@@ -47,11 +49,14 @@ export const ChromaKeyEffect: Effect<SerializedChromaKeyEffect> = {
     }
 
 
-    return new ChromaKeyFilter(
+    const filter = new ChromaKeyFilter(
       serialized.keyColor,
       serialized.range,
       bg
     )
+    filter.id = serialized.id ?? foundry.utils.randomID();
+    filter.temporary = serialized.temporary ?? false;
+    return filter;
   },
   typeCheck(filter: PIXI.Filter) { return filter instanceof ChromaKeyFilter; },
   fromForm(parent: HTMLElement): SerializedChromaKeyEffect {
@@ -87,7 +92,7 @@ function rgbaToCC(r: number, g: number, b: number): [number, number] {
   return [(b - y) * 0.565, (r - y) * 0.713];
 }
 
-class ChromaKeyFilter extends CustomFilter<ChromaKeyUniforms> {
+export class ChromaKeyFilter extends CustomFilter<ChromaKeyUniforms> {
   public readonly keyRGBA: [number, number, number, number];
   public readonly keyCC: [number, number];
   public readonly range: [number, number];

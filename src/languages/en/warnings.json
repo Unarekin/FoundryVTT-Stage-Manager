@@ -1,9 +1,11 @@
 {
   "STAGEMANAGER": {
+    "REGISTERSYSTEM": "Registering system compatibility: {system}",
     "WARNINGS": {
-      "READONLYWIDTH": "Attempting to set the width of an unsized StageObject.",
       "READONLYHEIGHT": "Attempting to set the height of an unsized StageObject.",
-      "REMOVEUNKNOWNOBJECT": "Attempting to remove unknown Stage Object: {id}"
+      "READONLYWIDTH": "Attempting to set the width of an unsized StageObject.",
+      "REMOVEUNKNOWNOBJECT": "Attempting to remove unknown Stage Object: {id}",
+      "UNABLETOHOOKROLL": "Unable to hook roll event for {system} system"
     }
   }
 }

@@ -1,48 +1,53 @@
 {
   "STAGEMANAGER": {
     "TRIGGERS": {
-      "TYPE": "Trigger Type",
+      "ACTION": "Triggered Action",
       "ACTIONS": {
         "MACRO": "Execute Macro"
       },
-      "UNKNOWN": "(Unknown Trigger)",
-      "ACTION": "Triggered Action",
-      "EVENT": "Triggering Event",
       "CATEGORIES": {
-        "NONE": "None",
-        "MOUSE": "Mouse",
         "ACTOR": "Actor",
         "COMBAT": "Combat",
         "MISC": "Miscellaneous",
+        "MOUSE": "Mouse",
+        "NONE": "None",
+        "REGION": "Region",
         "TOKEN": "Token"
       },
+      "EVENT": "Triggering Event",
       "EVENTS": {
-        "HOVERIN": "Mouse Enter",
-        "HOVEROUT": "Mouse Leave",
+        "ACTORCHANGE": "Actor Changed",
+        "ADDACTIVEEFFECT": "Add ActiveEffect",
+        "ADDSTATUSEFFECT": "Add Status Effect",
         "CLICK": "Left Click",
-        "RIGHTCLICK": "Right Click",
-        "DOUBLECLICK": "Double Click",
-        "COMBATSTART": "Combat Start",
         "COMBATEND": "Combat End",
         "combatRound": "Combat Round",
-        "COMBATTURNSTART": "Combat Turn Start",
+        "COMBATSTART": "Combat Start",
         "COMBATTURNEND": "Combat Turn End",
-        "SCENECHANGE": "Scene Change",
+        "COMBATTURNSTART": "Combat Turn Start",
+        "DESELECTTOKEN": "Deselect Token",
+        "DOUBLECLICK": "Double Click",
+        "HOVERIN": "Mouse Enter",
+        "HOVEROUT": "Mouse Leave",
+        "ITEMROLL": "Item Rolled",
         "PAUSE": "Pause",
+        "POSTHOOK": "Post Hook",
+        "PREHOOK": "Pre Hook",
+        "REMOVEACTIVEEFFECT": "Remove ActiveEffect",
+        "REMOVESTATUSEFFECT": "Remove Status Effect",
+        "RIGHTCLICK": "Right Click",
+        "SCENECHANGE": "Scene Change",
+        "SELECTTOKEN": "Select Token",
+        "TARGETTOKEN": "Target Token",
         "UNPAUSE": "Unpause",
+        "UNTARGETTOKEN": "Untarget Token",
         "USERCONNECTED": "User Connected",
         "USERDISCONNECTED": "User Disconnected",
-        "ADDACTIVEEFFECT": "Add ActiveEffect",
-        "REMOVEACTIVEEFFECT": "Remove ActiveEffect",
-        "ADDSTATUSEFFECT": "Add Status Effect",
-        "REMOVESTATUSEFFECT": "Remove Status Effect",
-        "SELECTTOKEN": "Select Token",
-        "DESELECTTOKEN": "Deselect Token",
-        "TARGETTOKEN": "Target Token",
-        "UNTARGETTOKEN": "Untarget Token",
-        "WORLDTIMECHANGE": "World Time Change",
-        "ACTORCHANGE": "Actor Changed"
-      }
+        "WORLDTIMECHANGE": "World Time Changed"
+      },
+      "TYPE": "Trigger Type",
+      "UNKNOWN": "(Unknown Trigger)",
+      "HOOKNAME": "Hook Name"
     }
   }
 }

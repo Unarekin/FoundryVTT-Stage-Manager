@@ -1,12 +1,16 @@
-import { InvalidTriggerError, LocalizedError } from "../errors";
-import { localize } from "../functions";
-import * as tempTriggerActions from "../triggeractions";
-import { TriggerAction } from "../triggeractions";
-import { SerializedTrigger } from "../types";
-import { confirm } from "./functions";
+import { SerializedTrigger, TriggerEventSignatures } from '../types';
+import { InvalidTriggerError, LocalizedError } from 'errors';
+import { getTriggerActionType, triggerActions } from 'triggeractions';
 import triggerEvents from "./triggerEvents.json";
+import { localize, confirm } from 'functions';
+import { StageObject } from 'stageobjects';
 
-export interface EventSpec {
+import * as hookEvents from "./hookEvents.json"
+
+const TRIGGER_LIST_SELECTOR = `select[name="triggerList"]`
+const TRIGGER_FORM_SELECTOR = `[data-role="trigger-config"]`
+
+interface EventSpec {
   addlArgs: { name: string, label: string }[]
   category: string;
   categoryLabel: string;
@@ -14,170 +18,26 @@ export interface EventSpec {
   value: string;
 }
 
-function getTriggerActions() { return triggerActions; }
 
-function getTriggerLabel(trigger: SerializedTrigger): string {
-  const triggerClass = getTriggerActionType(trigger.action);
-  if (!triggerClass) return "";
-  return triggerClass.getDialogLabel(trigger);
-}
-
-async function injectTriggerForm(parent: HTMLElement, trigger?: SerializedTrigger) {
-  const section = parent.querySelector(`[data-role="trigger-config"]`);
-  if (!(section instanceof HTMLElement)) throw new LocalizedError("NOTRIGGERELEMENT");
-
-  section.innerHTML = "";
-  const deleteButton = parent.querySelector(`button[data-action="deleteTrigger"]`);
-  if (deleteButton instanceof HTMLButtonElement) deleteButton.setAttribute("disabled", "disabled");
-
-  const context = {
-    triggerActionSelect: getTriggerActionSelect(),
-    triggerEventSelect: getTriggerEvents(trigger),
-    trigger
-  };
-
-  const triggerActions = getTriggerActions();
-  for (const action of triggerActions)
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    foundry.utils.mergeObject(context, action.prepareContext(trigger as any));
-
-  const content = await renderTemplate(`modules/${__MODULE_ID__}/templates/edit-trigger.hbs`, context);
-  section.innerHTML = content;
-  if (deleteButton instanceof HTMLButtonElement) deleteButton.removeAttribute("disabled");
-
-  setEventListeners(parent);
-  setSelectedConfig(parent);
-}
-
-
-function selectedTrigger(parent: HTMLElement): SerializedTrigger | undefined {
-  const option = selectedTriggerOption(parent);
-  if (!(option instanceof HTMLOptionElement)) return;
-  if (!option.dataset.serialized) return;
-
-  return JSON.parse(option.dataset.serialized) as SerializedTrigger;
-}
-
-function selectedTriggerOption(parent: HTMLElement): HTMLOptionElement | undefined {
-  const selectList = parent.querySelector(`select[name="triggerList"]`)
-  if (!(selectList instanceof HTMLSelectElement)) return;
-  const option = selectList.options[selectList.selectedIndex];
-  return option;
-}
-
-async function setMacroArgs(parent: HTMLElement) {
-  const eventElem = parent.querySelector("#event");
-  if (!(eventElem instanceof HTMLSelectElement)) return;
-
-  const selected = eventElem.value;
-  const events = getTriggerEvents();
-  const event = events.find(elem => elem.value === selected);
-
-  if (!event) return;
-
-  const container = parent.querySelector(`[data-role="autoArguments"]`);
-  if (!(container instanceof HTMLElement)) throw new LocalizedError("NOTRIGGERELEMENT");
-
-  container.replaceChildren();
-  if (Array.isArray(event.addlArgs)) {
-    for (const arg of event.addlArgs) {
-      const content = await renderTemplate(`modules/${__MODULE_ID__}/templates/editObject/additional-arg.hbs`, arg);
-      const elem = document.createElement("section");
-      elem.innerHTML = content;
-      container.appendChild(elem);
-    }
-  }
-}
-
-function setSelectedConfig(parent: HTMLElement) {
-  const eventSelect = parent.querySelector(`select[name="trigger.event"]`);
-  if (!(eventSelect instanceof HTMLSelectElement)) throw new LocalizedError("NOTRIGGERELEMENT");
-
-  const all = parent.querySelectorAll(`[data-role="event-configs"] [data-type], [data-role="event-configs"] [data-category]`)
-  for (const elem of all) {
-    if (elem instanceof HTMLElement) elem.style.display = "none";
-  }
-
-  const selectedEvent = eventSelect.value;
-
-  // Event-specific configurations
-  const eventConfig = parent.querySelector(`[data-role="event-configs"] [data-event="${selectedEvent}"]`);
-  if (eventConfig instanceof HTMLElement) eventConfig.style.display = "block";
-
-  // Category-specific configurations
-  const selectedOption = eventSelect.options[eventSelect.selectedIndex];
-  const category = selectedOption.dataset.category;
-  const categoryConfigs = parent.querySelectorAll(`[data-role="event-configs"] [data-category="${category}"]`);
-  for (const elem of categoryConfigs) {
-    if (elem instanceof HTMLElement) elem.style.display = "block";
-  }
-
-  const typeSelect = parent.querySelector(`select[name="trigger.action"]`);
-  if (!(typeSelect instanceof HTMLSelectElement)) throw new LocalizedError("NOTRIGGERELEMENT");
-
-
-  const selectedAction = typeSelect.value;
-  const actionConfig = parent.querySelector(`[data-role="action-configs"] [data-type="${selectedAction}"]`);
-  if (actionConfig instanceof HTMLElement) actionConfig.style.display = "block";
-
-  const others = parent.querySelectorAll(`[data-role="action-configs"] [data-type]:not([data-type="${selectedAction}"])`);
-  for (const elem of others) {
-    if (elem instanceof HTMLElement) elem.style.display = "none";
-  }
-
-  if (selectedAction === "macro")
-    void setMacroArgs(parent);
-}
-
-
-
-export function parseTriggerFormData(data: Record<string, unknown>): SerializedTrigger | undefined {
-  if (!data.trigger) return;
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-  const triggerClass = getTriggerActionType((data.trigger as any).action as string);
-  if (!triggerClass) return
-
-  return triggerClass.fromFormData(data.trigger as Record<string, unknown>);
-}
-
-export function setTriggerOption(parent: HTMLElement, trigger: SerializedTrigger) {
-  const select = parent.querySelector(`select[name="triggerList"]`)
+export function setTriggerOption(parent: HTMLElement, trigger: SerializedTrigger): void {
+  const select = parent.querySelector(TRIGGER_LIST_SELECTOR);
   if (!(select instanceof HTMLSelectElement)) throw new LocalizedError("NOTRIGGERELEMENT");
 
   const triggerClass = getTriggerActionType(trigger);
-  if (!triggerClass) throw new InvalidTriggerError(trigger.event);
-
-
-  // const option = select.querySelector(`option[value="${trigger.id}]`);
-  const option = parent.querySelector(`select[name="triggerList"] option[value="${trigger.id}"]`);
-  if (option instanceof HTMLOptionElement) {
-    option.dataset.event = trigger.event;
-    option.dataset.serialized = JSON.stringify(trigger);
-    option.value = trigger.id;
-    option.innerText = triggerClass.getDialogLabel(trigger);
-    addTriggerOptionToGroup(parent, option);
-  } else {
-    const newOption = document.createElement("option");
-    newOption.value = trigger.id;
-    newOption.dataset.event = trigger.event;
-    newOption.dataset.serialized = JSON.stringify(trigger);
-    newOption.innerText = triggerClass.getDialogLabel(trigger);
-
-    addTriggerOptionToGroup(parent, newOption);
-  }
-}
-
-function addTriggerOptionToGroup(parent: HTMLElement, option: HTMLOptionElement) {
-  const select = parent.querySelector(`select[name="triggerList"]`)
-  if (!(select instanceof HTMLSelectElement)) throw new LocalizedError("NOTRIGGERELEMENT");
-
-  const trigger = JSON.parse(option.dataset.serialized ?? "") as SerializedTrigger;
-  if (!trigger) throw new InvalidTriggerError(typeof trigger);
+  if (!triggerClass) throw new InvalidTriggerError(trigger.action);
 
   const event = triggerEvents.find(item => item.value === trigger.event);
   if (!event) throw new InvalidTriggerError(trigger.event);
 
-  const optGroup = parent.querySelector(`select[name="triggerList"] optgroup[data-category="${trigger.event}"]`);
+  const option: HTMLOptionElement = select.querySelector(`option[value="${trigger.id}"]`) ?? document.createElement("option");
+
+  option.dataset.event = trigger.event;
+  option.dataset.serialized = JSON.stringify(trigger);
+  option.value = trigger.id;
+  option.innerText = triggerClass.getDialogLabel(trigger);
+
+  // Add to group
+  const optGroup = select.querySelector(`optgroup[data-category="${trigger.event}"]`);
   if (!(optGroup instanceof HTMLOptGroupElement)) {
     const group = document.createElement("optgroup");
     group.dataset.category = trigger.event;
@@ -187,52 +47,114 @@ function addTriggerOptionToGroup(parent: HTMLElement, option: HTMLOptionElement)
   } else {
     optGroup.appendChild(option);
   }
+
+  // Check for empty optgroups
+  const optGroups = select.querySelectorAll(`optgroup`);
+  for (const group of optGroups) {
+    if (group.childElementCount === 0) group.remove();
+  }
+
 }
 
-export async function addTrigger(parent: HTMLElement) {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-  await injectTriggerForm(parent, { id: foundry.utils.randomID() } as any);
+export function parseTriggerList(parent: HTMLElement): Record<string, SerializedTrigger[]> {
+  const triggers = Array.from(parent.querySelectorAll(`select[name="triggerList"] option`).values()) as HTMLOptionElement[];
+  const data: Record<string, SerializedTrigger[]> = {};
+  for (const trigger of triggers) {
+    const event = trigger.dataset.event as keyof TriggerEventSignatures;
+    if (!event) continue;
+    const serialized = trigger.dataset.serialized;
+    if (!serialized) continue;
+    const deserialized = JSON.parse(serialized) as SerializedTrigger;
+
+    if (!Array.isArray(data[event])) {
+      data[event] = [deserialized]
+    } else {
+      const index = data[event].findIndex(item => item.id === deserialized.id);
+      if (index === -1) data[event].push(deserialized);
+      else data[event][index] = deserialized;
+    }
+  }
+
+  return data;
 }
 
-export async function editTrigger(parent: HTMLElement) {
-  const section = parent.querySelector(`[data-role="trigger-config"]`);
+export function parseTriggerFormData(data: Record<string, unknown>): SerializedTrigger | undefined {
+  try {
+    if (!data.trigger) return;
+
+    const triggerClass = getTriggerActionType(data.trigger as SerializedTrigger);
+    if (!triggerClass) return;
+
+    return triggerClass.fromFormData(data.trigger as Record<string, unknown>);
+  } catch {
+    return undefined;
+  }
+}
+
+export async function addTrigger(parent: HTMLElement, stageObject: StageObject): Promise<void> {
+  await injectTriggerForm(parent, undefined, stageObject);
+}
+
+async function injectTriggerForm(parent: HTMLElement, trigger?: SerializedTrigger, stageObject?: StageObject): Promise<void> {
+  const section = parent.querySelector(TRIGGER_FORM_SELECTOR);
   if (!(section instanceof HTMLElement)) throw new LocalizedError("NOTRIGGERELEMENT");
 
   section.innerHTML = "";
 
-  const trigger = selectedTrigger(parent);
-  if (!trigger) return;
-  await injectTriggerForm(parent, trigger);
+  const deleteButton = parent.querySelector(`button[data-action="deleteTrigger"]`);
+  if (deleteButton instanceof HTMLButtonElement) deleteButton.disabled = true;
+
+  const context = {
+    trigger: trigger ? trigger : { id: foundry.utils.randomID() },
+    stageObject: stageObject ? stageObject.serialize() : undefined,
+    triggerActionSelect: getTriggerActionSelect(),
+    triggerEventSelect: getTriggerEventSelect(trigger)
+  };
+
+  const actions = Object.values(triggerActions);
+  for (const action of actions)
+    foundry.utils.mergeObject(context, action.prepareContext(trigger));
+
+  const content = await renderTemplate(`modules/${__MODULE_ID__}/templates/edit-trigger.hbs`, context);
+  section.innerHTML = content;
+
+  if (deleteButton instanceof HTMLButtonElement) deleteButton.disabled = false;
+
+  const triggerSelectors = parent.querySelectorAll(`select[name="trigger.action"], select[name="trigger.event"]`);
+  for (const selector of triggerSelectors)
+    selector.addEventListener("change", () => { setSelectedConfig(parent, stageObject); });
+
+  // Add type-specific
+  const autoSection = parent.querySelector(`[data-role="autoArguments"]`);
+  if (autoSection instanceof HTMLElement) {
+    autoSection.innerHTML = "";
+
+    if (trigger?.action) {
+      // const actionClass = getTriggerActionType(trigger);
+
+      // if (actionClass?.customArgumentTemplate) {
+      //   const customArgs = await renderTemplate(`modules/${__MODULE_ID__}/templates/triggers/${actionClass.customArgumentTemplate}`, context);
+      //   autoSection.innerHTML = customArgs;
+      // }
+    }
+  }
+
+  setSelectedConfig(parent, stageObject);
 }
 
-export function getTriggerActionSelect(): Record<string, string> {
-  if (!game.i18n) return {};
-
-  return Object.fromEntries(
-    triggerActions
-      .sort((a, b) => game.i18n.localize(`STAGEMANAGER.TRIGGERS.ACTIONS.${a.i18nKey}`).localeCompare(game.i18n.localize(`STAGEMANAGER.TRIGGERS.ACTIONS.${b.i18nKey}`)))
-      .map(action => [action.type, `STAGEMANAGER.TRIGGERS.ACTIONS.${action.i18nKey}`])
-  )
-}
-
-export function getTriggerActionType(action: SerializedTrigger | string): typeof TriggerAction | undefined {
-  return triggerActions.find(item => item.type === (typeof action === "string" ? action : action.action));
-}
-
-export function getTriggerEvents(trigger?: SerializedTrigger): EventSpec[] {
-  return triggerEvents
-    .map(item => ({
-      ...item,
-      label: game.i18n?.localize(item.label) ?? "",
-      categoryLabel: game.i18n?.localize(item.categoryLabel) ?? "",
-      selected: trigger?.event === item.value
-    }))
-    .sort((a, b) => a.label.localeCompare(b.label))
+export async function editTrigger(parent: HTMLElement, trigger: SerializedTrigger, stageObject: StageObject) {
+  await injectTriggerForm(parent, trigger, stageObject);
 }
 
 export async function deleteTrigger(parent: HTMLElement) {
-  const trigger = selectedTrigger(parent);
-  if (!trigger) throw new LocalizedError("NOTRIGGERELEMENT");
+  const select = parent.querySelector(TRIGGER_LIST_SELECTOR);
+  if (!(select instanceof HTMLSelectElement)) throw new LocalizedError("NOTRIGGERELEMENT");
+
+  const option = select.options[select.selectedIndex];
+  if (!(option instanceof HTMLOptionElement)) throw new LocalizedError("NOTRIGGERELEMENT");
+
+  if (!option.dataset.serialized) return;
+  const trigger = JSON.parse(option.dataset.serialized) as SerializedTrigger;
 
   const remove = await confirm(
     localize("STAGEMANAGER.CONFIRMREMOVETRIGGER.TITLE"),
@@ -240,28 +162,181 @@ export async function deleteTrigger(parent: HTMLElement) {
   );
 
   if (!remove) return;
-  const option = selectedTriggerOption(parent);
-  if (!(option instanceof HTMLOptionElement)) throw new LocalizedError("NOTRIGGERELEMENT");
+
 
   const group = option.parentElement;
   option.remove();
 
-  if (group instanceof HTMLOptGroupElement) {
-    if (group.childElementCount === 0)
-      group.remove();
-  }
+  // Remove empty OptGroup
+  if (group instanceof HTMLOptGroupElement && group.childElementCount === 0)
+    group.remove();
 
+  // Clear form
   const section = parent.querySelector(`[data-role="trigger-config"]`);
   if (section instanceof HTMLElement) section.innerHTML = "";
 
+  // Disable delete button
+  const deleteButton = parent.querySelector(`button[data-action="deleteTrigger"]`);
+  if (deleteButton instanceof HTMLButtonElement) deleteButton.disabled = true;
 }
 
-const triggerActions = Object.values(tempTriggerActions).filter(item => !!item.type);
+function getTriggerLabel(trigger: SerializedTrigger): string {
+  const triggerClass = getTriggerActionType(trigger);
+  if (!triggerClass) return "";
 
-export function setEventListeners(parent: HTMLElement) {
-  const selectors = parent.querySelectorAll(`select[name="trigger.action"], select[name="trigger.event"]`);
-  for (const selector of selectors)
-    selector.addEventListener("change", () => { setSelectedConfig(parent); });
+  return triggerClass.getDialogLabel(trigger);
+}
+
+function showElements(parent: HTMLElement, selector: string) {
+  const elements = parent.querySelectorAll(selector);
+  for (const elem of elements)
+    if (elem instanceof HTMLElement) elem.style.display = "block";
+}
+
+function hideElements(parent: HTMLElement, selector: string) {
+  const elements = parent.querySelectorAll(selector);
+  for (const elem of elements)
+    if (elem instanceof HTMLElement) elem.style.display = "none";
+}
+
+function setHookSuggestions(parent: HTMLElement, selector: string) {
+  const list = parent.querySelector(selector);
+  if (!(list instanceof HTMLDataListElement)) return;
+
+  list.innerHTML = "";
+  Object.keys(hookEvents).forEach(key => {
+    const option = document.createElement("option");
+    option.value = key;
+    option.innerText = key;
+    list.appendChild(option);
+  })
 
 }
 
+function setSelectedConfig(parent: HTMLElement, stageObject?: StageObject) {
+  const eventSelect = parent.querySelector(`select[name="trigger.event"]`);
+  if (!(eventSelect instanceof HTMLSelectElement)) throw new LocalizedError("NOTRIGGERELEMENT");
+
+  const selectedEvent = eventSelect.value;
+
+  // Hide configuration elements
+  hideElements(parent, `[data-role="event-configs"] [data-type], [data-role="event-configs"] [data-event], [data-role="event-configs"] [data-category]`);
+
+  // Show event-specific configuration items
+  showElements(parent, `[data-role="event-configs"] [data-event="${selectedEvent}"]`);
+
+  // Load list of hook suggestions
+  if (selectedEvent === "preHook")
+    setHookSuggestions(parent, `#preHookList`);
+  else if (selectedEvent === "postHook")
+    setHookSuggestions(parent, "#postHookList")
+
+  // Show category-specific configuration
+  const selectedOption = eventSelect.options[eventSelect.selectedIndex];
+  const category = selectedOption.dataset.category;
+  showElements(parent, `[data-role="event-configs"] [data-category="${category}"]`);
+
+  const typeSelect = parent.querySelector(`select[name="trigger.action"]`);
+  if (!(typeSelect instanceof HTMLSelectElement)) throw new LocalizedError("NOTRIGGERELEMENT");
+
+  const selectedAction = typeSelect.value;
+  showElements(parent, `[data-role="action-configs"] [data-type="${selectedAction}"]`);
+
+  hideElements(parent, `[data-role="action-configs"] [data-type]:not([data-type="${selectedAction}"])`);
+
+  if (selectedAction === "macro")
+    void setMacroArgs(parent, stageObject);
+}
+
+async function setMacroArgs(parent: HTMLElement, stageObject?: StageObject) {
+  const eventElem = parent.querySelector(`select[name="trigger.event"]`);
+  if (!(eventElem instanceof HTMLSelectElement)) return;
+
+  const selected = eventElem.value;
+  const events = Object.values(triggerEvents);
+  const event = events.find(elem => elem.value === selected);
+
+  if (!event) return;
+
+  const autoArgs = parent.querySelector(`[data-role="autoArguments"]`);
+  if (autoArgs instanceof HTMLElement) {
+
+    autoArgs.innerHTML = "";
+
+    const hookArgs: { key: string, label: string, value: string }[] = [];
+
+    // // Get hook event arguments
+    // if (event.value === "preHook" || event.value === "postHook") {
+    //   const hookInput = parent.querySelector(`[data-role="${event.value.toLowerCase()}-name"]`);
+    //   if (hookInput instanceof HTMLInputElement && !!hookEvents[hookInput.value as keyof typeof hookEvents]) {
+    //     const args = hookEvents[hookInput.value as keyof typeof hookEvents] as string[];
+    //     hookArgs.push(...args.map(arg => ({ key: arg, label: arg, value: `STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.AUTO`, disabled: true })));
+    //   }
+    // }
+
+    const args: { key: string, label: string, value: string }[] = [
+      // Object-specific
+      ...(stageObject ? stageObject.macroArguments() : []),
+      // Event-specific
+      ...event.addlArgs.map(arg => ({ key: arg.name, label: arg.name, value: `STAGEMANAGER.ADDTRIGGERDIALOG.ARGS.AUTO` })),
+      ...hookArgs
+    ]
+      .filter((arg, i, arr) => arr.findIndex(elem => elem.key === arg.key) === i)
+      .sort((a, b) => a.key.localeCompare(b.key))
+      ;
+
+    for (const arg of args) {
+      const content = await renderTemplate(`modules/${__MODULE_ID__}/templates/editObject/additional-arg.hbs`, arg);
+      autoArgs.innerHTML += content;
+    }
+
+    const argElems = parent.querySelectorAll(`[data-role="autoArguments"] input`);
+    for (const elem of argElems) {
+      if (elem instanceof HTMLInputElement) elem.disabled = true;
+    }
+  }
+
+  // const customArgs = parent.querySelector(`[data-role="customArguments"]`);
+  // if (customArgs instanceof HTMLElement) {
+  //   customArgs.innerHTML = "";
+  //   if (Array.isArray(event.addlArgs)) {
+  //     for (const arg of event.addlArgs) {
+  //       const content = await renderTemplate(`modules/${__MODULE_ID__}/templates/editObject/additional-arg.hbs`, arg);
+  //       customArgs.innerHTML += content;
+  //     }
+  //   }
+  // }
+}
+
+function getTriggerActionSelect(): Record<string, string> {
+  return Object.fromEntries(
+    Object.values(triggerActions)
+      .sort((a, b) => localize(`STAGEMANAGER.TRIGGERS.ACTIONS.${a.i18nKey}`).localeCompare(localize(`STAGEMANAGER.TRIGGERS.ACTIONS.${b.i18nKey}`)))
+      .map(action => [action.type, `STAGEMANAGER.TRIGGERS.ACTIONS.${action.i18nKey}`])
+  )
+}
+
+function itemRollSupported(): boolean {
+  // return !!((triggerHooks.itemRoll as Record<string, unknown>)?.[game?.system?.id ?? ""]);
+  return true
+}
+
+function getTriggerEventSelect(trigger?: SerializedTrigger): EventSpec[] {
+
+  return triggerEvents.reduce((prev, curr) => {
+
+    if (curr.value === "itemRoll" && !itemRollSupported()) return prev;
+
+
+    return [
+      ...prev,
+      {
+        ...curr,
+        label: localize(curr.label),
+        categoryLabel: localize(curr.categoryLabel),
+        selected: trigger?.event === curr.value
+      }
+    ]
+  }, [] as EventSpec[])
+    .sort((a, b) => a.label.localeCompare(b.label));
+}

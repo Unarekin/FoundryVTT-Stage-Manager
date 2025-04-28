@@ -1,127 +1,95 @@
-import { CanvasNotInitializedError } from '../errors';
-import { logError } from '../logging';
-import { StageManager } from '../StageManager';
-import { PanelStageObject } from '../stageobjects/PanelStageObject';
-import { SerializedPanelStageObject } from '../types';
-import { StageObjectApplication } from './StageObjectApplication';
-import { StageObjectApplicationContext, StageObjectApplicationOptions, Tab } from './types';
+import { PanelStageObject } from "stageobjects";
+import { SerializedPanelStageObject } from "types";
+import { StageObjectApplication } from "./StageObjectApplication";
+import { EmptyObject } from "Foundry-VTT/src/types/utils.mjs";
+import { drawPanelPreview } from "./functions";
+import { logError } from "logging";
+import { StageManager } from "StageManager";
 
 export class PanelStageObjectApplication extends StageObjectApplication<PanelStageObject, SerializedPanelStageObject> {
-  static PARTS = {
-    tabs: {
-      template: "templates/generic/tab-navigation.hbs"
-    },
-    basics: {
-      template: `modules/${__MODULE_ID__}/templates/editObject/basics.hbs`
-    },
+
+  public static PARTS: Record<string, foundry.applications.api.HandlebarsApplicationMixin.HandlebarsTemplatePart> = {
+    ...PanelStageObjectApplication.FRONT_PARTS,
     panel: {
       template: `modules/${__MODULE_ID__}/templates/editObject/panel.hbs`
     },
-    triggers: {
-      template: `modules/${__MODULE_ID__}/templates/editObject/triggers.hbs`
-    },
-    footer: {
-      template: "templates/generic/form-footer.hbs"
-    }
+    ...PanelStageObjectApplication.BACK_PARTS
   }
 
-  protected getTabs(): Record<string, Tab> {
+  protected getTabs(): Record<string, foundry.applications.api.ApplicationV2.Tab> {
     return {
       panel: {
         id: "panel",
-        icon: "fas fa-window-maximize",
-        label: "STAGEMANAGER.TABS.PANEL",
         active: false,
         cssClass: "",
-        group: "primary"
+        group: "primary",
+        icon: "fas fa-window-maximize",
+        label: "STAGEMANAGER.TABS.PANEL"
       }
     }
   }
 
-  protected drawPreview() {
+  protected parseForm(form: HTMLFormElement): SerializedPanelStageObject {
+    const data = super.parseForm(form);
+    const bounds = data.restrictToVisualArea ? StageManager.VisualBounds : StageManager.ScreenBounds;
+
+    data.bounds = {
+      ...data.bounds,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      width: (data.bounds as any).width / bounds.width,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      height: (data.bounds as any).height / bounds.height
+    }
+
+    if (typeof data.blendMode === "string") {
+      data.blendMode = parseInt(data.blendMode);
+      if (isNaN(data.blendMode)) data.blendMode = 0;
+    }
+
+    return data;
+  }
+
+  _onChangeForm(): void {
     try {
-      if (!canvas?.app?.renderer) throw new CanvasNotInitializedError();
-      const previewCanvas = this.element.querySelector("#PanelPreview");
-      if (!(previewCanvas instanceof HTMLCanvasElement)) throw new CanvasNotInitializedError();
-
-      const { width, height } = this.stageObject.displayObject.texture;
-
-      previewCanvas.width = width;
-      previewCanvas.height = height;
-
-      const ctx = previewCanvas.getContext("2d");
-      if (!ctx) throw new CanvasNotInitializedError();
-
-      // const pixels = Uint8ClampedArray.from(canvas.app.renderer.extract.pixels(this.stageObject.displayObject));
-
-
-      const sprite = new PIXI.Sprite(this.stageObject.displayObject.texture.clone());
-      const rt = PIXI.RenderTexture.create({ width: sprite.width, height: sprite.height });
-      canvas.app.renderer.render(sprite, { renderTexture: rt, skipUpdateTransform: true, clear: false });
-
-      const pixels = Uint8ClampedArray.from(canvas.app.renderer.extract.pixels(rt));
-      sprite.destroy();
-
-      const imageData = new ImageData(pixels, width, height);
-      ctx.putImageData(imageData, 0, 0);
-
-      const { left, right, top, bottom } = this.stageObject.borders;
-
-      ctx.beginPath();
-
-      // Left column
-      ctx.moveTo(left, 0);
-      ctx.lineTo(left, height);
-
-      // Top row
-      ctx.moveTo(0, top);
-      ctx.lineTo(width, top);
-
-      // Right column
-      ctx.moveTo(width - right, 0);
-      ctx.lineTo(width - right, height);
-
-      // Bottom row
-      ctx.moveTo(0, height - bottom);
-      ctx.lineTo(width, height - bottom);
-
-      ctx.strokeStyle = "red";
-      ctx.stroke();
-
+      super._onChangeForm();
+      const previewCanvas = this.element.querySelector(`#PanelPreview`);
+      if (previewCanvas instanceof HTMLCanvasElement)
+        void drawPanelPreview(previewCanvas, this.stageObject.src, this.stageObject.borders);
     } catch (err) {
       logError(err as Error);
     }
   }
 
-  protected _onRender(context: StageObjectApplicationContext, options: StageObjectApplicationOptions): void {
-    super._onRender(context, options);
-    this.drawPreview();
-  }
-
-
-
-  protected prepareStageObject(): SerializedPanelStageObject {
-    const prep = super.prepareStageObject();
-    const bounds = this.originalObject.restrictToVisualArea ? StageManager.VisualBounds : StageManager.ScreenBounds;
-    return {
-      ...prep,
-      bounds: {
-        ...prep.bounds,
-        width: this.originalObject.bounds.width * bounds.width,
-        height: this.originalObject.bounds.height * bounds.height
-      }
+  protected _onRender(context: Record<string, undefined>, options: { force?: boolean | undefined; position?: { top?: number | undefined; left?: number | undefined; width?: number | "auto" | undefined; height?: number | "auto" | undefined; scale?: number | undefined; zIndex?: number | undefined; } | undefined; window?: { title?: string | undefined; icon?: string | false | undefined; controls?: boolean | undefined; } | undefined; parts?: string[] | undefined; isFirstRender?: boolean | undefined; }): void {
+    try {
+      super._onRender(context, options);
+      const previewCanvas = this.element.querySelector(`#PanelPreview`);
+      if (previewCanvas instanceof HTMLCanvasElement)
+        void drawPanelPreview(previewCanvas, this.stageObject.src, this.stageObject.borders);
+    } catch (err) {
+      logError(err as Error);
     }
   }
 
-  _onChangeForm(): void {
-    super._onChangeForm();
-    const form = this.element instanceof HTMLFormElement ? new FormDataExtended(this.element) : new FormDataExtended($(this.element).find("form")[0]);
-    const data = this.parseFormData(form.object);
-    if (this.ghost instanceof PIXI.Sprite) {
-      if (this.ghost.texture.baseTexture.resource.src !== data.src)
-        this.ghost.texture = PIXI.Texture.from(data.src);
-    }
-    this.drawPreview();
-  }
+  protected async _prepareContext(options: { force?: boolean | undefined; position?: { top?: number | undefined; left?: number | undefined; width?: number | 'auto' | undefined; height?: number | 'auto' | undefined; scale?: number | undefined; zIndex?: number | undefined; } | undefined; window?: { title?: string | undefined; icon?: string | false | undefined; controls?: boolean | undefined; } | undefined; parts?: string[] | undefined; isFirstRender?: boolean | undefined; }): Promise<EmptyObject> {
+    const context = await super._prepareContext(options) as Record<string, unknown>
+    const bounds = this.stageObject.actualBounds;
 
+    const serialized = context.stageObject as SerializedPanelStageObject;
+    serialized.bounds = {
+      ...serialized.bounds,
+      width: serialized.bounds.width * bounds.width,
+      height: serialized.bounds.height * bounds.height
+    }
+
+    context.blendModeSelect = {
+      0: `STAGEMANAGER.BLENDMODES.NORMAL`,
+      1: `STAGEMANAGER.BLENDMODES.ADD`,
+      2: `STAGEMANAGER.BLENDMODES.MULTIPLY`,
+      3: `STAGEMANAGER.BLENDMODES.SCREEN`,
+      28: `STAGEMANAGER.BLENDMODES.SUBTRACT`
+    };
+
+    return context as EmptyObject
+  }
 }

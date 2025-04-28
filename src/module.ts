@@ -56,6 +56,31 @@ Hooks.once("canvasReady", () => {
     return wrapped(scope, ...args);
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-function-type
+  libWrapper.register(__MODULE_ID__, "Hooks.call", function (this: Hooks, wrapped: Function, hook: string, ...args: unknown[]) {
+    StageManager.StageObjects.forEach(obj => void obj.triggerEvent("preHook", { hook, hookArgs: args }));
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const retVal = wrapped(hook, ...args);
+    StageManager.StageObjects.forEach(obj => void obj.triggerEvent("postHook", { hook, hookArgs: args }));
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return retVal;
+  });
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-function-type
+  libWrapper.register(__MODULE_ID__, "Hooks.callAll", function (this: Hooks, wrapped: Function, hook: string, ...args: unknown[]) {
+
+    StageManager.StageObjects.forEach(obj => void obj.triggerEvent("preHook", { hook, hookArgs: args }));
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const retVal = wrapped(hook, ...args);
+
+    StageManager.StageObjects.forEach(obj => void obj.triggerEvent("postHook", { hook, hookArgs: args }));
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return retVal;
+  })
 
   log("Initialized.");
 });
@@ -98,13 +123,15 @@ Hooks.once("ready", () => {
     `modules/${__MODULE_ID__}/templates/triggers/macro.hbs`,
     `modules/${__MODULE_ID__}/templates/editObject/additional-arg.hbs`,
     `modules/${__MODULE_ID__}/templates/events/actor.hbs`,
+    `modules/${__MODULE_ID__}/templates/events/hook.hbs`,
     `modules/${__MODULE_ID__}/templates/viewAsUser.hbs`,
     `modules/${__MODULE_ID__}/templates/editObject/text.hbs`,
     `modules/${__MODULE_ID__}/templates/editObject/font.hbs`,
     `modules/${__MODULE_ID__}/templates/editObject/customArgument.hbs`,
     `modules/${__MODULE_ID__}/templates/textInput.hbs`,
     `modules/${__MODULE_ID__}/templates/effects/background-select.hbs`,
-    `modules/${__MODULE_ID__}/templates/speakers/common.hbs`
+    `modules/${__MODULE_ID__}/templates/speakers/common.hbs`,
+    `modules/${__MODULE_ID__}/templates/actorSelector.hbs`
   ])
 });
 

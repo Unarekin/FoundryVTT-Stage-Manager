@@ -13,7 +13,8 @@ export const OutlineEffect: Effect<SerializedOutlineEffect> = {
     color: "#FF0000",
     thickness: 2,
     outlineOnly: false,
-    quality: .1
+    quality: .1,
+    temporary: false
   },
   serialize(filter: PIXI.Filter): SerializedOutlineEffect {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
@@ -24,7 +25,8 @@ export const OutlineEffect: Effect<SerializedOutlineEffect> = {
 
     return {
       ...OutlineEffect.default,
-      id: foundry.utils.randomID(),
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+      id: (filter as any).id ?? foundry.utils.randomID(),
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       outlineOnly: (filter as any).knockout,
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
@@ -32,6 +34,8 @@ export const OutlineEffect: Effect<SerializedOutlineEffect> = {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       quality: (filter as any).quality * 100,
       color: color.toHexa(),
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+      temporary: (filter as any).temporary ?? false
     }
   },
   deserialize(serialized: SerializedOutlineEffect): PIXI.Filter {
@@ -45,6 +49,10 @@ export const OutlineEffect: Effect<SerializedOutlineEffect> = {
     filter.quality = serialized.quality / 100;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     filter.knockout = serialized.outlineOnly;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    filter.id = serialized.id ?? foundry.utils.randomID();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    filter.temporary = serialized.temporary ?? false
 
     return filter as PIXI.Filter;
   },
