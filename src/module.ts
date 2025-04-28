@@ -9,7 +9,6 @@ import { InputManager } from './InputManager';
 import { SynchronizationManager } from './SynchronizationManager';
 import { coerceStageObject } from "./coercion";
 import { hitTestFn } from "./lib/hitTest";
-import { CUSTOM_HOOKS } from "./hooks";
 
 import groupBy from "./lib/groupBy";
 import "./triggerHooks";
@@ -59,14 +58,11 @@ Hooks.once("canvasReady", () => {
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-function-type
   libWrapper.register(__MODULE_ID__, "Hooks.call", function (this: Hooks, wrapped: Function, hook: string, ...args: unknown[]) {
-    if (!(hook === CUSTOM_HOOKS.PREHOOK || hook === CUSTOM_HOOKS.POSTHOOK))
-      Hooks.callAll(CUSTOM_HOOKS.PREHOOK, hook, args);
-
+    StageManager.StageObjects.forEach(obj => void obj.triggerEvent("preHook", { hook, hookArgs: args }));
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const retVal = wrapped(hook, ...args);
-    if (!(hook === CUSTOM_HOOKS.PREHOOK || hook === CUSTOM_HOOKS.POSTHOOK))
-      Hooks.callAll(CUSTOM_HOOKS.POSTHOOK, hook, args);
+    StageManager.StageObjects.forEach(obj => void obj.triggerEvent("postHook", { hook, hookArgs: args }));
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return retVal;
@@ -74,15 +70,13 @@ Hooks.once("canvasReady", () => {
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-function-type
   libWrapper.register(__MODULE_ID__, "Hooks.callAll", function (this: Hooks, wrapped: Function, hook: string, ...args: unknown[]) {
-    if (!(hook === CUSTOM_HOOKS.PREHOOK || hook === CUSTOM_HOOKS.POSTHOOK))
-      Hooks.callAll(CUSTOM_HOOKS.PREHOOK, hook, args);
 
+    StageManager.StageObjects.forEach(obj => void obj.triggerEvent("preHook", { hook, hookArgs: args }));
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const retVal = wrapped(hook, ...args);
 
-    if (!(hook === CUSTOM_HOOKS.PREHOOK || hook === CUSTOM_HOOKS.POSTHOOK))
-      Hooks.callAll(CUSTOM_HOOKS.POSTHOOK, hook, args);
+    StageManager.StageObjects.forEach(obj => void obj.triggerEvent("postHook", { hook, hookArgs: args }));
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return retVal;

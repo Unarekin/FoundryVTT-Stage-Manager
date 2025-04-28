@@ -170,10 +170,10 @@ Hooks.on(CUSTOM_HOOKS.ITEM_ROLLED, (actor: Actor, item: Item, rollData: Record<s
 // }
 
 
-Hooks.on(CUSTOM_HOOKS.PREHOOK, (hook: string, args: unknown[]) => {
-  triggerEvent("preHook", { hook, hookArgs: args });
-});
+// Hooks.on(CUSTOM_HOOKS.PREHOOK, (hook: string, args: unknown[]) => {
+//   triggerEvent("preHook", { hook, hookArgs: args });
+// });
 
-Hooks.on(CUSTOM_HOOKS.POSTHOOK, (hook: string, args: unknown[]) => {
-  triggerEvent("postHook", { hook, hookArgs: args });
-});
+// Hooks.on(CUSTOM_HOOKS.POSTHOOK, (hook: string, args: unknown[]) => {
+//   triggerEvent("postHook", { hook, hookArgs: args });
+// });
