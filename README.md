@@ -14,6 +14,7 @@
   - [Installation](#installation)
   - [Usage Instructions](#usage-instructions)
 - [Compability With Other Systems and Modules](#compability-with-other-systems-and-modules)
+- [Extensions](#extensions)
 - [Attributions \& Acknowledgements](#attributions--acknowledgements)
 - [Support](#support)
 
@@ -46,6 +47,9 @@ Please see the [wiki](https://github.com/Unarekin/FoundryVTT-Stage-Manager/wiki)
 - [Project FU](https://github.com/League-of-Fabulous-Developers/FoundryVTT-Fabula-Ultima) - The `itemRoll` trigger event is supported for Project FU.
 - [Battle Transitions](https://foundryvtt.com/packages/battle-transitions) - If Battle Transitions is detected when Stage Manager initializes, it will move the former's PIXI layer between its own foreground and primary layers.  Further configurability options are planned for the future.
 
+# Extensions
+- [Stage Manager - GUI](https://github.com/Unarekin/FoundryVTT-Stage-Manager-GUI) Adds features more specifically intended for video game-like GUI creation, such as automated progress bars based on actor resources, etc.
+- [Stage Manager - VN](https://github.com/Unarekin/FoundryVTT-Stage-Manager-VN) Adds features intended for more Visual Novel like dialogues
 
 # Attributions & Acknowledgements
 - The `select-background.svg`, `select-foreground.svg`, and `select-primary.svg` icons are edited versions of [Fontawesome](https://fontawesome.com) icons.  The original icons and these edited versions are both released under the [CC-By-4.0](https://creativecommons.org/licenses/by/4.0/deed.en) license.
