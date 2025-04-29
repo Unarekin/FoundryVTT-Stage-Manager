@@ -12,6 +12,7 @@ import { hitTestFn } from "./lib/hitTest";
 
 import groupBy from "./lib/groupBy";
 import "./triggerHooks";
+import { CUSTOM_HOOKS } from "hooks";
 
 groupBy.register(Handlebars);
 
@@ -82,6 +83,7 @@ Hooks.once("canvasReady", () => {
     return retVal;
   })
 
+  Hooks.callAll(CUSTOM_HOOKS.READY);
   log("Initialized.");
 });
 

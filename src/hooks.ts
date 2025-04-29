@@ -1,4 +1,5 @@
 export const CUSTOM_HOOKS = {
+  READY: `${__MODULE_ID__}.ready`,
   SYNC_START: `${__MODULE_ID__}.synchronizationStart`,
   SYNC_END: `${__MODULE_ID__}.synchronizationEnd`,
   SYNC_RECEIVED: `${__MODULE_ID__}.synchronizationReceived`,
