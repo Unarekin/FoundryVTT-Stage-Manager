@@ -31,9 +31,13 @@ let screenDarkenObject: ImageStageObject | undefined = undefined;
 export class StageManager {
   // #region Public Static Getters And Setters (10)
 
-  public static readonly abstract = {
+  public static readonly classes = {
     StageObject: StageObject,
-    StageObjectApplication: StageObjectApplication
+    StageObjectApplication: StageObjectApplication,
+    ActorStageObject: ActorStageObject,
+    ImageStageObject: ImageStageObject,
+    PanelStageObject: PanelStageObject,
+    TextStageObject: TextStageObject
   }
 
   public static get HighlightedObjects(): StageObject[] { return StageManager.StageObjects.filter(obj => obj.highlighted); }

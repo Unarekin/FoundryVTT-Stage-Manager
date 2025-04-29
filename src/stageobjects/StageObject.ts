@@ -14,6 +14,9 @@ import { StageObjectApplication } from "applications";
 
 const KNOWN_OBJECTS: Record<string, StageObject> = {};
 
+export type SerializationExtension = <t extends StageObject = StageObject, v extends SerializedStageObject = SerializedStageObject>(object: t) => v;
+export type DeserializationExtension = <t extends SerializedStageObject = SerializedStageObject>(serialized: t) => void;
+
 export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObject> {
   // #region Properties (15)
 
@@ -929,7 +932,8 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     this.alpha = serialized.alpha ?? 1;
     // this.scope = serialized.scope ?? "global";
 
-    this.temporary = serialized.scope === "temp" ? true : serialized.temporary ?? false;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    this.temporary = (serialized as any).scope === "temp" ? true : serialized.temporary ?? false;
 
     this.scopeOwners = serialized.scopeOwners ?? [];
     this.triggers = serialized.triggers ?? {};
@@ -988,6 +992,10 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     }
 
     if (typeof serialized.mask === "string") this.mask = serialized.mask;
+
+    for (const func of this.deserializationExtensions)
+      func.call(this, serialized);
+
     this.dirty = false;
   }
 
@@ -1193,8 +1201,14 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
     }
   }
 
+  protected readonly serializationExtensions: SerializationExtension[] = [];
+  protected readonly deserializationExtensions: DeserializationExtension[] = [];
+
+  public extendSerialization(func: SerializationExtension) { this.serializationExtensions.push(func); }
+  public extendDeserialization(func: DeserializationExtension) { this.deserializationExtensions.push(func); }
+
   public serialize(includeTemporaryEffects = false): SerializedStageObject {
-    return {
+    const serialized: SerializedStageObject = {
       id: this.id,
       layer: this.layer as StageLayer ?? "primary",
       owners: StageManager.getOwners(this.id),
@@ -1234,6 +1248,11 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
         y: this.skew.y
       }
     }
+
+    for (const func of this.serializationExtensions) {
+      foundry.utils.mergeObject(serialized, func.call(this, this));
+    }
+    return serialized;
   }
 
   public setLayer(layer: StageLayer) {
