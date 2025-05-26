@@ -31,14 +31,12 @@ let screenDarkenObject: ImageStageObject | undefined = undefined;
 export class StageManager {
   // #region Public Static Getters And Setters (10)
 
-  public static readonly classes = {
+  public static readonly abstract = {
     StageObject: StageObject,
-    StageObjectApplication: StageObjectApplication,
-    ActorStageObject: ActorStageObject,
-    ImageStageObject: ImageStageObject,
-    PanelStageObject: PanelStageObject,
-    TextStageObject: TextStageObject
+    StageObjectApplication: StageObjectApplication
   }
+
+  public static readonly types: Record<string, typeof StageObject> = {}
 
   public static get HighlightedObjects(): StageObject[] { return StageManager.StageObjects.filter(obj => obj.highlighted); }
 
@@ -663,6 +661,10 @@ export class StageManager {
     return owners.includes(userId);
   }
 
+  public static registerStageObjectType(obj: typeof StageObject) {
+    StageManager.types[obj.name] = obj;
+  }
+
   public static deserialize(serialized: SerializedStageObject): StageObject | undefined {
     try {
       const newType = Object.values(stageObjectTypes).find(item => item.type === serialized.type);
@@ -759,6 +761,7 @@ export class StageManager {
       fgCanvasGroup = new ScreenSpaceCanvasGroup("StageManagerForegroundCanvasGroup", "foreground");
       uiCanvasGroup = new ScreenSpaceCanvasGroup("StageManagerUICanvasGroup", "ui");
 
+      Object.entries(stageObjectTypes).forEach(([key, obj]) => { StageManager.types[key] = obj as typeof StageObject; });
 
       canvas.stage.addChild(bgCanvasGroup);
       canvas.stage.addChild(primaryCanvasGroup);
