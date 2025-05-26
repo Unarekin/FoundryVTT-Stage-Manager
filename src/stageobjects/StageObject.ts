@@ -55,8 +55,6 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.DisplayObj
   public static readonly ApplicationType: typeof StageObjectApplication = StageObjectApplication;
   public readonly abstract ApplicationType: typeof StageObjectApplication;
 
-
-
   // private _dirty = false;
   // public get dirty() { return this._dirty; }
   // protected set dirty(val) { this._dirty = val; }
