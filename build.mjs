@@ -13,6 +13,7 @@ import yoctoSpinner from "yocto-spinner";
 import { ESLint } from "eslint";
 import externalizeAllPackagesExcept from "esbuild-plugin-noexternal";
 import { compilePack } from "@foundryvtt/foundryvtt-cli";
+import ts from "typescript";
 
 /** Paths */
 const SRC_PATH = "./src";
@@ -166,6 +167,7 @@ if (buildResults.errors.length) {
   if (spinner) spinner.error("Build failed!");
   else console.error("Build failed!");
   console.error(buildResults.errors);
+  process.exit();
 } else {
   if (spinner)
     spinner.success(
@@ -176,33 +178,94 @@ if (buildResults.errors.length) {
       `Build completed in ${((Date.now() - buildStart) / 1000).toFixed(2)}s`
     );
   // if (buildResults.warnings.length) console.warn(buildResults.warnings);
+}
 
-  const packStart = Date.now();
+// Types
+if (!__DEV__ || (__DEV__ && !process.argv.slice(2).includes("--no-types"))) {
+  const typeStart = Date.now();
   if (!process.env.GITHUB_ACTIONS)
-    spinner = yoctoSpinner({ text: "Packing compendia..." }).start();
-  else console.log("Packing compendia...");
+    spinner = yoctoSpinner({ text: "Generating type declarations..." }).start();
+  else console.log("Generating type declarations...");
   try {
-    // Build compendia
-    const packs = await fs.readdir(path.join(SRC_PATH, "packs"));
-    for (const pack of packs) {
-      if (pack === ".gitattributes") continue;
-      await compilePack(
-        path.join(SRC_PATH, `packs`, pack),
-        path.join(OUT_PATH, "packs", pack),
-        { yaml: false }
-      );
-    }
+    await fs.rm("./types", { recursive: true, force: true });
+
+    const currentDir = process.cwd();
+    const configFile = ts.findConfigFile(
+      currentDir,
+      ts.sys.fileExists,
+      "tsconfig.json"
+    );
+    if (!configFile) throw new Error("tsconfig.json not found");
+    const { config } = ts.readConfigFile(configFile, ts.sys.readFile);
+
+    config.compilerOptions.declaration = true;
+    config.compilerOptions.declarationDir = "types";
+    config.compilerOptions.emitDeclarationOnly = true;
+    // config.compilerOptions.outFile = "./dist/index.d.ts";
+
+    const { options, fileNames, errors } = ts.parseJsonConfigFileContent(
+      config,
+      ts.sys,
+      currentDir
+    );
+    const program = ts.createProgram({
+      options,
+      rootNames: fileNames,
+      configFileParsingDiagnostics: errors,
+    });
+    const { diagnostics, emitSkipped } = program.emit();
+    const allDiagnostics = ts
+      .getPreEmitDiagnostics(program)
+      .concat(diagnostics, errors);
+
     if (spinner)
       spinner.success(
-        `Compendia packed in ${((Date.now() - packStart) / 1000).toFixed(2)}s`
+        `Type declarations emitted in ${(
+          (Date.now() - buildStart) /
+          1000
+        ).toFixed(2)}s`
       );
     else
       console.log(
-        `Compendia packed in ${((Date.now() - packStart) / 1000).toFixed(2)}s`
+        `Type declarations emitted in ${(
+          (Date.now() - buildStart) /
+          1000
+        ).toFixed(2)}s`
       );
   } catch (err) {
-    if (spinner) spinner.error("Build failed!");
-    else console.error("Build failed!");
+    if (spinner) spinner.error("Type declaration generation failed!");
+    else console.error("Type declaration generation failed!");
     console.error(err);
+    process.exit();
   }
+}
+
+// Pack compendia
+const packStart = Date.now();
+if (!process.env.GITHUB_ACTIONS)
+  spinner = yoctoSpinner({ text: "Packing compendia..." }).start();
+else console.log("Packing compendia...");
+try {
+  // Build compendia
+  const packs = await fs.readdir(path.join(SRC_PATH, "packs"));
+  for (const pack of packs) {
+    if (pack === ".gitattributes") continue;
+    await compilePack(
+      path.join(SRC_PATH, `packs`, pack),
+      path.join(OUT_PATH, "packs", pack),
+      { yaml: false }
+    );
+  }
+  if (spinner)
+    spinner.success(
+      `Compendia packed in ${((Date.now() - packStart) / 1000).toFixed(2)}s`
+    );
+  else
+    console.log(
+      `Compendia packed in ${((Date.now() - packStart) / 1000).toFixed(2)}s`
+    );
+} catch (err) {
+  if (spinner) spinner.error("Build failed!");
+  else console.error("Build failed!");
+  console.error(err);
 }

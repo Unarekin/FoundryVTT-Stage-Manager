@@ -3,11 +3,5 @@
   "entryPoints": ["src/**/*.ts"],
   "out": "docs",
   "cleanOutputDir": true,
-  "entryPointStrategy": "expand",
-  "plugin": [
-    "typedoc-github-theme",
-    "typedoc-plugin-rename-defaults",
-    "typedoc-plugin-version-header",
-  ],
-  "useTsLinkResolution": true
+  "plugin": ["typedoc-plugin-rename-defaults"]
 }
