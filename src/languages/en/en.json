@@ -1,3 +1,5 @@
 {
-  "STAGE-MANAGER": {}
+  "STAGE-MANAGER": {
+    "MODULENAME": "Stage Manager"
+  }
 }
