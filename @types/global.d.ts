@@ -1,5 +1,5 @@
 import { StageManager } from "../src/StageManager";
-import { SerializedStageObject } from "../src/types";
+import { SerializedStageObject, StageLayer } from "../src/types";
 
 declare global {
 
@@ -16,6 +16,10 @@ declare global {
 
   interface Game {
     StageManager: StageManager;
+  }
+
+  interface Canvas {
+    stageLayers: Record<StageLayer, ScreenSpaceCanvasGroup>;
   }
 
   interface SettingConfig {

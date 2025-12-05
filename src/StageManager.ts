@@ -2,7 +2,8 @@ import { log } from "./logging";
 import { SocketManager } from "./SocketManager";
 import { StageObject } from "./StageObjects";
 import { LocalizedError } from "./errors";
-import { SerializedStageObject, StageObjectType, DeepPartial } from "types";
+import { SerializedStageObject, StageObjectType, DeepPartial, StageLayer } from "types";
+import { ScreenSpaceCanvasGroup } from "ScreenSpaceCanvasGroup";
 
 export class StageManager {
   public readonly version = __MODULE_VERSION__;
@@ -11,7 +12,21 @@ export class StageManager {
 
   public readonly baseObjectClass: typeof StageObject = StageObject;
 
-  private canvasReady() { /** Empty */ }
+  public readonly layers: Record<StageLayer, ScreenSpaceCanvasGroup> = {
+    foreground: new ScreenSpaceCanvasGroup(),
+    background: new ScreenSpaceCanvasGroup()
+  };
+
+  private canvasReady() {
+    if (!canvas) return;
+
+    // Make sure stage layers are configured
+    if (!canvas.stageLayers) canvas.stageLayers = {};
+    canvas.stageLayers.foreground ??= this.layers.foreground;
+    canvas.stageLayers.background ??= this.layers.background;
+
+
+  }
 
   public registerStageObject(name: StageObjectType, objectClass: typeof StageObject) {
     if (this.objectClasses[name]) throw new LocalizedError("OBJECTALREADYREGISTERED", { type: name });
@@ -34,8 +49,12 @@ export class StageManager {
   }
 
   public constructor() {
-    this.canvasReady();
+
+    if (canvas)
+      this.canvasReady();
+
     Hooks.on("canvasReady", () => { this.canvasReady(); });
+
     Hooks.callAll(`${__MODULE_ID__}.initialize`, this);
     log("Initialized");
   }

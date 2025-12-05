@@ -1,0 +1,1 @@
+export class ScreenSpaceCanvasGroup extends foundry.canvas.groups.CanvasGroupMixin(foundry.canvas.containers.UnboundContainer) { }

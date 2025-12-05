@@ -23,6 +23,9 @@ export type AnyFunction = (arg0: never, ...args: never[]) => unknown;
 export const StageObjectTypes = [] as const;
 export type StageObjectType = typeof StageObjectTypes[number];
 
+export const StageLayers = ["foreground", "background"] as const;
+export type StageLayer = typeof StageLayers[number];
+
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface SerializedStageObject {
 
