@@ -4,6 +4,7 @@ import { StageObject } from "./StageObjects";
 import { LocalizedError } from "./errors";
 import { SerializedStageObject, StageObjectType, DeepPartial, StageLayer } from "types";
 import { ScreenSpaceCanvasGroup } from "ScreenSpaceCanvasGroup";
+import { StageObjectCollection } from "StageObjectCollection"
 
 export class StageManager {
   public readonly version = __MODULE_VERSION__;
@@ -11,6 +12,8 @@ export class StageManager {
   public readonly objectClasses: Record<StageObjectType, typeof StageObject> = {};
 
   public readonly baseObjectClass: typeof StageObject = StageObject;
+
+  public readonly stageObjects = new StageObjectCollection();
 
   public readonly layers: Record<StageLayer, ScreenSpaceCanvasGroup> = {
     foreground: new ScreenSpaceCanvasGroup(),

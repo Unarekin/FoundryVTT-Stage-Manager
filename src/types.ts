@@ -48,6 +48,7 @@ export interface SerializedStageObject {
   tags: string[];
   clickThrough: boolean;
   visible: boolean;
+  layer: StageLayer;
   bounds: {
     x: number;
     y: number;

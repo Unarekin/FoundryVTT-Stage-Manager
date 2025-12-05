@@ -1,4 +1,4 @@
-import { DeepPartial, SerializedStageObject, StageObjectType } from "types";
+import { DeepPartial, SerializedStageObject, StageLayer, StageObjectType } from "types";
 import { LocalizedError } from "errors";
 
 export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.Container, v extends SerializedStageObject = SerializedStageObject> {
@@ -57,6 +57,10 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.Container,
   public get mask() { return this.object.mask; }
   public set mask(val) { this.object.mask = val; }
 
+  #layer: StageLayer = "foreground";
+  public get layer() { return this.#layer; }
+  public set layer(val) { this.#layer = val; }
+
   public serialize(): v {
     return {
       id: this.id,
@@ -65,6 +69,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.Container,
       version: __MODULE_VERSION__,
       tags: [...this.tags],
       clickThrough: this.clickThrough,
+      layer: this.layer,
       bounds: {
         x: this.x,
         y: this.y,
@@ -95,6 +100,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.Container,
     if (typeof serialized.visible === "boolean") this.visible = serialized.visible;
     if (typeof serialized.alpha === "number") this.alpha = serialized.alpha;
     if (typeof serialized.zIndex === "number") this.zIndex = serialized.zIndex;
+    if (typeof serialized.layer === "string") this.layer = serialized.layer;
 
     return this;
   }
