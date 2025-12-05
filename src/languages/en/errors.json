@@ -1,0 +1,10 @@
+{
+  "STAGE-MANAGER": {
+    "ERRORS": {
+      "OBJECTALREADYREGISTERED": "Stage Object {type} already registered.",
+      "PERMISSIONDENIED": "Permission denied.",
+      "NOTIMPLEMENTED": "Not implemented.",
+      "OBJECTTYPENOTREGISTERED": "Stage Object type {type} not registered."
+    }
+  }
+}
