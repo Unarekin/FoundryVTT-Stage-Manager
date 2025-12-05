@@ -1,9 +1,10 @@
+import { HOOKS } from "hooks";
 
 export const SOCKET_MESSAGES = Object.freeze({
-
+  OBJECT_SYNC: "sync"
 })
 
-export type SocketHandler = (...args: unknown[]) => void;
+export type SocketHandler = (...args: any[]) => void;
 
 export class SocketManager {
   public readonly identifier = `module.${__MODULE_ID__}`
@@ -52,7 +53,7 @@ export class SocketManager {
       args
     });
 
-    const confirmed = Hooks.call(`${__MODULE_ID__}.socketSend`, message);
+    const confirmed = Hooks.call(HOOKS.SOCKET_SENT, message);
     if (!confirmed) return;
 
     if (actualMessage.users.includes(game.user.id)) {
@@ -118,6 +119,6 @@ export class SocketManager {
 
 
   constructor() {
-    Hooks.callAll(`${__MODULE_ID__}.socketInitialized`, this);
+    Hooks.callAll(HOOKS.SOCKET_INIT, this);
   }
 }

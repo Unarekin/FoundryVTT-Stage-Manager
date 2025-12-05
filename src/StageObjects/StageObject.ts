@@ -7,13 +7,26 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.Container,
   protected abstract readonly type: StageObjectType;
   protected abstract createObject(): t;
 
+  #dirty = false;
+  public get dirty() { return this.#dirty; }
+  public set dirty(val) { this.#dirty = val; }
+
   #id: string = foundry.utils.randomID();
   public get id() { return this.#id; }
-  protected set id(val) { this.#id = val; }
+  protected set id(val) {
+    if (this.id === val) return;
+
+    this.#id = val;
+    this.dirty = true;
+  }
 
   #name: string = this.id;
   public get name() { return this.#name; }
-  public set name(val) { this.#name = val; }
+  public set name(val) {
+    if (this.name === val) return;
+    this.#name = val;
+    this.dirty = true;
+  }
 
   public readonly width = 0;
   public readonly height = 0;
@@ -22,44 +35,95 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.Container,
 
   #clickThrough = false;
   public get clickThrough() { return this.#clickThrough; }
-  public set clickThrough(val) { this.#clickThrough = val; }
+  public set clickThrough(val) {
+    if (this.clickThrough === val) return;
+    this.#clickThrough = val;
+    this.dirty = true;
+  }
 
 
   public get rotation() { return this.object.rotation; }
-  public set rotation(val) { this.object.rotation = val; }
+  public set rotation(val) {
+    if (this.rotation === val) return;
+    this.object.rotation = val;
+    this.dirty = true;
+  }
 
   public get angle() { return this.object.angle; }
-  public set angle(val) { this.object.angle = val; }
+  public set angle(val) {
+    if (this.angle === val) return;
+    this.object.angle = val;
+    this.dirty = true;
+  }
 
 
   public get skew() { return this.object.skew; }
-  public set skew(val) { this.object.skew = val; }
+  public set skew(val) {
+    if (this.skew === val) return;
+    this.object.skew = val;
+    this.dirty = true;
+  }
 
   public get x() { return this.object.x; }
-  public set x(val) { this.object.x = val; }
+  public set x(val) {
+    if (this.x === val) return;
+    this.object.x = val;
+    this.dirty = true;
+  }
 
   public get y() { return this.object.y; }
-  public set y(val) { this.object.y = val; }
+  public set y(val) {
+    if (this.y === val) return;
+    this.object.y = val;
+    this.dirty = true;
+  }
 
   #locked = false;
   public get locked() { return this.#locked; }
-  public set locked(val) { this.#locked = val; }
+  public set locked(val) {
+    if (this.locked === val) return;
+    this.#locked = val;
+    this.dirty = true;
+  }
 
   public get visible() { return this.object.visible; }
-  public set visible(val) { this.object.visible = val; }
+  public set visible(val) {
+    if (this.visible === val) return;
+    this.object.visible = val;
+    this.dirty = true;
+  }
 
   public get alpha() { return this.object.alpha; }
-  public set alpha(val) { this.object.alpha = val; }
+  public set alpha(val) {
+    if (this.alpha === val) return;
+    this.object.alpha = val;
+    this.dirty = true;
+  }
 
   public get zIndex() { return this.object.zIndex; }
-  public set zIndex(val) { this.object.zIndex = val; }
+  public set zIndex(val) {
+    if (this.zIndex === val) return;
+    this.object.zIndex = val;
+    this.dirty = true;
+  }
 
   public get mask() { return this.object.mask; }
-  public set mask(val) { this.object.mask = val; }
+  public set mask(val) {
+    if (this.mask === val) return;
+    this.object.mask = val;
+    this.dirty = true;
+  }
 
   #layer: StageLayer = "foreground";
   public get layer() { return this.#layer; }
-  public set layer(val) { this.#layer = val; }
+  public set layer(val) {
+    if (this.layer === val) return;
+    this.#layer = val;
+    this.dirty = true;
+  }
+
+  public get responsibleUser() { return game?.users?.activeGM; }
+  public get isResponsibleUser() { return !!game?.user?.isActiveGM; }
 
   public serialize(): v {
     return {
@@ -89,7 +153,7 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.Container,
     } as v
   }
 
-  public deserialize(serialized: v): this {
+  public deserialize(serialized: v, dirty = false): this {
 
     if (typeof serialized.id === "string") this.id = serialized.id;
     if (typeof serialized.name === "string") this.name = serialized.name;
@@ -102,11 +166,12 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.Container,
     if (typeof serialized.zIndex === "number") this.zIndex = serialized.zIndex;
     if (typeof serialized.layer === "string") this.layer = serialized.layer;
 
+    this.dirty = dirty;
     return this;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public static deserialize(serialized: DeepPartial<SerializedStageObject>): StageObject { throw new LocalizedError("NOTIMPLEMENTED"); }
+  public static deserialize(serialized: DeepPartial<SerializedStageObject>, dirty = false): StageObject { throw new LocalizedError("NOTIMPLEMENTED"); }
 
   constructor() {
 

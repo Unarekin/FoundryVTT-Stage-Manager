@@ -65,3 +65,9 @@ export interface SerializedStageObject {
   zIndex: number;
   alpha: number;
 }
+
+export interface SynchronizationMessage {
+  updated: Record<string, DeepPartial<SerializedStageObject>>;
+  added: Record<string, SerializedStageObject>;
+  removed: string[];
+}

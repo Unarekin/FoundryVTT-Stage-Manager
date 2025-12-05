@@ -4,7 +4,8 @@
       "OBJECTALREADYREGISTERED": "Stage Object {type} already registered.",
       "PERMISSIONDENIED": "Permission denied.",
       "NOTIMPLEMENTED": "Not implemented.",
-      "OBJECTTYPENOTREGISTERED": "Stage Object type {type} not registered."
+      "OBJECTTYPENOTREGISTERED": "Stage Object type {type} not registered.",
+      "STAGEMANAGERNOTINITIALIZED": "Stage Manager not yet initialized."
     }
   }
 }

@@ -1,16 +1,18 @@
 import { log } from "./logging";
 import { SocketManager } from "./SocketManager";
+import { SynchronizationManager } from "./SynchronizationManager";;
 import { StageObject } from "./StageObjects";
 import { LocalizedError } from "./errors";
 import { SerializedStageObject, StageObjectType, DeepPartial, StageLayer } from "types";
 import { ScreenSpaceCanvasGroup } from "ScreenSpaceCanvasGroup";
 import { StageObjectCollection } from "StageObjectCollection"
+import { HOOKS } from "hooks";
 
 export class StageManager {
   public readonly version = __MODULE_VERSION__;
   public readonly sockets = new SocketManager();
+  public readonly syncManager = new SynchronizationManager();
   public readonly objectClasses: Record<StageObjectType, typeof StageObject> = {};
-
   public readonly baseObjectClass: typeof StageObject = StageObject;
 
   public readonly stageObjects = new StageObjectCollection();
@@ -35,14 +37,14 @@ export class StageManager {
     if (this.objectClasses[name]) throw new LocalizedError("OBJECTALREADYREGISTERED", { type: name });
 
     this.objectClasses[name] = objectClass;
-    Hooks.callAll(`${__MODULE_ID__}.stageObjectRegistered`, name, objectClass);
+    Hooks.callAll(HOOKS.OBJECT_REGISTERED, name, objectClass);
   }
 
   public unregisterStageObject(name: StageObjectType) {
     const objClass = this.objectClasses[name];
     delete this.objectClasses[name];
     if (objClass)
-      Hooks.callAll(`${__MODULE_ID__}.stageObjectUnregistered`, objClass);
+      Hooks.callAll(HOOKS.OBJECT_UNREGISTERED, objClass);
   }
 
   public add<t extends StageObject = StageObject>(objectType: StageObjectType, serialized: DeepPartial<SerializedStageObject>): t {
@@ -57,8 +59,7 @@ export class StageManager {
       this.canvasReady();
 
     Hooks.on("canvasReady", () => { this.canvasReady(); });
-
-    Hooks.callAll(`${__MODULE_ID__}.initialize`, this);
+    Hooks.callAll(HOOKS.INITIALIZED, this);
     log("Initialized");
   }
 }
