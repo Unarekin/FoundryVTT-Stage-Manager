@@ -2,3 +2,12 @@
 export interface SerializedStageObject {
 
 }
+
+export interface SocketMessage<t extends any[] = []> {
+  id: string;
+  message: string;
+  timestamp: number;
+  sender: string;
+  users: string[];
+  args: t
+}
