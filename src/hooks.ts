@@ -3,7 +3,8 @@ export const HOOKS: Record<string, keyof Hooks.HookName> = Object.freeze({
   SOCKET_SENT: `${__MODULE_ID__}.socketSent` as (keyof Hooks.HookName),
   SOCKET_INIT: `${__MODULE_ID__}.socketInitialized` as (keyof Hooks.HookName),
   OBJECT_REGISTERED: `${__MODULE_ID__}.stageObjectRegistered` as (keyof Hooks.HookName),
-  OBJECT_UNREGISTERED: `${__MODULE_ID__}.stageObjectUnregistered` as (keyof Hooks.HookName)
+  OBJECT_UNREGISTERED: `${__MODULE_ID__}.stageObjectUnregistered` as (keyof Hooks.HookName),
+  SCENE_CONTROLS: `${__MODULE_ID__}.getSceneControls` as (keyof Hooks.HookName)
 })
 
 

@@ -1,0 +1,42 @@
+@use "sass:string";
+
+
+@font-face {
+  font-family: 'Stage-Manager-Icons';
+  src:
+    url('../assets/fonts/Stage-Manager-Icons.ttf?pqysul') format('truetype'),
+    url('../assets/fonts/Stage-Manager-Icons.woff?pqysul') format('woff'),
+    url('../assets/fonts/Stage-Manager-Icons.svg?pqysul#Stage-Manager-Icons') format('svg');
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
+.sm-icon {
+  font-family: 'Stage-Manager-Icons' !important;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  &.curtains {
+    &:before {
+      content: string.unquote('"\\e902"');
+    }
+  }
+  &.background {
+    &:before {
+      content: string.unquote('"\\e900"');
+    }
+  }
+  &.foreground {
+    &:before {
+      content: string.unquote('"\\e901"');
+    }
+  }
+  
+}

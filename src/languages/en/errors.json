@@ -1,5 +1,5 @@
 {
-  "STAGE-MANAGER": {
+  "STAGEMANAGER": {
     "ERRORS": {
       "OBJECTALREADYREGISTERED": "Stage Object {type} already registered.",
       "PERMISSIONDENIED": "Permission denied.",

@@ -29,6 +29,7 @@
     "esbuild-sass-plugin": "^3.3.1",
     "eslint": "^9.11.0",
     "fvtt-types": "github:League-of-Foundry-Developers/foundry-vtt-types#main",
+    "gsap": "^3.13.0",
     "typedoc": "^0.26.10",
     "typedoc-plugin-rename-defaults": "^0.7.1",
     "typescript": "<5.6.0",

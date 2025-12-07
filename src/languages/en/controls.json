@@ -1,0 +1,9 @@
+{
+  "STAGEMANAGER": {
+    "CONTROLS": {
+      "FOREGROUND": "Foreground Layer",
+      "BACKGROUND": "Background Layer",
+      "TEXT": "Add Text"
+    }
+  }
+}

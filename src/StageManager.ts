@@ -38,6 +38,7 @@ export class StageManager {
 
     this.objectClasses[name] = objectClass;
     Hooks.callAll(HOOKS.OBJECT_REGISTERED, name, objectClass);
+    log(`Stage Object type registered:`, name);
   }
 
   public unregisterStageObject(name: StageObjectType) {

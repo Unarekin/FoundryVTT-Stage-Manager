@@ -1,10 +1,59 @@
-import { serializeStyle } from "functions";
+import { placeStageObject, serializeStyle } from "functions";
 import { StageObject } from "./StageObject";
 import { SerializedStageObject, SerializedTextStageObject, StageObjectType } from "types";
 import { HOOKS } from "hooks";
+import { logError } from "logging";
 import { StageManager } from "StageManager";
 
 Hooks.on(HOOKS.INITIALIZED, (stageManager: StageManager) => { stageManager.registerStageObject("text", TextStageObject as typeof StageObject); })
+
+
+Hooks.on(HOOKS.SCENE_CONTROLS, (tools: Record<string, foundry.applications.ui.SceneControls.Tool>) => {
+  tools.text = {
+    name: "text",
+    title: "STAGEMANAGER.CONTROLS.TEXT",
+    icon: "fa-solid fa-paragraph",
+    order: 100,
+    visible: game?.user?.isGM,
+    button: true,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    onChange(event: Event, active: boolean) {
+
+      foundry.applications.handlebars.renderTemplate(`modules/${__MODULE_ID__}/templates/AddText.hbs`, {})
+        .then(content => foundry.applications.api.DialogV2.input({
+          window: {
+            title: "STAGEMANAGER.CONTROLS.TEXT",
+            resize: true
+          },
+          content,
+          ok: {
+            label: "Save",
+            icon: "fa-solid fa-floppy-disk"
+          }
+        }))
+        .then(data => {
+          if (typeof data?.text === "string") {
+            const text = new PIXI.HTMLText(data.text);
+            text.anchor.x = text.anchor.y = 0.5;
+
+            return Promise.all([
+              Promise.resolve(text),
+              placeStageObject(text, "foreground")
+            ])
+          }
+        })
+        .then(([obj, pos]: [PIXI.HTMLText, { x: number, y: number } | undefined]) => {
+          if (pos)
+            game!.StageManager!.add("text", { text: obj.text, x: pos.x, y: pos.y, layer: "foreground" } as unknown as SerializedStageObject);
+          if (obj)
+            obj.destroy();
+        })
+        .catch(logError)
+    }
+  }
+});
+
+
 
 export class TextStageObject extends StageObject<PIXI.HTMLText, SerializedStageObject> {
   protected type: StageObjectType = "text";

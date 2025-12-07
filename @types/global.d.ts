@@ -1,5 +1,6 @@
 import { StageManager } from "../src/StageManager";
 import { SerializedStageObject, StageLayer } from "../src/types";
+import { gsap as gsapType } from "gsap";
 
 declare global {
 
@@ -13,6 +14,8 @@ declare global {
   declare const socketlib: any;
 
   declare module '*.scss';
+
+  declare const gsap: gsapType;
 
   interface Game {
     StageManager: StageManager;

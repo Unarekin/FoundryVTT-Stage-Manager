@@ -175,6 +175,26 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.Container,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public static deserialize(serialized: DeepPartial<SerializedStageObject>, dirty = false): StageObject { throw new LocalizedError("NOTIMPLEMENTED"); }
 
+  #destroyed = false;
+  public get destroyed() { return this.#destroyed; }
+
+  public destroy() {
+    if (this.#destroyed) return;
+
+    if (this.object) {
+      if (Array.isArray(this.object.filters)) {
+        const filters = [...this.object.filters];
+        this.object.filters = [];
+        filters.forEach(filter => { filter.destroy(); });
+      }
+
+      gsap.killTweensOf(this.object);
+      this.object.destroy();
+    }
+    game!.StageManager!.stageObjects.delete(this.id);
+    this.#destroyed = true;
+  }
+
   constructor() {
 
     this.object = this.createObject();
