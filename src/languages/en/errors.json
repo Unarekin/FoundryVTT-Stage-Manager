@@ -5,7 +5,8 @@
       "PERMISSIONDENIED": "Permission denied.",
       "NOTIMPLEMENTED": "Not implemented.",
       "OBJECTTYPENOTREGISTERED": "Stage Object type {type} not registered.",
-      "STAGEMANAGERNOTINITIALIZED": "Stage Manager not yet initialized."
+      "STAGEMANAGERNOTINITIALIZED": "Stage Manager not yet initialized.",
+      "INVALIDLAYER": "Invalid layer specified: {layer}"
     }
   }
 }

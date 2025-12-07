@@ -28,8 +28,8 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.Container,
     this.dirty = true;
   }
 
-  public readonly width = 0;
-  public readonly height = 0;
+  public width = 0;
+  public height = 0;
 
   public readonly tags: string[] = [];
 
@@ -134,12 +134,10 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.Container,
       tags: [...this.tags],
       clickThrough: this.clickThrough,
       layer: this.layer,
-      bounds: {
-        x: this.x,
-        y: this.y,
-        width: this.width,
-        height: this.height
-      },
+      x: this.x,
+      y: this.y,
+      width: this.width,
+      height: this.height,
       skew: {
         x: this.skew.x,
         y: this.skew.y
@@ -165,6 +163,10 @@ export abstract class StageObject<t extends PIXI.DisplayObject = PIXI.Container,
     if (typeof serialized.alpha === "number") this.alpha = serialized.alpha;
     if (typeof serialized.zIndex === "number") this.zIndex = serialized.zIndex;
     if (typeof serialized.layer === "string") this.layer = serialized.layer;
+    if (typeof serialized.x === "number") this.x = serialized.x;
+    if (typeof serialized.y === "number") this.y = serialized.y;
+    if (typeof serialized.width === "number") this.width = serialized.width;
+    if (typeof serialized.height === "number") this.height = serialized.height;
 
     this.dirty = dirty;
     return this;

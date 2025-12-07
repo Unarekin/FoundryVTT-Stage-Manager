@@ -1,4 +1,5 @@
 import { HOOKS } from "hooks";
+import { log } from "logging";
 
 export const SOCKET_MESSAGES = Object.freeze({
   OBJECT_SYNC: "sync"
@@ -55,6 +56,8 @@ export class SocketManager {
 
     const confirmed = Hooks.call(HOOKS.SOCKET_SENT, message);
     if (!confirmed) return;
+
+    log("Sending socket message:", actualMessage);
 
     if (actualMessage.users.includes(game.user.id)) {
       for (const handler of handlers)

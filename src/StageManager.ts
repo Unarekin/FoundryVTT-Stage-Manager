@@ -50,15 +50,27 @@ export class StageManager {
   public add<t extends StageObject = StageObject>(objectType: StageObjectType, serialized: DeepPartial<SerializedStageObject>): t {
     const objClass = this.objectClasses[objectType] as (typeof StageObject | undefined);
     if (!objClass) throw new LocalizedError("OBJECTTYPENOTREGISTERED", { type: objectType });
-    return objClass.deserialize(serialized) as t;
+    const obj = objClass.deserialize(serialized) as t;
+
+    if (!this.layers[obj.layer]) throw new LocalizedError("INVALIDLAYER", { layer: obj.layer });
+
+    this.layers[obj.layer].addChild(obj.object);
+    this.stageObjects.set(obj.id, obj);
+    return obj;
   }
 
   public constructor() {
 
-    if (canvas)
+    if (canvas) {
+      canvas.stage.addChild(this.layers.background);
+      canvas.stage.addChild(this.layers.foreground);
       this.canvasReady();
+    }
+
+
 
     Hooks.on("canvasReady", () => { this.canvasReady(); });
+
     Hooks.callAll(HOOKS.INITIALIZED, this);
     log("Initialized");
   }

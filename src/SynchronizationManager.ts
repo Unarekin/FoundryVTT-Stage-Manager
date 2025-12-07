@@ -18,12 +18,11 @@ export class SynchronizationManager {
 
     const sockets = game!.StageManager!.sockets;
     sockets.register(SOCKET_MESSAGES.OBJECT_SYNC, (message: SynchronizationMessage) => { this.MessageReceived(message); });
-    log("Synchronization Manager initialized.");
   }
 
 
   protected async registerTickHandler() {
-    if (!game?.StageManager) await awaitHook(HOOKS.INIT as string);
+    if (!game?.StageManager) await awaitHook(HOOKS.INITIALIZED as string);
 
     canvas!.app!.ticker.add(() => { this.onTick(); });
   }
@@ -43,21 +42,29 @@ export class SynchronizationManager {
     if (dirty.length || added.length || removed.length) {
 
       const addedSerialized = added.map(obj => obj.serialize());
-      const updatedSerialized = dirty.map(obj => obj.serialize());
+      const updatedSerialized = dirty.filter(obj => this.#knownObjects[obj.id]).map(obj => obj.serialize());
+
+      const updatedDiffs = updatedSerialized.map(obj => ({
+        ...this.diffObjects(this.#knownObjects[obj.id], obj),
+        id: obj.id
+      }));
 
       const message: SynchronizationMessage = {
         removed,
         added: Object.fromEntries(addedSerialized.map(obj => [obj.id, obj])),
-        updated: Object.fromEntries(updatedSerialized.map(obj => [obj.id, this.diffObjects(this.#knownObjects[obj.id], obj)]))
+        updated: Object.fromEntries(updatedDiffs.filter(obj => Object.keys(obj).length > 1).map(obj => [obj.id, obj]))
       }
+      if (Object.keys(message.updated).length || Object.keys(message.added).length || message.removed.length) {
 
-      this.#knownObjects = Object.fromEntries([
-        ...addedSerialized.map(obj => [obj.id, obj]),
-        ...updatedSerialized.map(obj => [obj.id, obj])
-      ]) as Record<string, SerializedStageObject>
+        this.#knownObjects = Object.fromEntries([
+          ...addedSerialized.map(obj => [obj.id, obj]),
+          ...updatedSerialized.map(obj => [obj.id, obj])
+        ]) as Record<string, SerializedStageObject>
 
-      game.StageManager.sockets.executeForEveryone(SOCKET_MESSAGES.OBJECT_SYNC, message)
+        game.StageManager.sockets.executeForEveryone(SOCKET_MESSAGES.OBJECT_SYNC, message)
+      }
     }
+    dirty.forEach(obj => { obj.dirty = false; });
   }
 
   constructor() {

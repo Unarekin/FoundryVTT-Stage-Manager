@@ -20,7 +20,7 @@ export type AnyArray = readonly unknown[];
 export type AnyFunction = (arg0: never, ...args: never[]) => unknown;
 
 
-export const StageObjectTypes = [] as const;
+export const StageObjectTypes = ["text"] as const;
 export type StageObjectType = typeof StageObjectTypes[number];
 
 export const StageLayers = ["foreground", "background"] as const;
@@ -49,12 +49,10 @@ export interface SerializedStageObject {
   clickThrough: boolean;
   visible: boolean;
   layer: StageLayer;
-  bounds: {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  };
+  x: number;
+  y: number;
+  width: number;
+  height: number;
   skew: {
     x: number,
     y: number
@@ -64,6 +62,16 @@ export interface SerializedStageObject {
   mask: string;
   zIndex: number;
   alpha: number;
+}
+
+export interface SerializedTextStageObject extends SerializedStageObject {
+  type: "text";
+  text: string;
+  style: DeepPartial<PIXI.HTMLTextStyle>;
+  anchor: {
+    x: number;
+    y: number;
+  }
 }
 
 export interface SynchronizationMessage {
