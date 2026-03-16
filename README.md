@@ -17,7 +17,8 @@
 - [Extensions](#extensions)
 - [Attributions \& Acknowledgements](#attributions--acknowledgements)
 - [Support](#support)
-
+- [Socials](#socials)
+- [100% Human Made](#100-human-made)
 
 
 
@@ -57,4 +58,11 @@ Please see the [wiki](https://github.com/Unarekin/FoundryVTT-Stage-Manager/wiki)
 - The clock images provided in this module are edited versions of the ones originally released by Justin Alexander on his blog, [The Alexandrian](https://thealexandrian.net/wordpress/40424/roleplaying-games/blades-in-the-dark-progress-clocks).  The original images were released under no specific license, permission is explicitly granted for all commercial and non-commercial use, with attribution.
 
 # Support
-If you're feeling generous, please feel free to make a donation at my [Ko-Fi](https://ko-fi.com/unarekin) page, it's much appreciated!
+Do please consider throwing me a few bucks over on [Ko-Fi](https://ko-fi.com/unarekin) or [Patreon](https://www.patreon.com/BattleTransitions) if you like what you see and are feeling generous.  Every little bit helps.
+
+# Socials
+- [Linktree](https://linktr.ee/EricasCodebin)
+- [Discord](https://discord.gg/RaFYSW9Vcp)
+
+# 100% Human-made
+This module contains exactly 0% AI-generated content, whether that be code generation, code *completion*, documentation, art assets, etc.  None, never.  I don't need a torment nexus to write bad code, I can do that well enough on my own.
